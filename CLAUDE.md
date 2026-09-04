@@ -151,6 +151,16 @@ MVP completo (8 pasos). Fuera del MVP, preparado pero no implementado: panel
 multi-cuadrilla, vista del trabajador, NFC, i18n completo, fotos de albaranes, pantalla
 RGPD (política de privacidad + export/borrado de datos de un trabajador).
 
+### Despliegue (en marcha, 2026-09-04)
+
+Checklist completa por fases en `DEPLOY.md` (raíz del repo). Fase 1 (PWA en modo demo,
+Cloudflare Workers, dominio `cuadrillas.app`) **hecha**. Fase 2 (backend: MongoDB Atlas +
+Railway) **en curso** — nos quedamos justo después de crear el cluster Atlas M0 y el
+usuario de base de datos; falta pegar el connection string para configurar Railway
+(`MONGODB_URI`, `JWT_SECRET`, `APP_URL`), enlazar `api.cuadrillas.app` y añadir
+`VITE_API_URL` en Cloudflare. Retomar en `DEPLOY.md` → "Fase 2 — Backend (Railway +
+MongoDB Atlas)". Fases 3 (Resend) y 4 (Stripe) sin empezar.
+
 ### Transporte (hecho)
 
 `Worker.transporteCentimos` (0 = no se le paga). En la liquidación,
