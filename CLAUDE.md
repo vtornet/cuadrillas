@@ -161,6 +161,10 @@ aparte. Formulario en `gestion/WorkerForm.svelte` (checkbox + importe).
   son del grupo y luego se reparten entre sus componentes. Nueva entidad `Group` (o
   `Squad`) con `crewId` + `memberIds[]`; `Entry` podría apuntar a un grupo en vez de a un
   trabajador, y la liquidación/estadísticas repartirían las unidades entre miembros.
-- **Firma del jefe de cuadrilla** al cerrar un parte: capturar la firma (canvas) al
-  cerrar la jornada y guardarla con el `Shift` (data URL / blob); mostrarla en la
-  liquidación o el parte exportado.
+- **Cierre de jornada como "parte" con firma**: al cerrar una jornada, añadir un botón
+  final de cierre en `Jornada.svelte` que capture la firma del jefe de cuadrilla
+  (canvas) y la guarde con el `Shift` (data URL / blob).
+- **Historial de jornadas (consulta)**: hoy `Jornada.svelte` solo muestra la jornada
+  activa y las abiertas; las cerradas desaparecen de la vista. Falta una pantalla/lista
+  donde aparezcan también las jornadas cerradas y se pueda entrar a consultarlas
+  (asistencia, registros, total, y la firma de arriba una vez exista).
