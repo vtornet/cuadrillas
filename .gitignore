@@ -13,5 +13,6 @@ coverage/
 .idea/
 
 # Capturas de pantalla que se guardan en la raiz durante el trabajo con Claude
-image.png
-Logo.png
+# (ancladas a la raiz: no deben tapar assets reales como app/public/logo.png)
+/image.png
+/Logo.png

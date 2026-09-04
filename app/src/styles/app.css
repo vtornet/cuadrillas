@@ -119,6 +119,13 @@ button:disabled {
   font-size: 22px;
 }
 
+.appbar-logo {
+  flex: 0 0 auto;
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+
 .jornada-info {
   display: block;
   width: 100%;
@@ -1121,9 +1128,17 @@ button:disabled {
   margin: 0 auto;
 }
 
+.login-logo {
+  display: block;
+  width: 140px;
+  max-width: 60%;
+  margin: 24px auto 8px;
+}
+
 .login h2 {
   margin-top: 8px;
   font-size: var(--f-grande);
+  text-align: center;
 }
 
 .login-ayuda {

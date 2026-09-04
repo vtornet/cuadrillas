@@ -15,6 +15,7 @@
   >
     <span aria-hidden="true">&#9776;</span>
   </button>
+  <img class="appbar-logo" src="/icon-512.png" alt="" aria-hidden="true" />
   <h1>{titulo}</h1>
   <SyncBadge />
 </div>

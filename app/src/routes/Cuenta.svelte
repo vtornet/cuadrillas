@@ -113,6 +113,7 @@
   <div class="pantalla">
     <header class="cabecera"><AppBar titulo={i18n.t("app.nombre")} /></header>
     <div class="pantalla-cuerpo login">
+      <img class="login-logo" src="/logo.png" alt={i18n.t("app.nombre")} />
       <h2>{i18n.t("cuenta.entrar")}</h2>
       <p class="login-ayuda">{i18n.t("cuenta.ayuda")}</p>
 
