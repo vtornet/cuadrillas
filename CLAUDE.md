@@ -175,10 +175,14 @@ Perfil de usuario bajo → simplificar. Plan en 4 fases:
   un atajo que abre directamente `WorkerForm` para ese trabajador (`gestion.trabajadoresDe`,
   callback `oneditarworker` hacia `Gestion.svelte`). Eliminar una cuadrilla solo se permite
   sin trabajadores asignados (si tiene, se oculta el botón y se explica por qué).
-- **Fase C — pendiente.** Pantalla "Historial": lista de partes cerrados (`estado:
-  "closed"`) → consultar (resumen de trabajadores/grupos, cantidades, total) → botón
-  Editar con aviso + confirmación → habilita añadir/anular anotaciones igual que en un
-  parte activo, sin tocar `estado`.
+- **Fase C — hecho.** Pantalla "Historial" (`Historial.svelte` + `ParteDetalle.svelte`):
+  lista de partes cerrados (`estado: "closed"`) → modo consulta (filas de solo lectura,
+  `.hist-fila`) → botón Editar con aviso + confirmación inline → modo edición reutiliza
+  `WorkerRow`/`WorkerSheet` tal cual (ya estaban desacoplados del store `jornada` vía props
+  callback) para añadir/anular anotaciones, sin tocar `estado` del `Shift` ni el
+  `activeShiftId`. Estado (workers/entries/conteos) vive local al componente, no en un
+  store singleton — a diferencia de `jornada.svelte.ts`, aquí no hace falta persistencia
+  entre pantallas ni pila de deshacer.
 - **Fase D — pendiente.** Grupos: entidad persistente y editable a nivel de cuadrilla
   (como los trabajadores, gestionable desde Gestión), **no** efímera por parte — así no
   hay que recrearlos cada día; si falta alguien un día, se edita el grupo al vuelo. Al

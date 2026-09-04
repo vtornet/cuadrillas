@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import Registro from "./routes/Registro.svelte";
+  import Historial from "./routes/Historial.svelte";
   import Estadisticas from "./routes/Estadisticas.svelte";
   import Liquidacion from "./routes/Liquidacion.svelte";
   import Gestion from "./routes/Gestion.svelte";
@@ -49,7 +50,9 @@
   <Cuenta />
 {:else}
   <main>
-    {#if router.vista === "estadisticas"}
+    {#if router.vista === "historial"}
+      <Historial />
+    {:else if router.vista === "estadisticas"}
       <Estadisticas />
     {:else if router.vista === "liquidacion"}
       <Liquidacion />

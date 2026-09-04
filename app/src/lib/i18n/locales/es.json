@@ -19,6 +19,7 @@
     "titulo": "Menu",
     "cerrar": "Cerrar menu",
     "registrar": "Registrar",
+    "historial": "Historial",
     "gestion": "Gestion",
     "estadisticas": "Estadisticas",
     "liquidacion": "Liquidacion",
@@ -140,6 +141,15 @@
     "desde_fecha": "desde {fecha}",
     "eliminar": "Eliminar",
     "eliminar_confirmar": "Se eliminara este registro."
+  },
+  "historial": {
+    "titulo": "Historial",
+    "sin_partes": "Todavia no hay ningun parte cerrado.",
+    "no_encontrado": "No se encontro este parte.",
+    "editar": "Editar",
+    "aviso_editar": "Vas a editar un parte ya cerrado. Los cambios afectaran a sus estadisticas y liquidacion.",
+    "confirmar_editar": "Editar parte",
+    "volver": "Volver al historial"
   },
   "jornada": {
     "cerrar_confirmar": "Al finalizar no se podra seguir registrando en este parte.",

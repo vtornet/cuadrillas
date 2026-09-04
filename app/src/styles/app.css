@@ -966,6 +966,41 @@ button:disabled {
   margin: 0;
 }
 
+.btn-ancho {
+  width: 100%;
+  margin-top: 12px;
+}
+
+.lista-simple {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.hist-fila {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: var(--tap);
+  padding: 10px 14px;
+  background: var(--c-superficie);
+  border: 2px solid var(--c-borde);
+  border-radius: var(--radio);
+}
+
+.hist-fila .nombre {
+  font-weight: 600;
+}
+
+.hist-fila .conteo {
+  font-size: var(--f-grande);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
 .crew-workers {
   list-style: none;
   margin: 0;

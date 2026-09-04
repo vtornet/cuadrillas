@@ -19,6 +19,7 @@
     "titulo": "Menu",
     "cerrar": "Close menu",
     "registrar": "Record",
+    "historial": "History",
     "gestion": "Management",
     "estadisticas": "Statistics",
     "liquidacion": "Settlement",
@@ -140,6 +141,15 @@
     "desde_fecha": "from {fecha}",
     "eliminar": "Delete",
     "eliminar_confirmar": "This record will be deleted."
+  },
+  "historial": {
+    "titulo": "History",
+    "sin_partes": "No closed shifts yet.",
+    "no_encontrado": "This shift could not be found.",
+    "editar": "Edit",
+    "aviso_editar": "You are about to edit a closed shift. Changes will affect its statistics and settlement.",
+    "confirmar_editar": "Edit shift",
+    "volver": "Back to history"
   },
   "jornada": {
     "cerrar_confirmar": "Once finished you cannot keep recording in this shift.",
