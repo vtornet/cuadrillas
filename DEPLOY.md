@@ -36,7 +36,10 @@ offline con datos de ejemplo — sin tocar Railway, Mongo ni Stripe.
    o los rangos de Railway si prefieres restringirlo. Copia el connection
    string (`mongodb+srv://...`).
 2. **Railway** → *New Project* → *Deploy from GitHub repo* → `vtornet/cuadrillas`.
-   Usa el `api/railway.json` ya presente en el repo (build/start commands).
+   **Root Directory: déjalo en `/`** (la raíz del monorepo, igual que en
+   Cloudflare) — el `api/railway.json` ya define el build/start command
+   (`pnpm --filter @cuadrilla/api build` / `start`), que necesita ver el
+   `pnpm-workspace.yaml` para resolver `@cuadrilla/shared`.
 3. Variables en Railway (Settings → Variables):
    - `MONGODB_URI` = el connection string de Atlas (con el nombre de BD, p. ej.
      `.../cuadrilla?retryWrites=true&w=majority`)
