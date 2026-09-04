@@ -77,7 +77,11 @@ export function calcularEstadisticas(
     if (e.deleted) continue;
     const s = porShift.get(e.shiftId);
     if (!s) continue;
-    unidades.set(e.workerId, (unidades.get(e.workerId) ?? 0) + e.cantidad);
+    // Los registros de grupo (Entry.groupId) no se desglosan por trabajador
+    // aqui todavia; si cuentan en la evolucion diaria (total de la cuadrilla).
+    if (e.workerId) {
+      unidades.set(e.workerId, (unidades.get(e.workerId) ?? 0) + e.cantidad);
+    }
     evolucionMap.set(s.fecha, (evolucionMap.get(s.fecha) ?? 0) + e.cantidad);
   }
 
@@ -89,7 +93,10 @@ export function calcularEstadisticas(
     const asistentes =
       s.attendeeIds.length > 0
         ? s.attendeeIds
-        : entries.filter((e) => e.shiftId === s.id).map((e) => e.workerId);
+        : entries
+            .filter((e) => e.shiftId === s.id)
+            .map((e) => e.workerId)
+            .filter((id): id is string => !!id);
     for (const w of new Set(asistentes)) {
       horasPorTrabajador.set(w, (horasPorTrabajador.get(w) ?? 0) + h);
     }

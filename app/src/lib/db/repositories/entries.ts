@@ -5,7 +5,9 @@ import { persistir } from "./base";
 export interface NuevaEntryInput {
   organizationId: string;
   shiftId: string;
-  workerId: string;
+  /** Exactamente uno de los dos: workerId (registro individual) o groupId (grupo). */
+  workerId?: string;
+  groupId?: string;
   cantidad: number;
   registradoPor: string;
 }
@@ -18,6 +20,7 @@ export function crearEntry(input: NuevaEntryInput): Entry {
     organizationId: input.organizationId,
     shiftId: input.shiftId,
     workerId: input.workerId,
+    groupId: input.groupId,
     cantidad: input.cantidad,
     timestamp: now,
     registradoPor: input.registradoPor,

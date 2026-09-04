@@ -183,14 +183,23 @@ Perfil de usuario bajo → simplificar. Plan en 4 fases:
   `activeShiftId`. Estado (workers/entries/conteos) vive local al componente, no en un
   store singleton — a diferencia de `jornada.svelte.ts`, aquí no hace falta persistencia
   entre pantallas ni pila de deshacer.
-- **Fase D — pendiente.** Grupos: entidad persistente y editable a nivel de cuadrilla
-  (como los trabajadores, gestionable desde Gestión), **no** efímera por parte — así no
-  hay que recrearlos cada día; si falta alguien un día, se edita el grupo al vuelo. Al
-  comenzar un parte, opción "trabajar por grupos" → elegir qué grupos trabajan hoy. El
-  parte activo muestra tarjetas de grupo en vez de trabajador (tocar abre modal con
-  miembros + total). En liquidación, las unidades del grupo se reparten **a partes
-  iguales** entre sus miembros de ese parte (sin arrastrar ausencias de otros días, porque
-  la composición se ajusta cada vez).
+- **Fase D — hecho.** Grupos: entidad persistente y editable a nivel de cuadrilla
+  (`Group` — pestaña "Grupos" en `Gestion.svelte` / `GroupForm.svelte`, igual que
+  trabajadores). Al comenzar un parte, `ComenzarJornadaSheet` ofrece "trabajar por
+  grupos" → se eligen qué grupos trabajan hoy y su composición se copia como snapshot
+  (`Shift.groups: GrupoDeJornada[]`, filtrado a la asistencia marcada) — así el grupo
+  fijo de Gestión no se toca, y si falta alguien ese día el jefe lo desmarca en el
+  parte (`jornada.actualizarGrupoDeHoy`, editable también desde `ParteDetalle` en modo
+  edición). El parte activo muestra tarjetas de grupo en vez de trabajador
+  (`Registro.svelte`, `WorkerRow` generalizado con prop `item: {name, alias}`; tocar
+  abre `GroupSheet.svelte` con miembros de hoy + anotaciones). `Entry.workerId` /
+  `Entry.groupId` son ambos opcionales y mutuamente excluyentes; `sumarConteos` indexa
+  por el que esté presente. En liquidación (`settlement.ts`), las unidades y el importe
+  de cada anotación de grupo se reparten **a partes iguales** en céntimos exactos
+  (floor + reparto determinista del resto) entre los `memberIds` del snapshot de ESE
+  parte — sin arrastrar ausencias de otros días. Fuera de alcance de esta fase (gap
+  conocido, no corrupción): Estadísticas por trabajador ignora las anotaciones de
+  grupo (`stats.ts`, guardado explícitamente).
 - **Firma del jefe al finalizar**: capturar firma (canvas) al finalizar un parte y
   guardarla con el `Shift` (data URL/blob); mostrarla en el historial/liquidación. Sin
   fase asignada todavía.

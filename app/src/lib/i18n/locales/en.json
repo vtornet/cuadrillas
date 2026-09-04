@@ -140,7 +140,14 @@
     "tarifa_sin_fin": "No end date",
     "desde_fecha": "from {fecha}",
     "eliminar": "Delete",
-    "eliminar_confirmar": "This record will be deleted."
+    "eliminar_confirmar": "This record will be deleted.",
+    "grupos": "Groups",
+    "editar_grupo": "Edit group",
+    "nuevo_grupo": "New group",
+    "grupo_nombre": "Group name",
+    "grupo_activo": "Active group",
+    "grupo_sin_cuadrilla": "Pick a crew with workers first.",
+    "grupo_sin_miembros": "Pick at least one member."
   },
   "historial": {
     "titulo": "History",
@@ -166,7 +173,11 @@
     "presentes": "{n} present",
     "abrir": "Start shift",
     "sin_cuadrillas": "You have no crew assigned.",
-    "sin_productos": "No products. Create them in Management."
+    "sin_productos": "No products. Create them in Management.",
+    "trabajar_por_grupos": "Work by groups",
+    "elegir_grupos": "Pick the groups working today.",
+    "sin_grupos": "This crew has no groups. Create them in Management.",
+    "sin_grupos_seleccionados": "Pick at least one group."
   },
   "pad": {
     "cancelar": "Cancel",
@@ -191,6 +202,11 @@
     "cambios_sin_guardar": "You have unsaved changes.",
     "seguir_editando": "Keep editing",
     "cerrar_sin_guardar": "Close without saving"
+  },
+  "grupo": {
+    "ficha": "Group details",
+    "miembros_hoy": "Today's members",
+    "miembros_contador": "{n} member(s)"
   },
   "qr": {
     "apunta": "Point at the worker code",

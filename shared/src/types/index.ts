@@ -3,6 +3,7 @@ export * from "./organization";
 export * from "./user";
 export * from "./crew";
 export * from "./worker";
+export * from "./group";
 export * from "./product";
 export * from "./unitType";
 export * from "./rate";

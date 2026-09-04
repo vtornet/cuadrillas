@@ -1,5 +1,6 @@
 import type {
   Entry,
+  GrupoDeJornada,
   Idioma,
   Product,
   Shift,
@@ -42,8 +43,12 @@ export interface CambiosWorker {
  * escritura local fallara (raro), se revierte la interfaz.
  *
  * `entries` guarda TODOS los registros de la jornada (incluidas lapidas) para
- * poder mostrar el historial por trabajador. Los conteos se mantienen aparte,
- * incrementalmente, para no recalcular en cada pulsacion.
+ * poder mostrar el historial. Los conteos se mantienen aparte, incrementalmente,
+ * para no recalcular en cada pulsacion.
+ *
+ * Los metodos de registro/anotacion son agnosticos a si el "sujeto" (`id`) es
+ * un trabajador o un grupo (`shift.groups`) — `conteos`/`entries` se indexan
+ * igual en los dos casos.
  */
 class JornadaStore {
   shift = $state<Shift | null>(null);
@@ -138,27 +143,43 @@ class JornadaStore {
     return t;
   }
 
-  conteoDe(workerId: string): number {
-    return this.conteos[workerId] ?? 0;
+  /** Grupos configurados para esta jornada (vacio = se registra por trabajador). */
+  get grupos(): GrupoDeJornada[] {
+    return this.shift?.groups ?? [];
   }
 
-  /** Anotaciones de un trabajador en la jornada, mas recientes primero. */
-  entriesDeWorker(workerId: string): Entry[] {
+  get trabajaPorGrupos(): boolean {
+    return this.grupos.length > 0;
+  }
+
+  conteoDe(id: string): number {
+    return this.conteos[id] ?? 0;
+  }
+
+  nombreTrabajador(id: string): string {
+    return this.workers.find((w) => w.id === id)?.name ?? "?";
+  }
+
+  /** Anotaciones de un trabajador o grupo en la jornada, mas recientes primero. */
+  entriesDe(id: string): Entry[] {
     return this.entries
-      .filter((e) => e.workerId === workerId)
+      .filter((e) => e.workerId === id || e.groupId === id)
       .sort((a, b) => b.timestamp - a.timestamp);
   }
 
-  async sumar(workerId: string, cantidad: number): Promise<void> {
+  /** Registra una cantidad para un trabajador o (si `trabajaPorGrupos`) un grupo. */
+  async sumar(id: string, cantidad: number): Promise<void> {
     if (!this.shift || cantidad === 0) return;
+    const esGrupo = this.grupos.some((g) => g.groupId === id);
 
     // 1. Pantalla primero.
-    this.conteos[workerId] = (this.conteos[workerId] ?? 0) + cantidad;
+    this.conteos[id] = (this.conteos[id] ?? 0) + cantidad;
 
     const entry = crearEntry({
       organizationId: this.shift.organizationId,
       shiftId: this.shift.id,
-      workerId,
+      workerId: esGrupo ? undefined : id,
+      groupId: esGrupo ? id : undefined,
       cantidad,
       registradoPor: sesion.userId,
     });
@@ -169,7 +190,7 @@ class JornadaStore {
     try {
       await registrarEntry(entry);
     } catch (e) {
-      this.conteos[workerId] = (this.conteos[workerId] ?? 0) - cantidad;
+      this.conteos[id] = (this.conteos[id] ?? 0) - cantidad;
       this.entries = this.entries.filter((x) => x.id !== entry.id);
       this.#pila.pop();
       console.error("[jornada] no se pudo registrar", e);
@@ -184,7 +205,7 @@ class JornadaStore {
     await this.#anular(ultima);
   }
 
-  /** Anular una anotacion concreta desde la ficha del trabajador. */
+  /** Anular una anotacion concreta desde la ficha del trabajador o del grupo. */
   async anularAnotacion(entryId: string): Promise<void> {
     const entry = this.entries.find((e) => e.id === entryId);
     if (!entry || entry.deleted === 1) return;
@@ -220,18 +241,47 @@ class JornadaStore {
     }
   }
 
+  /**
+   * Ajusta la composicion de un grupo SOLO para esta jornada (p. ej. alguien
+   * falta hoy). No toca el grupo fijo de Gestion.
+   */
+  async actualizarGrupoDeHoy(
+    groupId: string,
+    memberIds: string[],
+  ): Promise<void> {
+    if (!this.shift?.groups) return;
+    const base = $state.snapshot(this.shift) as Shift;
+    const anterior = base.groups;
+    const grupos = (base.groups ?? []).map((g) =>
+      g.groupId === groupId ? { ...g, memberIds: [...memberIds] } : g,
+    );
+    const actualizado: Shift = {
+      ...base,
+      groups: grupos,
+      updatedAt: Date.now(),
+    };
+    this.shift = actualizado;
+    try {
+      await guardarShift(actualizado);
+    } catch (e) {
+      this.shift = { ...actualizado, groups: anterior };
+      console.error("[jornada] no se pudo actualizar el grupo", e);
+      throw e;
+    }
+  }
+
   async #anular(entry: Entry): Promise<void> {
     if (entry.deleted === 1) return;
+    const sujeto = entry.workerId ?? entry.groupId;
+    if (!sujeto) return;
 
-    this.conteos[entry.workerId] =
-      (this.conteos[entry.workerId] ?? 0) - entry.cantidad;
+    this.conteos[sujeto] = (this.conteos[sujeto] ?? 0) - entry.cantidad;
     this.#marcarBorrada(entry.id, 1);
 
     try {
       await anularEntry(entry);
     } catch (e) {
-      this.conteos[entry.workerId] =
-        (this.conteos[entry.workerId] ?? 0) + entry.cantidad;
+      this.conteos[sujeto] = (this.conteos[sujeto] ?? 0) + entry.cantidad;
       this.#marcarBorrada(entry.id, 0);
       console.error("[jornada] no se pudo anular", e);
       throw e;

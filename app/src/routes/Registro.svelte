@@ -4,17 +4,19 @@
   import AppBar from "../lib/components/AppBar.svelte";
   import WorkerRow from "../lib/components/WorkerRow.svelte";
   import WorkerSheet from "../lib/components/WorkerSheet.svelte";
+  import GroupSheet from "../lib/components/GroupSheet.svelte";
   import QrScanner from "../lib/components/QrScanner.svelte";
   import ComenzarJornadaSheet from "../lib/components/ComenzarJornadaSheet.svelte";
 
   let q = $state("");
   let scannerAbierto = $state(false);
   let workerAbiertoId = $state<string | null>(null);
+  let grupoAbiertoId = $state<string | null>(null);
   let comenzarAbierto = $state(false);
   let confirmandoFinalizar = $state(false);
   let finalizando = $state(false);
 
-  const visibles = $derived.by(() => {
+  const visiblesWorkers = $derived.by(() => {
     const t = q.trim().toLowerCase();
     if (!t) return jornada.workers;
     return jornada.workers.filter(
@@ -23,9 +25,21 @@
     );
   });
 
+  const visiblesGrupos = $derived.by(() => {
+    const t = q.trim().toLowerCase();
+    if (!t) return jornada.grupos;
+    return jornada.grupos.filter((g) => g.name.toLowerCase().includes(t));
+  });
+
   const workerAbierto = $derived(
     workerAbiertoId
       ? (jornada.workers.find((w) => w.id === workerAbiertoId) ?? null)
+      : null,
+  );
+
+  const grupoAbierto = $derived(
+    grupoAbiertoId
+      ? (jornada.grupos.find((g) => g.groupId === grupoAbiertoId) ?? null)
       : null,
   );
 
@@ -45,7 +59,13 @@
     const w = jornada.workers.find(
       (x) => x.qrCode === texto || x.alias.toLowerCase() === limpio,
     );
-    if (w) await jornada.sumar(w.id, 1);
+    if (!w) return;
+    if (!jornada.trabajaPorGrupos) {
+      await jornada.sumar(w.id, 1);
+      return;
+    }
+    const grupo = jornada.grupos.find((g) => g.memberIds.includes(w.id));
+    if (grupo) await jornada.sumar(grupo.groupId, 1);
   }
 
   async function finalizar(): Promise<void> {
@@ -96,18 +116,38 @@
     </header>
 
     <ul class="lista">
-      {#each visibles as w (w.id)}
-        <li>
-          <WorkerRow
-            worker={w}
-            conteo={jornada.conteoDe(w.id)}
-            onsumar={(n) => jornada.sumar(w.id, n)}
-            onabrir={() => (workerAbiertoId = w.id)}
-          />
-        </li>
+      {#if jornada.trabajaPorGrupos}
+        {#each visiblesGrupos as g (g.groupId)}
+          <li>
+            <WorkerRow
+              item={{
+                name: g.name,
+                alias: i18n.t("grupo.miembros_contador", {
+                  n: g.memberIds.length,
+                }),
+              }}
+              conteo={jornada.conteoDe(g.groupId)}
+              onsumar={(n) => jornada.sumar(g.groupId, n)}
+              onabrir={() => (grupoAbiertoId = g.groupId)}
+            />
+          </li>
+        {:else}
+          <li class="vacio-busqueda">{i18n.t("registro.sin_resultados")}</li>
+        {/each}
       {:else}
-        <li class="vacio-busqueda">{i18n.t("registro.sin_resultados")}</li>
-      {/each}
+        {#each visiblesWorkers as w (w.id)}
+          <li>
+            <WorkerRow
+              item={w}
+              conteo={jornada.conteoDe(w.id)}
+              onsumar={(n) => jornada.sumar(w.id, n)}
+              onabrir={() => (workerAbiertoId = w.id)}
+            />
+          </li>
+        {:else}
+          <li class="vacio-busqueda">{i18n.t("registro.sin_resultados")}</li>
+        {/each}
+      {/if}
 
       <li class="finalizar-item">
         {#if confirmandoFinalizar}
@@ -170,10 +210,25 @@
       {#key wa.id}
         <WorkerSheet
           worker={wa}
-          entries={jornada.entriesDeWorker(wa.id)}
+          entries={jornada.entriesDe(wa.id)}
           onsave={(cambios) => jornada.guardarTrabajador(wa.id, cambios)}
           onanular={(entryId) => jornada.anularAnotacion(entryId)}
           onclose={() => (workerAbiertoId = null)}
+        />
+      {/key}
+    {/if}
+
+    {#if grupoAbierto}
+      {@const ga = grupoAbierto}
+      {#key ga.groupId}
+        <GroupSheet
+          group={ga}
+          workers={jornada.workers}
+          entries={jornada.entriesDe(ga.groupId)}
+          onmembers={(memberIds) =>
+            jornada.actualizarGrupoDeHoy(ga.groupId, memberIds)}
+          onanular={(entryId) => jornada.anularAnotacion(entryId)}
+          onclose={() => (grupoAbiertoId = null)}
         />
       {/key}
     {/if}

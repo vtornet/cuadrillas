@@ -20,7 +20,7 @@ export interface LiquidacionTrabajador {
   name: string;
   lineas: LineaLiquidacion[];
   totalUnidades: number;
-  /** Importe a destajo (unidades x tarifa). */
+  /** Importe a destajo (unidades x tarifa). Incluye el reparto de grupos. */
   importeCentimos: number;
   /** Dias distintos en que el trabajador participo en el periodo. */
   diasTrabajados: number;
@@ -58,13 +58,23 @@ interface Acumulado {
   tarifas: Set<number>;
 }
 
+function redondear2(n: number): number {
+  return Math.round(n * 100) / 100;
+}
+
 /**
  * Resumen por trabajador y periodo con importe segun tarifa y transporte.
  *
  * - La tarifa se resuelve por `Shift.fecha` (dia natural). Entradas del mismo
  *   producto en fechas con tarifas distintas se suman correctamente.
+ * - Registros de grupo (`Entry.groupId`): el importe se reparte a partes
+ *   iguales entre los miembros del grupo tal como estaban configurados en esa
+ *   jornada (`Shift.groups`), en centimos exactos (sin perder ni un centimo
+ *   por redondeo: el resto se reparte de uno en uno). Las unidades tambien se
+ *   reparten a partes iguales (pueden salir con decimales).
  * - Transporte: `Worker.transporteCentimos` por cada dia distinto en que el
- *   trabajador participa (asiste o registra algo) dentro del periodo.
+ *   trabajador participa (asiste o registra algo, individualmente o en
+ *   grupo) dentro del periodo.
  * - Dinero en centimos enteros. Las correcciones (cantidad negativa) restan.
  *
  * Funcion pura.
@@ -95,6 +105,38 @@ export function calcularLiquidacion(
     dias.add(fecha);
   };
 
+  const acumular = (
+    workerId: string,
+    productId: string,
+    unitTypeId: string,
+    unidades: number,
+    importeCentimos: number,
+    tarifaCentimos: number | null,
+  ): void => {
+    const clave = `${productId}|${unitTypeId}`;
+    let mapa = porTrabajador.get(workerId);
+    if (!mapa) {
+      mapa = new Map();
+      porTrabajador.set(workerId, mapa);
+    }
+    let acc = mapa.get(clave);
+    if (!acc) {
+      acc = {
+        productId,
+        unitTypeId,
+        unidades: 0,
+        importeCentimos: 0,
+        sinTarifa: false,
+        tarifas: new Set(),
+      };
+      mapa.set(clave, acc);
+    }
+    acc.unidades += unidades;
+    acc.importeCentimos += importeCentimos;
+    if (tarifaCentimos === null) acc.sinTarifa = true;
+    else acc.tarifas.add(tarifaCentimos);
+  };
+
   // Asistencia (dias trabajados) a partir de attendeeIds.
   for (const s of shiftsEnRango.values()) {
     for (const workerId of s.attendeeIds) anotaDia(workerId, s.fecha);
@@ -105,35 +147,45 @@ export function calcularLiquidacion(
     const s = shiftsEnRango.get(e.shiftId);
     if (!s) continue;
 
-    anotaDia(e.workerId, s.fecha); // por si no estaba en attendeeIds
-
-    const clave = `${s.productId}|${s.unitTypeId}`;
-    let mapa = porTrabajador.get(e.workerId);
-    if (!mapa) {
-      mapa = new Map();
-      porTrabajador.set(e.workerId, mapa);
-    }
-    let acc = mapa.get(clave);
-    if (!acc) {
-      acc = {
-        productId: s.productId,
-        unitTypeId: s.unitTypeId,
-        unidades: 0,
-        importeCentimos: 0,
-        sinTarifa: false,
-        tarifas: new Set(),
-      };
-      mapa.set(clave, acc);
-    }
-
     const tarifa = resolverTarifa(rates, s.productId, s.unitTypeId, s.fecha);
-    acc.unidades += e.cantidad;
-    if (tarifa) {
-      acc.importeCentimos += e.cantidad * tarifa.amountPerUnit;
-      acc.tarifas.add(tarifa.amountPerUnit);
-    } else {
-      acc.sinTarifa = true;
+    const tarifaCentimos = tarifa?.amountPerUnit ?? null;
+
+    if (e.groupId) {
+      const miembros = s.groups?.find((g) => g.groupId === e.groupId)
+        ?.memberIds;
+      if (!miembros || miembros.length === 0) continue;
+
+      const n = miembros.length;
+      const unidadPorMiembro = e.cantidad / n;
+      const importeTotal = tarifa ? e.cantidad * tarifa.amountPerUnit : 0;
+      const base = Math.floor(importeTotal / n);
+      const resto = importeTotal - base * n; // entero en [0, n)
+      const ordenados = [...miembros].sort();
+
+      ordenados.forEach((workerId, i) => {
+        anotaDia(workerId, s.fecha);
+        acumular(
+          workerId,
+          s.productId,
+          s.unitTypeId,
+          unidadPorMiembro,
+          base + (i < resto ? 1 : 0),
+          tarifaCentimos,
+        );
+      });
+      continue;
     }
+
+    if (!e.workerId) continue;
+    anotaDia(e.workerId, s.fecha);
+    acumular(
+      e.workerId,
+      s.productId,
+      s.unitTypeId,
+      e.cantidad,
+      tarifa ? e.cantidad * tarifa.amountPerUnit : 0,
+      tarifaCentimos,
+    );
   }
 
   // Todos los trabajadores con destajo o con asistencia.
@@ -149,7 +201,7 @@ export function calcularLiquidacion(
         .map((a) => ({
           productId: a.productId,
           unitTypeId: a.unitTypeId,
-          unidades: a.unidades,
+          unidades: redondear2(a.unidades),
           tarifaCentimos:
             !a.sinTarifa && a.tarifas.size === 1 ? [...a.tarifas][0] : null,
           importeCentimos: a.importeCentimos,
@@ -166,7 +218,7 @@ export function calcularLiquidacion(
         workerId,
         name: porWorker.get(workerId)?.name ?? "?",
         lineas,
-        totalUnidades: lineas.reduce((s, l) => s + l.unidades, 0),
+        totalUnidades: redondear2(lineas.reduce((s, l) => s + l.unidades, 0)),
         importeCentimos,
         diasTrabajados,
         transporteCentimos,
@@ -189,7 +241,9 @@ export function calcularLiquidacion(
     desde,
     hasta,
     trabajadores,
-    totalUnidades: trabajadores.reduce((s, t) => s + t.totalUnidades, 0),
+    totalUnidades: redondear2(
+      trabajadores.reduce((s, t) => s + t.totalUnidades, 0),
+    ),
     destajoCentimos,
     transporteCentimos,
     totalCentimos: destajoCentimos + transporteCentimos,

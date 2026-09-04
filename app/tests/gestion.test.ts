@@ -1,6 +1,6 @@
 import "fake-indexeddb/auto";
 import { beforeEach, describe, expect, it } from "vitest";
-import type { Crew, Product, Rate, Worker } from "@cuadrilla/shared";
+import type { Crew, Group, Product, Rate, Worker } from "@cuadrilla/shared";
 import { db } from "../src/lib/db/dexie";
 import { gestion } from "../src/lib/stores/gestion.svelte";
 import { sesion } from "../src/lib/stores/sesion.svelte";
@@ -39,6 +39,20 @@ function trabajador(p: Partial<Worker> = {}): Worker {
     alias: "ANA",
     crewId: "c1",
     language: "es",
+    activo: 1,
+    updatedAt: 1,
+    deleted: 0,
+    ...p,
+  };
+}
+
+function grupo(p: Partial<Group> = {}): Group {
+  return {
+    id: crypto.randomUUID(),
+    organizationId: ORG,
+    name: "Grupo A",
+    crewId: "c1",
+    memberIds: [],
     activo: 1,
     updatedAt: 1,
     deleted: 0,
@@ -123,5 +137,29 @@ describe("gestion store CRUD", () => {
     expect(gestion.crews.find((x) => x.id === "c1")).toBeUndefined();
     const guardada = await db.crews.get("c1");
     expect(guardada?.deleted).toBe(1);
+  });
+
+  it("crea un grupo y aparece en gruposDe su cuadrilla", async () => {
+    await gestion.guardar("crew", cuadrilla({ id: "c1" }));
+    await gestion.guardar("worker", trabajador({ id: "w1", crewId: "c1" }));
+    await gestion.guardar("worker", trabajador({ id: "w2", crewId: "c1" }));
+    const g = grupo({ id: "g1", crewId: "c1", memberIds: ["w1", "w2"] });
+    await gestion.guardar("group", g);
+
+    expect(gestion.groups.map((x) => x.id)).toContain("g1");
+    expect(gestion.gruposDe("c1").map((x) => x.id)).toEqual(["g1"]);
+  });
+
+  it("eliminar un grupo lo saca de la lista sin tocar sus miembros", async () => {
+    await gestion.guardar("crew", cuadrilla({ id: "c1" }));
+    await gestion.guardar("worker", trabajador({ id: "w1", crewId: "c1" }));
+    const g = grupo({ id: "g1", crewId: "c1", memberIds: ["w1"] });
+    await gestion.guardar("group", g);
+    await gestion.eliminar("group", g);
+
+    expect(gestion.groups.find((x) => x.id === "g1")).toBeUndefined();
+    const guardado = await db.groups.get("g1");
+    expect(guardado?.deleted).toBe(1);
+    expect(gestion.trabajadoresDe("c1").map((w) => w.id)).toEqual(["w1"]);
   });
 });

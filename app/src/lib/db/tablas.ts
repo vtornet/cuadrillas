@@ -13,6 +13,8 @@ export function tablaPorEntidad(
       return db.crews as never;
     case "worker":
       return db.workers as never;
+    case "group":
+      return db.groups as never;
     case "product":
       return db.products as never;
     case "unitType":

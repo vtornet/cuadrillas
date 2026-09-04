@@ -140,7 +140,14 @@
     "tarifa_sin_fin": "Sin fecha de fin",
     "desde_fecha": "desde {fecha}",
     "eliminar": "Eliminar",
-    "eliminar_confirmar": "Se eliminara este registro."
+    "eliminar_confirmar": "Se eliminara este registro.",
+    "grupos": "Grupos",
+    "editar_grupo": "Editar grupo",
+    "nuevo_grupo": "Nuevo grupo",
+    "grupo_nombre": "Nombre del grupo",
+    "grupo_activo": "Grupo activo",
+    "grupo_sin_cuadrilla": "Elige antes una cuadrilla con trabajadores.",
+    "grupo_sin_miembros": "Elige al menos un miembro."
   },
   "historial": {
     "titulo": "Historial",
@@ -166,7 +173,11 @@
     "presentes": "{n} presentes",
     "abrir": "Comenzar jornada",
     "sin_cuadrillas": "No tienes ninguna cuadrilla asignada.",
-    "sin_productos": "No hay productos. Se crean en Gestion."
+    "sin_productos": "No hay productos. Se crean en Gestion.",
+    "trabajar_por_grupos": "Trabajar por grupos",
+    "elegir_grupos": "Elige los grupos que van a trabajar hoy.",
+    "sin_grupos": "Esta cuadrilla no tiene grupos. Se crean en Gestion.",
+    "sin_grupos_seleccionados": "Elige al menos un grupo."
   },
   "pad": {
     "cancelar": "Cancelar",
@@ -191,6 +202,11 @@
     "cambios_sin_guardar": "Tienes cambios sin guardar.",
     "seguir_editando": "Seguir editando",
     "cerrar_sin_guardar": "Cerrar sin guardar"
+  },
+  "grupo": {
+    "ficha": "Ficha del grupo",
+    "miembros_hoy": "Miembros de hoy",
+    "miembros_contador": "{n} miembro(s)"
   },
   "qr": {
     "apunta": "Apunta al codigo del trabajador",

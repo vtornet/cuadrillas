@@ -2,6 +2,7 @@ export type EntityName =
   | "organization"
   | "crew"
   | "worker"
+  | "group"
   | "product"
   | "unitType"
   | "rate"

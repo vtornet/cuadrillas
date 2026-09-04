@@ -1,12 +1,20 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import type { Crew, Product, UnitType, Worker } from "@cuadrilla/shared";
+  import type {
+    Crew,
+    Group,
+    GrupoDeJornada,
+    Product,
+    UnitType,
+    Worker,
+  } from "@cuadrilla/shared";
   import { i18n } from "../i18n/i18n.svelte";
   import { sesion } from "../stores/sesion.svelte";
   import { jornada } from "../stores/jornada.svelte";
   import { crewsDelForeman } from "../db/repositories/crews";
   import { productosActivos, todasLasUnidades } from "../db/repositories/products";
   import { trabajadoresDeCuadrilla } from "../db/repositories/workers";
+  import { gruposActivosDeCuadrilla } from "../db/repositories/groups";
   import { crearShift } from "../db/repositories/shifts";
 
   let { onclose, oncomenzado }: { onclose: () => void; oncomenzado: () => void } =
@@ -24,6 +32,7 @@
   let products = $state<Product[]>([]);
   let allUnits = $state<UnitType[]>([]);
   let workersPorCrew = $state<Record<string, Worker[]>>({});
+  let groupsPorCrew = $state<Record<string, Group[]>>({});
   let cargado = $state(false);
 
   let crewId = $state("");
@@ -32,14 +41,22 @@
   let fecha = $state(hoyISO());
   let horaInicio = $state(horaActual());
   let asistentes = $state<Set<string>>(new Set());
+  let porGrupos = $state(false);
+  let gruposSel = $state<Set<string>>(new Set());
   let comenzando = $state(false);
 
   const units = $derived(
     allUnits.filter((u) => u.productId === productId || u.productId === null),
   );
   const workersActuales = $derived(workersPorCrew[crewId] ?? []);
+  const gruposActuales = $derived(groupsPorCrew[crewId] ?? []);
   const puedeComenzar = $derived(
-    !!crewId && !!productId && !!unitTypeId && asistentes.size > 0 && !comenzando,
+    !!crewId &&
+      !!productId &&
+      !!unitTypeId &&
+      asistentes.size > 0 &&
+      (!porGrupos || gruposSel.size > 0) &&
+      !comenzando,
   );
 
   onMount(async () => {
@@ -48,8 +65,13 @@
     allUnits = await todasLasUnidades(sesion.organizationId);
 
     const wpc: Record<string, Worker[]> = {};
-    for (const c of crews) wpc[c.id] = await trabajadoresDeCuadrilla(c.id);
+    const gpc: Record<string, Group[]> = {};
+    for (const c of crews) {
+      wpc[c.id] = await trabajadoresDeCuadrilla(c.id);
+      gpc[c.id] = await gruposActivosDeCuadrilla(c.id);
+    }
     workersPorCrew = wpc;
+    groupsPorCrew = gpc;
 
     crewId = crews[0]?.id ?? "";
     productId = products[0]?.id ?? "";
@@ -78,17 +100,40 @@
     asistentes = s;
   }
 
+  function toggleGrupo(id: string): void {
+    const s = new Set(gruposSel);
+    if (s.has(id)) s.delete(id);
+    else s.add(id);
+    gruposSel = s;
+  }
+
   function alCambiarCuadrilla(): void {
     marcarTodos();
+    porGrupos = false;
+    gruposSel = new Set();
   }
   function alCambiarProducto(): void {
     if (!units.some((u) => u.id === unitTypeId)) unitTypeId = primeraUnidad();
+  }
+  function alActivarGrupos(): void {
+    if (porGrupos) gruposSel = new Set(gruposActuales.map((g) => g.id));
+    else gruposSel = new Set();
   }
 
   async function comenzar(): Promise<void> {
     if (!puedeComenzar) return;
     comenzando = true;
     try {
+      const groups: GrupoDeJornada[] | undefined = porGrupos
+        ? gruposActuales
+            .filter((g) => gruposSel.has(g.id))
+            .map((g) => ({
+              groupId: g.id,
+              name: g.name,
+              memberIds: g.memberIds.filter((id) => asistentes.has(id)),
+            }))
+        : undefined;
+
       const shift = await crearShift({
         organizationId: sesion.organizationId,
         crewId,
@@ -97,6 +142,7 @@
         fecha,
         horaInicio,
         attendeeIds: [...asistentes],
+        groups,
       });
       await jornada.activar(shift.id);
       oncomenzado();
@@ -199,6 +245,35 @@
             </li>
           {/each}
         </ul>
+
+        {#if gruposActuales.length > 0}
+          <label class="campo campo-check">
+            <input
+              type="checkbox"
+              bind:checked={porGrupos}
+              onchange={alActivarGrupos}
+            />
+            <span>{i18n.t("jornada.trabajar_por_grupos")}</span>
+          </label>
+
+          {#if porGrupos}
+            <p class="aviso-tarifa">{i18n.t("jornada.elegir_grupos")}</p>
+            <ul class="asistencia">
+              {#each gruposActuales as g (g.id)}
+                <li>
+                  <label>
+                    <input
+                      type="checkbox"
+                      checked={gruposSel.has(g.id)}
+                      onchange={() => toggleGrupo(g.id)}
+                    />
+                    <span>{g.name}</span>
+                  </label>
+                </li>
+              {/each}
+            </ul>
+          {/if}
+        {/if}
       {/if}
     </div>
 

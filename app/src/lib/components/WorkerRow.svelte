@@ -1,15 +1,18 @@
 <script lang="ts">
-  import type { Worker } from "@cuadrilla/shared";
   import { i18n } from "../i18n/i18n.svelte";
   import NumberPad from "./NumberPad.svelte";
 
+  /**
+   * Tarjeta de registro (+1/+5/pad). Sirve igual para un trabajador o para un
+   * grupo: solo necesita un nombre y un subtitulo (alias, o "N miembros").
+   */
   let {
-    worker,
+    item,
     conteo,
     onsumar,
     onabrir,
   }: {
-    worker: Worker;
+    item: { name: string; alias: string };
     conteo: number;
     onsumar: (n: number) => void;
     onabrir: () => void;
@@ -21,12 +24,12 @@
 <div class="fila">
   <button type="button" class="ident" onclick={onabrir}>
     <span class="nombre">
-      {worker.name}<span class="chevron" aria-hidden="true">&rsaquo;</span>
+      {item.name}<span class="chevron" aria-hidden="true">&rsaquo;</span>
     </span>
-    <span class="alias">{worker.alias}</span>
+    <span class="alias">{item.alias}</span>
   </button>
 
-  <span class="conteo" aria-live="polite" aria-label={`${worker.name}: ${conteo}`}>
+  <span class="conteo" aria-live="polite" aria-label={`${item.name}: ${conteo}`}>
     {conteo}
   </span>
 
@@ -46,7 +49,7 @@
 
 {#if padAbierto}
   <NumberPad
-    titulo={worker.name}
+    titulo={item.name}
     onconfirm={(n) => {
       onsumar(n);
       padAbierto = false;

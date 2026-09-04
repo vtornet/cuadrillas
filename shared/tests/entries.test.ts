@@ -25,4 +25,17 @@ describe("sumarConteos", () => {
     expect(sumarConteos([])).toEqual({});
     expect(totalJornada({})).toBe(0);
   });
+
+  it("suma por grupo cuando el registro es de un grupo", () => {
+    const conteos = sumarConteos([
+      { groupId: "g1", cantidad: 20, deleted: 0 },
+      { groupId: "g1", cantidad: 5, deleted: 0 },
+      { workerId: "a", cantidad: 3, deleted: 0 },
+    ]);
+    expect(conteos).toEqual({ g1: 25, a: 3 });
+  });
+
+  it("ignora un registro sin trabajador ni grupo", () => {
+    expect(sumarConteos([{ cantidad: 5, deleted: 0 }])).toEqual({});
+  });
 });

@@ -36,6 +36,7 @@ export const Modelos: Record<EntityName, Model<DocBase>> = {
   organization: crearModelo("organizations"),
   crew: crearModelo("crews"),
   worker: crearModelo("workers"),
+  group: crearModelo("groups"),
   product: crearModelo("products"),
   unitType: crearModelo("unitTypes"),
   rate: crearModelo("rates"),

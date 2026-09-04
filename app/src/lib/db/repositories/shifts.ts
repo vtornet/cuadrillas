@@ -1,4 +1,4 @@
-import type { Shift } from "@cuadrilla/shared";
+import type { GrupoDeJornada, Shift } from "@cuadrilla/shared";
 import { db } from "../dexie";
 import { persistir } from "./base";
 
@@ -24,6 +24,8 @@ export interface NuevaShiftInput {
   fecha: string;
   horaInicio: string;
   attendeeIds: string[];
+  /** Si se trabaja por grupos ese dia: su composicion inicial. */
+  groups?: GrupoDeJornada[];
 }
 
 export async function crearShift(input: NuevaShiftInput): Promise<Shift> {
@@ -39,6 +41,7 @@ export async function crearShift(input: NuevaShiftInput): Promise<Shift> {
     unitTypeId: input.unitTypeId,
     estado: "open",
     attendeeIds: [...input.attendeeIds],
+    groups: input.groups?.map((g) => ({ ...g, memberIds: [...g.memberIds] })),
     updatedAt: now,
     deleted: 0,
   };

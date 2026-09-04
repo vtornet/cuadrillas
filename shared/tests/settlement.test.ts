@@ -188,4 +188,56 @@ describe("calcularLiquidacion", () => {
     expect(beto.transporteCentimos).toBe(300);
     expect(beto.importeCentimos).toBe(0);
   });
+
+  it("un registro de grupo se reparte a partes iguales, sin perder centimos", () => {
+    // 100 unidades x 18 centimos = 1800 centimos entre 3 miembros -> 600 c/u exacto
+    const s = shift({
+      groups: [{ groupId: "g1", name: "Grupo A", memberIds: ["w1", "w2", "w3"] }],
+    });
+    const liq = calcularLiquidacion(
+      [s],
+      [worker("w1", "Ana"), worker("w2", "Beto"), worker("w3", "Ines")],
+      [entry({ workerId: undefined, groupId: "g1", cantidad: 100 })],
+      [rate({ amountPerUnit: 18 })],
+      RANGO,
+    );
+    expect(liq.trabajadores).toHaveLength(3);
+    for (const t of liq.trabajadores) {
+      expect(t.importeCentimos).toBe(600);
+      // las unidades por miembro se redondean a 2 decimales para mostrarlas
+      expect(t.totalUnidades).toBeCloseTo(100 / 3, 2);
+    }
+    const sumaImportes = liq.trabajadores.reduce((s, t) => s + t.importeCentimos, 0);
+    expect(sumaImportes).toBe(1800); // no se pierde ni un centimo
+  });
+
+  it("el resto de centimos del reparto de grupo se reparte de uno en uno", () => {
+    // 10 unidades x 10 centimos = 100 centimos entre 3 -> 33,33,34
+    const s = shift({
+      groups: [{ groupId: "g1", name: "Grupo A", memberIds: ["w1", "w2", "w3"] }],
+    });
+    const liq = calcularLiquidacion(
+      [s],
+      [worker("w1", "Ana"), worker("w2", "Beto"), worker("w3", "Ines")],
+      [entry({ workerId: undefined, groupId: "g1", cantidad: 10 })],
+      [rate({ amountPerUnit: 10 })],
+      RANGO,
+    );
+    const importes = liq.trabajadores.map((t) => t.importeCentimos).sort((a, b) => a - b);
+    expect(importes).toEqual([33, 33, 34]);
+    expect(importes.reduce((a, b) => a + b, 0)).toBe(100);
+  });
+
+  it("un registro de grupo sin snapshot de miembros se ignora (no revienta)", () => {
+    const s = shift({ groups: [], attendeeIds: [] });
+    const liq = calcularLiquidacion(
+      [s],
+      [worker("w1", "Ana")],
+      [entry({ workerId: undefined, groupId: "g-fantasma", cantidad: 50 })],
+      [rate({ amountPerUnit: 18 })],
+      RANGO,
+    );
+    expect(liq.trabajadores).toHaveLength(0);
+    expect(liq.totalCentimos).toBe(0);
+  });
 });

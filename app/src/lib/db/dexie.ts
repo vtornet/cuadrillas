@@ -2,6 +2,7 @@ import Dexie, { type Table } from "dexie";
 import type {
   Crew,
   Entry,
+  Group,
   Organization,
   PendingOp,
   Product,
@@ -32,6 +33,7 @@ export class CuadrillaDB extends Dexie {
   organizations!: Table<Organization, string>;
   crews!: Table<Crew, string>;
   workers!: Table<Worker, string>;
+  groups!: Table<Group, string>;
   products!: Table<Product, string>;
   unitTypes!: Table<UnitType, string>;
   rates!: Table<Rate, string>;
@@ -54,6 +56,14 @@ export class CuadrillaDB extends Dexie {
         "id, organizationId, shiftId, workerId, [shiftId+workerId], timestamp",
       pendingOps: "++localSeq, entityId, entity, createdAt",
       meta: "key",
+    });
+
+    // v2: grupos de trabajo (fase D) + indices de entries para registros de
+    // grupo (Entry.groupId, ademas de Entry.workerId).
+    this.version(2).stores({
+      groups: "id, organizationId, crewId",
+      entries:
+        "id, organizationId, shiftId, workerId, groupId, [shiftId+workerId], [shiftId+groupId], timestamp",
     });
   }
 }
