@@ -1,0 +1,5 @@
+# Paquetes del monorepo.
+packages:
+  - shared
+  - app
+  - api

@@ -1,0 +1,28 @@
+/* Tokens de diseno. Modo claro de alto contraste, pensado para uso a pleno sol. */
+:root {
+  --c-fondo: #faf7f0;
+  --c-superficie: #ffffff;
+  --c-borde: #cfc7b6;
+  --c-borde-fuerte: #8f8874;
+  --c-texto: #161616;
+  --c-texto-suave: #524f47;
+  --c-primario: #1c6b3c;
+  --c-primario-txt: #ffffff;
+  --c-peligro: #b3261e;
+  --c-ok: #1c6b3c;
+  --c-aviso: #8a5a00;
+
+  /* Objetivos tactiles: minimo 56 px de alto (guantes, sol, prisa). */
+  --tap: 56px;
+  --tap-grande: 68px;
+
+  --radio: 12px;
+  --gap: 12px;
+
+  --f-base: 17px;
+  --f-grande: 22px;
+  --f-conteo: 34px;
+
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color-scheme: light;
+}

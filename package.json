@@ -1,0 +1,22 @@
+{
+  "name": "cuadrilla",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@9.15.0",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "pnpm --filter @cuadrilla/app dev",
+    "dev:api": "pnpm --filter @cuadrilla/api dev",
+    "dev:all": "pnpm --parallel --filter @cuadrilla/app --filter @cuadrilla/api dev",
+    "build": "pnpm -r build",
+    "preview": "pnpm --filter @cuadrilla/app preview",
+    "test": "pnpm -r test",
+    "typecheck": "pnpm -r typecheck"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.3"
+  }
+}
