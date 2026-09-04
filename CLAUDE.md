@@ -169,9 +169,12 @@ Perfil de usuario bajo → simplificar. Plan en 4 fases:
   activo; botón "Finalizar jornada" al final de la lista (con confirmación) cuando lo hay.
   Un solo parte activo a la vez (se quitó el selector de "otras jornadas abiertas" — ver
   `jornadasAbiertas()` en `shifts.ts`, que ahora solo debería devolver 0 o 1).
-- **Fase B — pendiente.** Gestión de cuadrillas: pestaña nueva en `Gestion.svelte` para
-  crear/renombrar/eliminar cuadrillas. Asignar trabajadores reutiliza el selector que ya
-  existe en `WorkerForm.svelte`.
+- **Fase B — hecho.** Pestaña "Cuadrillas" en `Gestion.svelte` (`CrewForm.svelte`):
+  crear/renombrar/eliminar. Asignar trabajadores sigue siendo el selector de
+  `WorkerForm.svelte`; la ficha de la cuadrilla lista sus trabajadores (solo lectura) con
+  un atajo que abre directamente `WorkerForm` para ese trabajador (`gestion.trabajadoresDe`,
+  callback `oneditarworker` hacia `Gestion.svelte`). Eliminar una cuadrilla solo se permite
+  sin trabajadores asignados (si tiene, se oculta el botón y se explica por qué).
 - **Fase C — pendiente.** Pantalla "Historial": lista de partes cerrados (`estado:
   "closed"`) → consultar (resumen de trabajadores/grupos, cantidades, total) → botón
   Editar con aviso + confirmación → habilita añadir/anular anotaciones igual que en un

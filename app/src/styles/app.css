@@ -966,6 +966,31 @@ button:disabled {
   margin: 0;
 }
 
+.crew-workers {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.crew-worker-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 48px;
+  padding: 0 12px;
+  border: 2px solid var(--c-borde);
+  border-radius: var(--radio);
+  text-align: left;
+}
+
+.crew-worker-btn .chevron {
+  color: var(--c-texto-suave);
+}
+
 .registro {
   list-style: none;
   margin: 0;

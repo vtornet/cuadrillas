@@ -1,6 +1,6 @@
 import "fake-indexeddb/auto";
 import { beforeEach, describe, expect, it } from "vitest";
-import type { Product, Rate } from "@cuadrilla/shared";
+import type { Crew, Product, Rate, Worker } from "@cuadrilla/shared";
 import { db } from "../src/lib/db/dexie";
 import { gestion } from "../src/lib/stores/gestion.svelte";
 import { sesion } from "../src/lib/stores/sesion.svelte";
@@ -12,6 +12,33 @@ function producto(p: Partial<Product> = {}): Product {
     id: crypto.randomUUID(),
     organizationId: ORG,
     name: "Naranja",
+    activo: 1,
+    updatedAt: 1,
+    deleted: 0,
+    ...p,
+  };
+}
+
+function cuadrilla(p: Partial<Crew> = {}): Crew {
+  return {
+    id: crypto.randomUUID(),
+    organizationId: ORG,
+    name: "Cuadrilla Norte",
+    foremanIds: ["u1"],
+    updatedAt: 1,
+    deleted: 0,
+    ...p,
+  };
+}
+
+function trabajador(p: Partial<Worker> = {}): Worker {
+  return {
+    id: crypto.randomUUID(),
+    organizationId: ORG,
+    name: "Ana",
+    alias: "ANA",
+    crewId: "c1",
+    language: "es",
     activo: 1,
     updatedAt: 1,
     deleted: 0,
@@ -67,5 +94,34 @@ describe("gestion store CRUD", () => {
     const guardada = await db.rates.get("r1");
     expect(guardada?.amountPerUnit).toBe(18);
     expect(gestion.rates).toHaveLength(1);
+  });
+
+  it("crea una cuadrilla y aparece en la lista", async () => {
+    const c = cuadrilla({ id: "c1" });
+    await gestion.guardar("crew", c);
+    expect(gestion.crews.map((x) => x.id)).toContain("c1");
+    expect(gestion.nombreCrew("c1")).toBe("Cuadrilla Norte");
+  });
+
+  it("trabajadoresDe devuelve los trabajadores de esa cuadrilla", async () => {
+    await gestion.guardar("crew", cuadrilla({ id: "c1" }));
+    await gestion.guardar("worker", trabajador({ id: "w1", crewId: "c1" }));
+    await gestion.guardar("worker", trabajador({ id: "w2", crewId: "c1" }));
+    await gestion.guardar("worker", trabajador({ id: "w3", crewId: "otra" }));
+
+    expect(gestion.trabajadoresDe("c1").map((w) => w.id).sort()).toEqual([
+      "w1",
+      "w2",
+    ]);
+  });
+
+  it("eliminar una cuadrilla la saca de la lista", async () => {
+    const c = cuadrilla({ id: "c1" });
+    await gestion.guardar("crew", c);
+    await gestion.eliminar("crew", c);
+
+    expect(gestion.crews.find((x) => x.id === "c1")).toBeUndefined();
+    const guardada = await db.crews.get("c1");
+    expect(guardada?.deleted).toBe(1);
   });
 });

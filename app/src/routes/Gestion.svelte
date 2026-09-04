@@ -1,25 +1,26 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import type { Product, Rate, UnitType, Worker } from "@cuadrilla/shared";
+  import type { Crew, Product, Rate, UnitType, Worker } from "@cuadrilla/shared";
   import { i18n } from "../lib/i18n/i18n.svelte";
   import { gestion } from "../lib/stores/gestion.svelte";
   import { centimosAEuros } from "../lib/money";
   import AppBar from "../lib/components/AppBar.svelte";
+  import CrewForm from "../lib/components/gestion/CrewForm.svelte";
   import WorkerForm from "../lib/components/gestion/WorkerForm.svelte";
   import ProductForm from "../lib/components/gestion/ProductForm.svelte";
   import UnitForm from "../lib/components/gestion/UnitForm.svelte";
   import RateForm from "../lib/components/gestion/RateForm.svelte";
 
-  type Tab = "workers" | "products" | "units" | "rates";
+  type Tab = "crews" | "workers" | "products" | "units" | "rates";
+  type Registro = Crew | Worker | Product | UnitType | Rate;
 
   let tab = $state<Tab>("workers");
-  let editando = $state<
-    { tab: Tab; registro: Worker | Product | UnitType | Rate | null } | null
-  >(null);
+  let editando = $state<{ tab: Tab; registro: Registro | null } | null>(null);
 
   onMount(() => gestion.cargar());
 
   const tabs: Array<{ id: Tab; label: string }> = [
+    { id: "crews", label: i18n.t("gestion.cuadrillas") },
     { id: "workers", label: i18n.t("gestion.trabajadores") },
     { id: "products", label: i18n.t("gestion.productos") },
     { id: "units", label: i18n.t("gestion.unidades") },
@@ -29,10 +30,11 @@
   function nuevo(): void {
     editando = { tab, registro: null };
   }
-  function editar(
-    registro: Worker | Product | UnitType | Rate,
-  ): void {
+  function editar(registro: Registro): void {
     editando = { tab, registro };
+  }
+  function editarWorker(worker: Worker): void {
+    editando = { tab: "workers", registro: worker };
   }
   function cerrar(): void {
     editando = null;
@@ -63,7 +65,20 @@
   </header>
 
   <div class="pantalla-cuerpo">
-    {#if tab === "workers"}
+    {#if tab === "crews"}
+      {#each gestion.crews as c (c.id)}
+        <button type="button" class="fila-gestion" onclick={() => editar(c)}>
+          <span class="fg-main">{c.name}</span>
+          <span class="fg-sub">
+            {i18n.t("gestion.cuadrilla_trabajadores", {
+              n: gestion.trabajadoresDe(c.id).length,
+            })}
+          </span>
+        </button>
+      {:else}
+        <p class="vacio-lista">{i18n.t("gestion.lista_vacia")}</p>
+      {/each}
+    {:else if tab === "workers"}
       {#each gestion.workers as w (w.id)}
         <button type="button" class="fila-gestion" onclick={() => editar(w)}>
           <span class="fg-main">{w.name} <em>{w.alias}</em></span>
@@ -123,7 +138,13 @@
 
   {#if editando}
     {@const e = editando}
-    {#if e.tab === "workers"}
+    {#if e.tab === "crews"}
+      <CrewForm
+        registro={e.registro as Crew | null}
+        onclose={cerrar}
+        oneditarworker={editarWorker}
+      />
+    {:else if e.tab === "workers"}
       <WorkerForm registro={e.registro as Worker | null} onclose={cerrar} />
     {:else if e.tab === "products"}
       <ProductForm registro={e.registro as Product | null} onclose={cerrar} />

@@ -18,7 +18,7 @@ import { todasLasTarifas } from "../db/repositories/rates";
 import { sesion } from "./sesion.svelte";
 import { jornada } from "./jornada.svelte";
 
-export type TipoGestion = "worker" | "product" | "unitType" | "rate";
+export type TipoGestion = "worker" | "product" | "unitType" | "rate" | "crew";
 
 /**
  * Estado y CRUD de la pantalla de Gestion. Toda escritura pasa por la cola
@@ -72,6 +72,11 @@ class GestionStore {
   }
   nombreCrew(id: string): string {
     return this.crews.find((c) => c.id === id)?.name ?? "?";
+  }
+
+  /** Trabajadores (no borrados) de una cuadrilla, para la ficha de Gestion. */
+  trabajadoresDe(crewId: string): Worker[] {
+    return this.workers.filter((w) => w.crewId === crewId);
   }
 
   async #trasCambio(): Promise<void> {
