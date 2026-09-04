@@ -24,8 +24,8 @@ export default defineConfig({
       // conflictos con HMR. El modo offline se prueba con `pnpm preview`.
       devOptions: { enabled: false },
       manifest: {
-        name: "Cuadrilla",
-        short_name: "Cuadrilla",
+        name: "Cuadrillas",
+        short_name: "Cuadrillas",
         description:
           "Registro a destajo para jefes de cuadrilla. Funciona sin conexión.",
         lang: "es",

@@ -97,7 +97,7 @@ mismo, no para usuarios reales.
 
 1. Cuenta en Resend, verifica el dominio `cuadrillas.app` (registros DNS que te
    da Resend: SPF/DKIM).
-2. Railway: añade `RESEND_API_KEY` y `EMAIL_FROM=Cuadrilla <login@cuadrillas.app>`.
+2. Railway: añade `RESEND_API_KEY` y `EMAIL_FROM=Cuadrillas <login@cuadrillas.app>`.
 
 ## Fase 4 — Stripe (modo test primero)
 

@@ -5,7 +5,7 @@ import { env } from "./config/env";
 async function main(): Promise<void> {
   await conectarMongo();
   crearApp().listen(env.port, () => {
-    console.log(`API de Cuadrilla en http://localhost:${env.port}`);
+    console.log(`API de Cuadrillas en http://localhost:${env.port}`);
   });
 }
 

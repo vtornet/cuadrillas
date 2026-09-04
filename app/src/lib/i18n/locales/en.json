@@ -1,6 +1,6 @@
 {
   "app": {
-    "nombre": "Cuadrilla",
+    "nombre": "Cuadrillas",
     "cargando": "Loading..."
   },
   "registro": {
@@ -79,7 +79,7 @@
   },
   "cuenta": {
     "titulo": "Account",
-    "entrar": "Sign in to Cuadrilla",
+    "entrar": "Sign in to Cuadrillas",
     "ayuda": "We email you a sign-in link. No passwords.",
     "email": "Email address",
     "enviar_enlace": "Send sign-in link",

@@ -1,6 +1,6 @@
 {
   "app": {
-    "nombre": "Cuadrilla",
+    "nombre": "Cuadrillas",
     "cargando": "Cargando..."
   },
   "registro": {
@@ -79,7 +79,7 @@
   },
   "cuenta": {
     "titulo": "Cuenta",
-    "entrar": "Entrar en Cuadrilla",
+    "entrar": "Entrar en Cuadrillas",
     "ayuda": "Te enviamos un enlace de acceso a tu correo. Sin contrasenas.",
     "email": "Correo electronico",
     "enviar_enlace": "Enviar enlace de acceso",

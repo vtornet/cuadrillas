@@ -13,7 +13,7 @@ export const env = {
   jwtSecret: requerido("JWT_SECRET", "dev-secret-no-usar-en-produccion"),
   appUrl: process.env.APP_URL ?? "http://localhost:5173",
   resendApiKey: process.env.RESEND_API_KEY ?? "",
-  emailFrom: process.env.EMAIL_FROM ?? "Cuadrilla <login@cuadrilla.local>",
+  emailFrom: process.env.EMAIL_FROM ?? "Cuadrillas <login@cuadrillas.local>",
   stripeSecretKey: process.env.STRIPE_SECRET_KEY ?? "",
   stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET ?? "",
   stripePriceForeman: process.env.STRIPE_PRICE_FOREMAN ?? "",

@@ -1,4 +1,4 @@
-# Cuadrilla
+# Cuadrillas
 
 PWA para jefes de cuadrilla que trabajan a destajo. Registro en campo **sin cobertura**,
 estadísticas y liquidaciones.

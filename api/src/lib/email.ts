@@ -22,8 +22,8 @@ export async function enviarEnlaceMagico(
     body: JSON.stringify({
       from: env.emailFrom,
       to: email,
-      subject: "Tu acceso a Cuadrilla",
-      text: `Entra en Cuadrilla desde este enlace (caduca en 15 minutos):\n\n${enlace}\n`,
+      subject: "Tu acceso a Cuadrillas",
+      text: `Entra en Cuadrillas desde este enlace (caduca en 15 minutos):\n\n${enlace}\n`,
     }),
   });
 

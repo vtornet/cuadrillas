@@ -1,6 +1,6 @@
 # @cuadrilla/api
 
-Backend de Cuadrilla: Express + MongoDB (Mongoose). Autenticacion por enlace
+Backend de Cuadrillas: Express + MongoDB (Mongoose). Autenticacion por enlace
 magico y endpoint `/sync`.
 
 ## Endpoints
