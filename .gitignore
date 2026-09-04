@@ -11,3 +11,7 @@ coverage/
 !.env.example
 .vscode/
 .idea/
+
+# Capturas de pantalla que se guardan en la raiz durante el trabajo con Claude
+image.png
+Logo.png

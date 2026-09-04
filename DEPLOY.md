@@ -26,23 +26,35 @@ No necesita ninguna de las cuentas de abajo salvo Cloudflare.
    (modo demo). Cuando exista la API, se añade con el valor
    `https://api.cuadrillas.app` y se vuelve a desplegar.
 4. Dominio (`cuadrillas.app` comprado en **Namecheap** → hay que traer el DNS a
-   Cloudflare primero, luego enlazarlo al Worker):
-   1. Cloudflare → **Add a domain** (o "Websites" → *Add a domain*) → escribe
-      `cuadrillas.app` → plan **Free** → revisa los registros que Cloudflare haya
-      detectado en Namecheap (normalmente ninguno relevante en un dominio nuevo) →
-      continúa. Te da **2 nameservers** (`algo.ns.cloudflare.com`).
+   Cloudflare primero, luego enlazarlo al Worker). Pasos reales verificados
+   (2026-09-04, el panel de Cloudflare cambia bastante entre cuentas/fechas):
+   1. Cloudflare → busca **"Add a domain"** en la home de la cuenta → escribe
+      `cuadrillas.app` → plan **Free** → continúa. Te da **2 nameservers**
+      (`algo.ns.cloudflare.com`).
    2. Namecheap → *Domain List* → **Manage** sobre `cuadrillas.app` → sección
       **Nameservers** → cambia de "Namecheap BasicDNS" a **Custom DNS** → pega los
       2 nameservers de Cloudflare → guarda (✓).
-   3. Espera al email de Cloudflare ("cuadrillas.app is now active") — minutos a
+   3. Espera a que la zona pase a activa (email de Cloudflare, o entra en la
+      zona y comprueba que ya NO sale el aviso amarillo de "pending"). Minutos a
       pocas horas.
-   4. Vuelve al proyecto Worker (Workers & Pages → `cuadrillas`) → **Settings →
-      Domains & Routes** → **Add → Custom Domain** → `cuadrillas.app` → Cloudflare
-      crea el DNS y el certificado solo.
+   4. **Limpia el DNS**: un dominio recién comprado en Namecheap trae por
+      defecto una "parking page". En la zona → **DNS → Records**, borra (Edit →
+      Delete):
+      - `cuadrillas.app` tipo **A** (apunta a una IP de Namecheap)
+      - `www.cuadrillas.app` tipo **CNAME** → `parkingpage.namecheap.com`
+
+      No toques los registros `MX`/`TXT` (`eforward*.registrar-servers.com`,
+      `v=spf1...`) — son el reenvío de correo gratuito de Namecheap.
+   5. Cuelga el dominio del Worker: **Workers & Pages → `cuadrillas`** (el
+      proyecto) → pestaña **Domains** (arriba, junto a Overview/Metrics/
+      Deployments...) → **Add Domain** → en el cuadro "Connect domain" busca y
+      selecciona `cuadrillas.app` → en "Enter your subdomain" **déjalo vacío**
+      (para la raíz, sin subdominio) → confirma. Cloudflare crea el registro DNS
+      y el certificado SSL solo (1-2 min).
 
    ⚠️ Si ya tenías email u otra cosa apuntando a `cuadrillas.app` en Namecheap,
-   comprueba en el paso 1 que Cloudflare importó esos registros antes de cambiar
-   los nameservers (para un dominio recién comprado no suele haber nada).
+   comprueba en el paso 1 que Cloudflare lo importó antes de cambiar los
+   nameservers.
 
 > Tu cuenta usa el sistema nuevo de Cloudflare ("Workers Builds", que sustituye a
 > Pages): el deploy corre `wrangler deploy`, no `wrangler pages deploy`. Por eso el
