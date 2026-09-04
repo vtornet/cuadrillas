@@ -6,7 +6,6 @@
 
   const items: Array<{ v: Vista; label: string }> = [
     { v: "registro", label: i18n.t("menu.registrar") },
-    { v: "jornada", label: i18n.t("menu.jornada") },
     { v: "estadisticas", label: i18n.t("menu.estadisticas") },
     { v: "liquidacion", label: i18n.t("menu.liquidacion") },
     { v: "gestion", label: i18n.t("menu.gestion") },

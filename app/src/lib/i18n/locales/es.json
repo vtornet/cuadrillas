@@ -9,16 +9,16 @@
     "deshacer": "Deshacer",
     "escanear": "Escanear QR",
     "sin_resultados": "Ningun trabajador coincide con la busqueda",
-    "sin_jornada": "No hay ninguna jornada abierta",
-    "sin_jornada_ayuda": "Abre una jornada para empezar a registrar.",
-    "abrir_jornada": "Abrir jornada",
+    "sin_jornada": "No hay ningun parte abierto",
+    "sin_jornada_ayuda": "Comienza una jornada para empezar a registrar.",
+    "comenzar_jornada": "Comenzar jornada",
+    "finalizar_jornada": "Finalizar jornada",
     "jornada_info": "{producto} - {unidad} - {fecha}"
   },
   "menu": {
     "titulo": "Menu",
     "cerrar": "Cerrar menu",
     "registrar": "Registrar",
-    "jornada": "Jornada (abrir o cerrar)",
     "gestion": "Gestion",
     "estadisticas": "Estadisticas",
     "liquidacion": "Liquidacion",
@@ -135,16 +135,9 @@
     "eliminar_confirmar": "Se eliminara este registro."
   },
   "jornada": {
-    "titulo": "Jornada",
-    "activa": "Jornada activa",
-    "ir_registrar": "Ir a registrar",
-    "cerrar": "Cerrar jornada",
-    "cerrar_confirmar": "Al cerrar no se podra seguir registrando en esta jornada.",
-    "cerrar_si": "Cerrar jornada",
+    "cerrar_confirmar": "Al finalizar no se podra seguir registrando en este parte.",
     "seguir_abierta": "Seguir abierta",
-    "otras_abiertas": "Otras jornadas abiertas",
-    "activar": "Registrar en esta",
-    "nueva": "Abrir nueva jornada",
+    "nueva": "Comenzar jornada",
     "cuadrilla": "Cuadrilla",
     "producto": "Producto",
     "unidad": "Unidad",
@@ -154,11 +147,9 @@
     "todos": "Todos",
     "ninguno": "Ninguno",
     "presentes": "{n} presentes",
-    "abrir": "Abrir jornada",
+    "abrir": "Comenzar jornada",
     "sin_cuadrillas": "No tienes ninguna cuadrilla asignada.",
-    "sin_productos": "No hay productos. Se crean en Gestion.",
-    "desde": "desde las {hora}",
-    "registrado": "{n} registrado"
+    "sin_productos": "No hay productos. Se crean en Gestion."
   },
   "pad": {
     "cancelar": "Cancelar",

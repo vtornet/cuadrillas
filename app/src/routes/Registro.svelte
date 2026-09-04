@@ -1,15 +1,18 @@
 <script lang="ts">
   import { jornada } from "../lib/stores/jornada.svelte";
   import { i18n } from "../lib/i18n/i18n.svelte";
-  import { router } from "../lib/stores/router.svelte";
   import AppBar from "../lib/components/AppBar.svelte";
   import WorkerRow from "../lib/components/WorkerRow.svelte";
   import WorkerSheet from "../lib/components/WorkerSheet.svelte";
   import QrScanner from "../lib/components/QrScanner.svelte";
+  import ComenzarJornadaSheet from "../lib/components/ComenzarJornadaSheet.svelte";
 
   let q = $state("");
   let scannerAbierto = $state(false);
   let workerAbiertoId = $state<string | null>(null);
+  let comenzarAbierto = $state(false);
+  let confirmandoFinalizar = $state(false);
+  let finalizando = $state(false);
 
   const visibles = $derived.by(() => {
     const t = q.trim().toLowerCase();
@@ -44,6 +47,16 @@
     );
     if (w) await jornada.sumar(w.id, 1);
   }
+
+  async function finalizar(): Promise<void> {
+    finalizando = true;
+    try {
+      await jornada.cerrarActual();
+      confirmandoFinalizar = false;
+    } finally {
+      finalizando = false;
+    }
+  }
 </script>
 
 <div class="pantalla">
@@ -57,22 +70,16 @@
       <button
         type="button"
         class="btn-primario"
-        onclick={() => router.ir("jornada")}
+        onclick={() => (comenzarAbierto = true)}
       >
-        {i18n.t("registro.abrir_jornada")}
+        {i18n.t("registro.comenzar_jornada")}
       </button>
     </div>
   {:else}
     <header class="cabecera">
       <AppBar titulo={i18n.t("app.nombre")} />
       {#if infoJornada}
-        <button
-          type="button"
-          class="jornada-info"
-          onclick={() => router.ir("jornada")}
-        >
-          {infoJornada}<span class="chevron" aria-hidden="true">&rsaquo;</span>
-        </button>
+        <p class="jornada-info">{infoJornada}</p>
       {/if}
       <div class="total">
         <span>{i18n.t("registro.total_jornada")}</span>
@@ -101,6 +108,39 @@
       {:else}
         <li class="vacio-busqueda">{i18n.t("registro.sin_resultados")}</li>
       {/each}
+
+      <li class="finalizar-item">
+        {#if confirmandoFinalizar}
+          <div class="confirm-inline">
+            <span>{i18n.t("jornada.cerrar_confirmar")}</span>
+            <div>
+              <button
+                type="button"
+                class="btn-secundario"
+                onclick={() => (confirmandoFinalizar = false)}
+              >
+                {i18n.t("jornada.seguir_abierta")}
+              </button>
+              <button
+                type="button"
+                class="btn-deshacer"
+                disabled={finalizando}
+                onclick={finalizar}
+              >
+                {i18n.t("registro.finalizar_jornada")}
+              </button>
+            </div>
+          </div>
+        {:else}
+          <button
+            type="button"
+            class="btn-deshacer finalizar-btn"
+            onclick={() => (confirmandoFinalizar = true)}
+          >
+            {i18n.t("registro.finalizar_jornada")}
+          </button>
+        {/if}
+      </li>
     </ul>
 
     <div class="acciones">
@@ -137,5 +177,12 @@
         />
       {/key}
     {/if}
+  {/if}
+
+  {#if comenzarAbierto}
+    <ComenzarJornadaSheet
+      onclose={() => (comenzarAbierto = false)}
+      oncomenzado={() => (comenzarAbierto = false)}
+    />
   {/if}
 </div>

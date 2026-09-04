@@ -95,11 +95,16 @@ Stores singleton en archivos `*.svelte.ts`:
   mágico → JWT (365 d) guardado en la tabla `meta`. `auth.token` NO es reactivo (solo lo
   usa el motor de sync).
 - `sesion.svelte.ts` — getters que derivan de `auth` (userId, organizationId, rol).
-- `jornada.svelte.ts` — jornada activa + registro optimista (contador en pantalla síncrono
-  <100 ms, IndexedDB + cola después). `activeShiftId` en `meta`.
+- `jornada.svelte.ts` — parte (jornada) activo + registro optimista (contador en pantalla
+  síncrono <100 ms, IndexedDB + cola después). `activeShiftId` en `meta`. **Un solo parte
+  activo a la vez** (simplificación deliberada, sin selector de "otras jornadas abiertas").
 - `gestion.svelte.ts` — CRUD genérico `guardar(tipo, record)` / `eliminar(tipo, record)`.
-- `router.svelte.ts` — router por hash (`#/registro`, …). Vistas: registro, jornada,
-  estadisticas, liquidacion, gestion, cuenta.
+- `router.svelte.ts` — router por hash (`#/registro`, …). Vistas: registro, estadisticas,
+  liquidacion, gestion, cuenta. **No hay pantalla "jornada" separada**: `Registro.svelte`
+  es autosuficiente — con parte activo muestra el registro normal y un botón "Finalizar
+  jornada" al final de la lista; sin parte activo, un botón "Comenzar jornada" que abre
+  `ComenzarJornadaSheet.svelte` (hoja modal con cuadrilla/producto/unidad/fecha/hora/
+  asistencia).
 - `syncStatus` — estado de sync + auto-disparo.
 
 ### Dinero
@@ -155,16 +160,30 @@ registro) y `transporteCentimos = transporte/día × diasTrabajados`. `Liquidaci
 (CSV resumen por trabajador, XLSX hoja "Resumen") muestran el transporte en columna
 aparte. Formulario en `gestion/WorkerForm.svelte` (checkbox + importe).
 
-### Pendiente (backlog de producto)
+### Reestructuración "el parte" (en marcha, 2026-09-04)
 
-- **Grupos dentro de la cuadrilla**: muchas cuadrillas trabajan por grupo; las anotaciones
-  son del grupo y luego se reparten entre sus componentes. Nueva entidad `Group` (o
-  `Squad`) con `crewId` + `memberIds[]`; `Entry` podría apuntar a un grupo en vez de a un
-  trabajador, y la liquidación/estadísticas repartirían las unidades entre miembros.
-- **Cierre de jornada como "parte" con firma**: al cerrar una jornada, añadir un botón
-  final de cierre en `Jornada.svelte` que capture la firma del jefe de cuadrilla
-  (canvas) y la guarde con el `Shift` (data URL / blob).
-- **Historial de jornadas (consulta)**: hoy `Jornada.svelte` solo muestra la jornada
-  activa y las abiertas; las cerradas desaparecen de la vista. Falta una pantalla/lista
-  donde aparezcan también las jornadas cerradas y se pueda entrar a consultarlas
-  (asistencia, registros, total, y la firma de arriba una vez exista).
+Perfil de usuario bajo → simplificar. Plan en 4 fases:
+
+- **Fase A — hecho.** `Jornada.svelte` desaparece. `Registro.svelte` es autosuficiente:
+  botón "Comenzar jornada" (`ComenzarJornadaSheet.svelte`, hoja modal) cuando no hay parte
+  activo; botón "Finalizar jornada" al final de la lista (con confirmación) cuando lo hay.
+  Un solo parte activo a la vez (se quitó el selector de "otras jornadas abiertas" — ver
+  `jornadasAbiertas()` en `shifts.ts`, que ahora solo debería devolver 0 o 1).
+- **Fase B — pendiente.** Gestión de cuadrillas: pestaña nueva en `Gestion.svelte` para
+  crear/renombrar/eliminar cuadrillas. Asignar trabajadores reutiliza el selector que ya
+  existe en `WorkerForm.svelte`.
+- **Fase C — pendiente.** Pantalla "Historial": lista de partes cerrados (`estado:
+  "closed"`) → consultar (resumen de trabajadores/grupos, cantidades, total) → botón
+  Editar con aviso + confirmación → habilita añadir/anular anotaciones igual que en un
+  parte activo, sin tocar `estado`.
+- **Fase D — pendiente.** Grupos: entidad persistente y editable a nivel de cuadrilla
+  (como los trabajadores, gestionable desde Gestión), **no** efímera por parte — así no
+  hay que recrearlos cada día; si falta alguien un día, se edita el grupo al vuelo. Al
+  comenzar un parte, opción "trabajar por grupos" → elegir qué grupos trabajan hoy. El
+  parte activo muestra tarjetas de grupo en vez de trabajador (tocar abre modal con
+  miembros + total). En liquidación, las unidades del grupo se reparten **a partes
+  iguales** entre sus miembros de ese parte (sin arrastrar ausencias de otros días, porque
+  la composición se ajusta cada vez).
+- **Firma del jefe al finalizar**: capturar firma (canvas) al finalizar un parte y
+  guardarla con el `Shift` (data URL/blob); mostrarla en el historial/liquidación. Sin
+  fase asignada todavía.

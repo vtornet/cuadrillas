@@ -10,15 +10,15 @@
     "escanear": "Scan QR",
     "sin_resultados": "No worker matches the search",
     "sin_jornada": "No open shift",
-    "sin_jornada_ayuda": "Open a shift to start recording.",
-    "abrir_jornada": "Open shift",
+    "sin_jornada_ayuda": "Start a shift to begin recording.",
+    "comenzar_jornada": "Start shift",
+    "finalizar_jornada": "Finish shift",
     "jornada_info": "{producto} - {unidad} - {fecha}"
   },
   "menu": {
     "titulo": "Menu",
     "cerrar": "Close menu",
     "registrar": "Record",
-    "jornada": "Shift (open or close)",
     "gestion": "Management",
     "estadisticas": "Statistics",
     "liquidacion": "Settlement",
@@ -135,16 +135,9 @@
     "eliminar_confirmar": "This record will be deleted."
   },
   "jornada": {
-    "titulo": "Shift",
-    "activa": "Active shift",
-    "ir_registrar": "Go to recording",
-    "cerrar": "Close shift",
-    "cerrar_confirmar": "Once closed you cannot keep recording in this shift.",
-    "cerrar_si": "Close shift",
+    "cerrar_confirmar": "Once finished you cannot keep recording in this shift.",
     "seguir_abierta": "Keep open",
-    "otras_abiertas": "Other open shifts",
-    "activar": "Record in this one",
-    "nueva": "Open a new shift",
+    "nueva": "Start shift",
     "cuadrilla": "Crew",
     "producto": "Product",
     "unidad": "Unit",
@@ -154,11 +147,9 @@
     "todos": "All",
     "ninguno": "None",
     "presentes": "{n} present",
-    "abrir": "Open shift",
+    "abrir": "Start shift",
     "sin_cuadrillas": "You have no crew assigned.",
-    "sin_productos": "No products. Create them in Management.",
-    "desde": "since {hora}",
-    "registrado": "{n} recorded"
+    "sin_productos": "No products. Create them in Management."
   },
   "pad": {
     "cancelar": "Cancel",

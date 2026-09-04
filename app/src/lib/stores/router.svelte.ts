@@ -1,6 +1,5 @@
 export type Vista =
   | "registro"
-  | "jornada"
   | "estadisticas"
   | "liquidacion"
   | "gestion"
@@ -8,7 +7,6 @@ export type Vista =
 
 const VISTAS: Vista[] = [
   "registro",
-  "jornada",
   "estadisticas",
   "liquidacion",
   "gestion",
@@ -16,8 +14,9 @@ const VISTAS: Vista[] = [
 ];
 
 /**
- * Enrutado minimo por hash (`#/registro`, `#/jornada`). Suficiente para el MVP;
- * sin dependencias. La pantalla principal es "registro".
+ * Enrutado minimo por hash (`#/registro`, `#/gestion`...). Suficiente para el
+ * MVP; sin dependencias. La pantalla principal ("registro") es autosuficiente:
+ * comenzar y finalizar la jornada se hacen ahi mismo, sin pantalla aparte.
  */
 class Router {
   vista = $state<Vista>("registro");

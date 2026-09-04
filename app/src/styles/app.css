@@ -127,21 +127,9 @@ button:disabled {
 }
 
 .jornada-info {
-  display: block;
-  width: 100%;
   margin: 6px 0 0;
-  padding: 6px 0;
-  border: 0;
-  min-height: 0;
-  background: transparent;
   color: var(--c-texto-suave);
   font-size: 14px;
-  text-align: left;
-  cursor: pointer;
-}
-
-.jornada-info .chevron {
-  margin-left: 6px;
 }
 
 .total {
@@ -183,6 +171,16 @@ button:disabled {
   padding: 24px;
   text-align: center;
   color: var(--c-texto-suave);
+}
+
+.finalizar-item {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 2px dashed var(--c-borde);
+}
+
+.finalizar-btn {
+  width: 100%;
 }
 
 .fila {
