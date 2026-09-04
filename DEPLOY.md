@@ -4,8 +4,10 @@ Plan por fases. Cada fase deja algo usable; no hace falta completar todas para
 empezar a probar con un jefe de cuadrilla de verdad.
 
 - Repo: https://github.com/vtornet/cuadrillas
-- Dominio propio: `cuadrillas.app`
-  - PWA → `https://cuadrillas.app` (Cloudflare Pages)
+- Dominio propio: `cuadrillas.app`, comprado en Namecheap
+  - PWA → `https://cuadrillas.app` (Cloudflare Workers con assets estáticos —
+    la cuenta usa el sistema "Workers Builds" que sustituye a Pages, ver nota
+    en fase 1)
   - API → `https://api.cuadrillas.app` (Railway)
 
 ## Fase 1 — PWA en modo demo (sin backend)
@@ -23,8 +25,24 @@ No necesita ninguna de las cuentas de abajo salvo Cloudflare.
 3. Variable de entorno de build: deja `VITE_API_URL` **sin definir** por ahora
    (modo demo). Cuando exista la API, se añade con el valor
    `https://api.cuadrillas.app` y se vuelve a desplegar.
-4. Dominio: *Custom domains* → añade `cuadrillas.app` (y `www.cuadrillas.app` si
-   quieres redirigir). Cloudflare gestiona el certificado solo.
+4. Dominio (`cuadrillas.app` comprado en **Namecheap** → hay que traer el DNS a
+   Cloudflare primero, luego enlazarlo al Worker):
+   1. Cloudflare → **Add a domain** (o "Websites" → *Add a domain*) → escribe
+      `cuadrillas.app` → plan **Free** → revisa los registros que Cloudflare haya
+      detectado en Namecheap (normalmente ninguno relevante en un dominio nuevo) →
+      continúa. Te da **2 nameservers** (`algo.ns.cloudflare.com`).
+   2. Namecheap → *Domain List* → **Manage** sobre `cuadrillas.app` → sección
+      **Nameservers** → cambia de "Namecheap BasicDNS" a **Custom DNS** → pega los
+      2 nameservers de Cloudflare → guarda (✓).
+   3. Espera al email de Cloudflare ("cuadrillas.app is now active") — minutos a
+      pocas horas.
+   4. Vuelve al proyecto Worker (Workers & Pages → `cuadrillas`) → **Settings →
+      Domains & Routes** → **Add → Custom Domain** → `cuadrillas.app` → Cloudflare
+      crea el DNS y el certificado solo.
+
+   ⚠️ Si ya tenías email u otra cosa apuntando a `cuadrillas.app` en Namecheap,
+   comprueba en el paso 1 que Cloudflare importó esos registros antes de cambiar
+   los nameservers (para un dominio recién comprado no suele haber nada).
 
 > Tu cuenta usa el sistema nuevo de Cloudflare ("Workers Builds", que sustituye a
 > Pages): el deploy corre `wrangler deploy`, no `wrangler pages deploy`. Por eso el
