@@ -1,0 +1,6 @@
+# Config de despliegue para Cloudflare Pages. Necesario porque el repo es un
+# monorepo pnpm: sin este archivo, wrangler no sabe que dirección (app/dist)
+# publicar cuando el "Root directory" del proyecto es la raiz del workspace.
+name = "cuadrillas"
+pages_build_output_dir = "app/dist"
+compatibility_date = "2026-09-04"

@@ -26,6 +26,11 @@ No necesita ninguna de las cuentas de abajo salvo Cloudflare.
 4. Dominio: *Custom domains* → añade `cuadrillas.app` (y `www.cuadrillas.app` si
    quieres redirigir). Cloudflare gestiona el certificado solo.
 
+> El `wrangler.toml` de la raíz del repo (`pages_build_output_dir = "app/dist"`) es
+> necesario: en un monorepo, sin él, el paso de deploy de Cloudflare no sabe qué
+> carpeta publicar y falla con "Cloudflare application detection logic has been
+> run in the root of a workspace...".
+
 Con esto, `https://cuadrillas.app` ya es instalable en el móvil y funciona 100%
 offline con datos de ejemplo — sin tocar Railway, Mongo ni Stripe.
 
