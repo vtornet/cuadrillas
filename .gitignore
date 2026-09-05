@@ -16,3 +16,6 @@ coverage/
 # (ancladas a la raiz: no deben tapar assets reales como app/public/logo.png)
 /image.png
 /Logo.png
+
+# Notas personales del usuario (credenciales/datos de despliegue), nunca al repo
+/Datos.txt
