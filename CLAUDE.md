@@ -163,7 +163,16 @@ backend real. Fase 3 (email real con Resend) **hecha**: dominio `cuadrillas.app`
 verificado en Resend (SPF/MX en el subdominio `send.`, DKIM en `resend._domainkey`, sin
 tocar el SPF/MX de raíz que usa el reenvío de correo de Namecheap), `RESEND_API_KEY` y
 `EMAIL_FROM=Cuadrillas <login@cuadrillas.app>` puestas en Railway — el enlace mágico ya
-llega por email de verdad. Fase 4 (Stripe) sin empezar — retomar en `DEPLOY.md`.
+llega por email de verdad. Fase 4 (Stripe) **hecha en modo test**: 3 productos/precios
+(jefe de cuadrilla, empresa, campaña) y webhook a `https://api.cuadrillas.app/webhooks/stripe`
+configurados en Stripe; `STRIPE_SECRET_KEY`/`STRIPE_PRICE_*`/`STRIPE_WEBHOOK_SECRET`
+puestas en Railway. Probado end-to-end con tarjeta de prueba: checkout → webhook → la
+organización pasa a `plan: "foreman"` con `subscriptionStatus: "active"`. Pendiente:
+repetir con claves **live** cuando se quiera cobrar de verdad (clave secreta live,
+price ids live que ya existen en Stripe, webhook nuevo apuntando a producción). Con
+esto, **las 4 fases de `DEPLOY.md` están completas en modo test/demo** — el pendiente
+real antes de usuarios de pago es pasar Stripe a modo live, y antes de usuarios reales
+en general, la pantalla RGPD (ver más abajo).
 
 ### Transporte (hecho)
 
