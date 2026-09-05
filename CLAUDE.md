@@ -151,15 +151,17 @@ MVP completo (8 pasos). Fuera del MVP, preparado pero no implementado: panel
 multi-cuadrilla, vista del trabajador, NFC, i18n completo, fotos de albaranes, pantalla
 RGPD (política de privacidad + export/borrado de datos de un trabajador).
 
-### Despliegue (en marcha, 2026-09-04)
+### Despliegue (en marcha, 2026-09-05)
 
 Checklist completa por fases en `DEPLOY.md` (raíz del repo). Fase 1 (PWA en modo demo,
 Cloudflare Workers, dominio `cuadrillas.app`) **hecha**. Fase 2 (backend: MongoDB Atlas +
-Railway) **en curso** — nos quedamos justo después de crear el cluster Atlas M0 y el
-usuario de base de datos; falta pegar el connection string para configurar Railway
-(`MONGODB_URI`, `JWT_SECRET`, `APP_URL`), enlazar `api.cuadrillas.app` y añadir
-`VITE_API_URL` en Cloudflare. Retomar en `DEPLOY.md` → "Fase 2 — Backend (Railway +
-MongoDB Atlas)". Fases 3 (Resend) y 4 (Stripe) sin empezar.
+Railway) **hecha**: cluster Atlas M0 (`vtornet_db_user`, red `0.0.0.0/0`), API en Railway
+(root dir `/`, variables `MONGODB_URI`/`JWT_SECRET`/`APP_URL`) con dominio propio
+`api.cuadrillas.app` (CNAME en Cloudflare, DNS only sin proxy), y `VITE_API_URL` puesta en
+el Worker de Cloudflare — la PWA en `cuadrillas.app` ya sale del modo demo y habla con el
+backend real. Pendiente: el login por enlace mágico funciona pero el enlace solo se ve en
+los logs de Railway (no se envía email todavía, eso es la Fase 3). Fases 3 (Resend) y 4
+(Stripe) sin empezar — retomar en `DEPLOY.md`.
 
 ### Transporte (hecho)
 
