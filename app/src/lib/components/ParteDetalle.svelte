@@ -270,6 +270,11 @@
       </ul>
     {/if}
 
+    {#if shift?.firma}
+      <h3>{i18n.t("firma.titulo")}</h3>
+      <img class="firma-vista" src={shift.firma} alt={i18n.t("firma.titulo")} />
+    {/if}
+
     <button type="button" class="btn-secundario btn-ancho" onclick={onclose}>
       {i18n.t("historial.volver")}
     </button>

@@ -7,14 +7,14 @@
   import GroupSheet from "../lib/components/GroupSheet.svelte";
   import QrScanner from "../lib/components/QrScanner.svelte";
   import ComenzarJornadaSheet from "../lib/components/ComenzarJornadaSheet.svelte";
+  import FirmaSheet from "../lib/components/FirmaSheet.svelte";
 
   let q = $state("");
   let scannerAbierto = $state(false);
   let workerAbiertoId = $state<string | null>(null);
   let grupoAbiertoId = $state<string | null>(null);
   let comenzarAbierto = $state(false);
-  let confirmandoFinalizar = $state(false);
-  let finalizando = $state(false);
+  let firmaAbierta = $state(false);
 
   const visiblesWorkers = $derived.by(() => {
     const t = q.trim().toLowerCase();
@@ -68,14 +68,9 @@
     if (grupo) await jornada.sumar(grupo.groupId, 1);
   }
 
-  async function finalizar(): Promise<void> {
-    finalizando = true;
-    try {
-      await jornada.cerrarActual();
-      confirmandoFinalizar = false;
-    } finally {
-      finalizando = false;
-    }
+  async function finalizar(firma?: string): Promise<void> {
+    await jornada.cerrarActual(firma);
+    firmaAbierta = false;
   }
 </script>
 
@@ -150,36 +145,13 @@
       {/if}
 
       <li class="finalizar-item">
-        {#if confirmandoFinalizar}
-          <div class="confirm-inline">
-            <span>{i18n.t("jornada.cerrar_confirmar")}</span>
-            <div>
-              <button
-                type="button"
-                class="btn-secundario"
-                onclick={() => (confirmandoFinalizar = false)}
-              >
-                {i18n.t("jornada.seguir_abierta")}
-              </button>
-              <button
-                type="button"
-                class="btn-deshacer"
-                disabled={finalizando}
-                onclick={finalizar}
-              >
-                {i18n.t("registro.finalizar_jornada")}
-              </button>
-            </div>
-          </div>
-        {:else}
-          <button
-            type="button"
-            class="btn-deshacer finalizar-btn"
-            onclick={() => (confirmandoFinalizar = true)}
-          >
-            {i18n.t("registro.finalizar_jornada")}
-          </button>
-        {/if}
+        <button
+          type="button"
+          class="btn-deshacer finalizar-btn"
+          onclick={() => (firmaAbierta = true)}
+        >
+          {i18n.t("registro.finalizar_jornada")}
+        </button>
       </li>
     </ul>
 
@@ -231,6 +203,13 @@
           onclose={() => (grupoAbiertoId = null)}
         />
       {/key}
+    {/if}
+
+    {#if firmaAbierta}
+      <FirmaSheet
+        onfinalizar={(firma) => finalizar(firma)}
+        onclose={() => (firmaAbierta = false)}
+      />
     {/if}
   {/if}
 

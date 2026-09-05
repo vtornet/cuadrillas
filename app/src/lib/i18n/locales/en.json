@@ -160,7 +160,6 @@
   },
   "jornada": {
     "cerrar_confirmar": "Once finished you cannot keep recording in this shift.",
-    "seguir_abierta": "Keep open",
     "nueva": "Start shift",
     "cuadrilla": "Crew",
     "producto": "Product",
@@ -207,6 +206,13 @@
     "ficha": "Group details",
     "miembros_hoy": "Today's members",
     "miembros_contador": "{n} member(s)"
+  },
+  "firma": {
+    "titulo": "Foreman's signature",
+    "ayuda": "Sign in the box to confirm closing the shift (optional).",
+    "borrar": "Clear signature",
+    "finalizar_sin_firma": "Finish without signing",
+    "finalizar_con_firma": "Sign and finish"
   },
   "qr": {
     "apunta": "Point at the worker code",

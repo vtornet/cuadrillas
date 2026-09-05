@@ -33,4 +33,10 @@ export interface Shift extends RegistroSincronizable {
    * composicion de ese dia. Ausente o vacio = registro por trabajador.
    */
   groups?: GrupoDeJornada[];
+  /**
+   * Firma del jefe de cuadrilla al finalizar el parte (PNG en data URL).
+   * Opcional: se puede finalizar sin firmar. Se captura una sola vez, al
+   * cerrar la jornada; editar un parte cerrado despues no la modifica.
+   */
+  firma?: string;
 }

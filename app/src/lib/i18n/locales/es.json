@@ -160,7 +160,6 @@
   },
   "jornada": {
     "cerrar_confirmar": "Al finalizar no se podra seguir registrando en este parte.",
-    "seguir_abierta": "Seguir abierta",
     "nueva": "Comenzar jornada",
     "cuadrilla": "Cuadrilla",
     "producto": "Producto",
@@ -207,6 +206,13 @@
     "ficha": "Ficha del grupo",
     "miembros_hoy": "Miembros de hoy",
     "miembros_contador": "{n} miembro(s)"
+  },
+  "firma": {
+    "titulo": "Firma del jefe de cuadrilla",
+    "ayuda": "Firma en el recuadro para confirmar el cierre del parte (opcional).",
+    "borrar": "Borrar firma",
+    "finalizar_sin_firma": "Finalizar sin firmar",
+    "finalizar_con_firma": "Firmar y finalizar"
   },
   "qr": {
     "apunta": "Apunta al codigo del trabajador",

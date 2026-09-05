@@ -90,14 +90,15 @@ class JornadaStore {
     await this.cargar();
   }
 
-  /** Cierra la jornada activa (estado `closed` + hora fin). */
-  async cerrarActual(): Promise<void> {
+  /** Cierra la jornada activa (estado `closed` + hora fin). `firma` es opcional. */
+  async cerrarActual(firma?: string): Promise<void> {
     if (!this.shift) return;
     const base = $state.snapshot(this.shift) as Shift;
     const cerrada: Shift = {
       ...base,
       estado: "closed",
       horaFin: this.#horaActual(),
+      firma,
       updatedAt: Date.now(),
     };
     await guardarShift(cerrada);

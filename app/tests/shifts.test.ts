@@ -121,4 +121,22 @@ describe("apertura y cierre de jornada", () => {
     expect(jornada.shift?.id).toBe(s.id);
     expect(await getMeta<string>("activeShiftId")).toBe(s.id);
   });
+
+  it("cerrarActual guarda la firma cuando se pasa una", async () => {
+    const s = await crearShift(nuevaInput());
+    await jornada.activar(s.id);
+    await jornada.cerrarActual("data:image/png;base64,abc123");
+
+    const guardada = await db.shifts.get(s.id);
+    expect(guardada?.firma).toBe("data:image/png;base64,abc123");
+  });
+
+  it("cerrarActual sin firma no guarda el campo", async () => {
+    const s = await crearShift(nuevaInput());
+    await jornada.activar(s.id);
+    await jornada.cerrarActual();
+
+    const guardada = await db.shifts.get(s.id);
+    expect(guardada?.firma).toBeUndefined();
+  });
 });

@@ -223,6 +223,12 @@ Perfil de usuario bajo → simplificar. Plan en 4 fases:
   parte — sin arrastrar ausencias de otros días. Fuera de alcance de esta fase (gap
   conocido, no corrupción): Estadísticas por trabajador ignora las anotaciones de
   grupo (`stats.ts`, guardado explícitamente).
-- **Firma del jefe al finalizar**: capturar firma (canvas) al finalizar un parte y
-  guardarla con el `Shift` (data URL/blob); mostrarla en el historial/liquidación. Sin
-  fase asignada todavía.
+- **Firma del jefe al finalizar — hecho.** Al pulsar "Finalizar jornada" en
+  `Registro.svelte` se abre `FirmaSheet.svelte`: aviso de cierre + un `<canvas>` táctil
+  (Pointer Events, con `setPointerCapture` para no perder el trazo al salir del recuadro)
+  y dos acciones, "Finalizar sin firmar" o "Firmar y finalizar" (deshabilitado hasta que
+  hay trazo). La firma se guarda como PNG en data URL en `Shift.firma` (opcional;
+  `jornada.cerrarActual(firma?)`), y se muestra de solo lectura en `ParteDetalle.svelte`
+  (Historial). No se pidió ni se implementó en Liquidación (vista agregada por
+  trabajador/periodo, sin hueco natural para una firma por parte individual). Firmar es
+  opcional a propósito — un parte se puede cerrar sin firma sin fricción extra.
