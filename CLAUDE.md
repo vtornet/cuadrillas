@@ -159,9 +159,11 @@ Railway) **hecha**: cluster Atlas M0 (`vtornet_db_user`, red `0.0.0.0/0`), API e
 (root dir `/`, variables `MONGODB_URI`/`JWT_SECRET`/`APP_URL`) con dominio propio
 `api.cuadrillas.app` (CNAME en Cloudflare, DNS only sin proxy), y `VITE_API_URL` puesta en
 el Worker de Cloudflare — la PWA en `cuadrillas.app` ya sale del modo demo y habla con el
-backend real. Pendiente: el login por enlace mágico funciona pero el enlace solo se ve en
-los logs de Railway (no se envía email todavía, eso es la Fase 3). Fases 3 (Resend) y 4
-(Stripe) sin empezar — retomar en `DEPLOY.md`.
+backend real. Fase 3 (email real con Resend) **hecha**: dominio `cuadrillas.app`
+verificado en Resend (SPF/MX en el subdominio `send.`, DKIM en `resend._domainkey`, sin
+tocar el SPF/MX de raíz que usa el reenvío de correo de Namecheap), `RESEND_API_KEY` y
+`EMAIL_FROM=Cuadrillas <login@cuadrillas.app>` puestas en Railway — el enlace mágico ya
+llega por email de verdad. Fase 4 (Stripe) sin empezar — retomar en `DEPLOY.md`.
 
 ### Transporte (hecho)
 
