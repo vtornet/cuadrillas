@@ -232,3 +232,19 @@ Perfil de usuario bajo → simplificar. Plan en 4 fases:
   (Historial). No se pidió ni se implementó en Liquidación (vista agregada por
   trabajador/periodo, sin hueco natural para una firma por parte individual). Firmar es
   opcional a propósito — un parte se puede cerrar sin firma sin fricción extra.
+
+### Backlog sin planificar
+
+- **Auxiliares.** Además de los recolectores (que cobran a destajo por unidad), en muchas
+  cuadrillas hay personas que hacen otras tareas: carga de camiones, paletizado de cajas
+  en campo, pesaje de cajas (berries), etc. No cobran por recolección. Habría que poder
+  darlos de alta y reflejar su trabajo/pago de forma distinta al destajo por unidad
+  (¿jornal fijo? ¿por horas? ¿tarifa aparte?) — pendiente de definir el modelo con el
+  usuario.
+- **Cambios en nombres de menús y estructura de navegación.** El usuario los explicará
+  más adelante; de momento solo anotado que van a cambiar.
+- Pantalla RGPD (privacidad + export/borrado de datos de un trabajador) — recomendada
+  antes de dar de alta usuarios reales.
+- Estadísticas por trabajador: integrar las anotaciones de grupo (hoy se ignoran, gap
+  conocido de la Fase D).
+- Pasar Stripe a modo live cuando se quiera cobrar de verdad (ver `DEPLOY.md`).
