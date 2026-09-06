@@ -243,6 +243,10 @@ Perfil de usuario bajo → simplificar. Plan en 4 fases:
   usuario.
 - **Cambios en nombres de menús y estructura de navegación.** El usuario los explicará
   más adelante; de momento solo anotado que van a cambiar.
+- **Aviso al finalizar si hay recolectores a 0.** Al cerrar una jornada, si algún
+  recolector presente no tiene ninguna anotación, mostrar un aviso ("Fulano no tiene
+  anotaciones, ¿finalizar con 0?") antes de cerrar, con opción de seguir de todas formas
+  o volver a la lista. Encaja en el flujo de `FirmaSheet.svelte` / `jornada.cerrarActual`.
 - Pantalla RGPD (privacidad + export/borrado de datos de un trabajador) — recomendada
   antes de dar de alta usuarios reales.
 - Estadísticas por trabajador: integrar las anotaciones de grupo (hoy se ignoran, gap
