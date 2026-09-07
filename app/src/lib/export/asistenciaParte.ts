@@ -14,8 +14,10 @@ export interface DatosAsistenciaParte {
   fecha: string;
   producto: string;
   unidad: string;
-  /** Nombres de los trabajadores presentes (se ordenan aquí). */
+  /** Nombres de los recolectores presentes (se ordenan aquí). */
   nombres: string[];
+  /** Nombres de los auxiliares presentes (se ordenan aquí). */
+  auxiliares?: string[];
   /** Si el parte se trabaja por grupos: composición de hoy. */
   grupos?: GrupoAsistencia[];
 }
@@ -37,6 +39,13 @@ export function textoAsistenciaParte(d: DatosAsistenciaParte): string {
   L.push("");
   L.push(`Trabajadores (${nombres.length}):`);
   nombres.forEach((n, i) => L.push(`${i + 1}. ${n}`));
+
+  const aux = [...(d.auxiliares ?? [])].sort((a, b) => a.localeCompare(b, "es"));
+  if (aux.length > 0) {
+    L.push("");
+    L.push(`Auxiliares (${aux.length}):`);
+    aux.forEach((n, i) => L.push(`${i + 1}. ${n}`));
+  }
 
   if (d.grupos && d.grupos.length > 0) {
     L.push("");

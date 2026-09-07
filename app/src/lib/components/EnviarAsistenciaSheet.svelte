@@ -41,7 +41,10 @@
     fecha: shift.fecha,
     producto,
     unidad,
-    nombres: workers.map((w) => w.name),
+    nombres: workers.filter((w) => w.funcion !== "auxiliar").map((w) => w.name),
+    auxiliares: workers
+      .filter((w) => w.funcion === "auxiliar")
+      .map((w) => w.name),
     grupos: grupos?.map((g) => ({
       nombre: g.name,
       miembros: g.memberIds.map((id) => nombrePorId.get(id) ?? "?"),

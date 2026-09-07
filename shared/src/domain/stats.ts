@@ -69,6 +69,10 @@ export function calcularEstadisticas(
 ): Estadisticas {
   const nombre = new Map(workers.map((w) => [w.id, w.name]));
   const porShift = new Map(shifts.map((s) => [s.id, s]));
+  // Los auxiliares no recolectan: fuera del ranking, medias y unidades/hora.
+  const esAuxiliar = new Set(
+    workers.filter((w) => w.funcion === "auxiliar").map((w) => w.id),
+  );
 
   const unidades = new Map<string, number>();
   const evolucionMap = new Map<string, number>();
@@ -79,7 +83,7 @@ export function calcularEstadisticas(
     if (!s) continue;
     // Los registros de grupo (Entry.groupId) no se desglosan por trabajador
     // aqui todavia; si cuentan en la evolucion diaria (total de la cuadrilla).
-    if (e.workerId) {
+    if (e.workerId && !esAuxiliar.has(e.workerId)) {
       unidades.set(e.workerId, (unidades.get(e.workerId) ?? 0) + e.cantidad);
     }
     evolucionMap.set(s.fecha, (evolucionMap.get(s.fecha) ?? 0) + e.cantidad);
@@ -98,6 +102,7 @@ export function calcularEstadisticas(
             .map((e) => e.workerId)
             .filter((id): id is string => !!id);
     for (const w of new Set(asistentes)) {
+      if (esAuxiliar.has(w)) continue;
       horasPorTrabajador.set(w, (horasPorTrabajador.get(w) ?? 0) + h);
     }
   }

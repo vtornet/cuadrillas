@@ -22,7 +22,7 @@ function shift(p: Partial<Shift>): Shift {
   };
 }
 
-function worker(id: string, name: string): Worker {
+function worker(id: string, name: string, p: Partial<Worker> = {}): Worker {
   return {
     id,
     organizationId: "o",
@@ -33,6 +33,7 @@ function worker(id: string, name: string): Worker {
     activo: 1,
     updatedAt: 1,
     deleted: 0,
+    ...p,
   };
 }
 
@@ -87,6 +88,24 @@ describe("calcularEstadisticas", () => {
     expect(r.mediaUnidades).toBe(32.5);
     expect(r.totalHoras).toBe(16);
     expect(r.mediaUnidadesPorHora).toBe(4.06); // 65/16 redondeado a 2 decimales
+  });
+
+  it("los auxiliares no entran en el ranking, medias ni horas", () => {
+    const conAux = [
+      worker("w1", "Ana"),
+      worker("w2", "Beto"),
+      worker("aux", "Carga", { funcion: "auxiliar" }),
+    ];
+    const shiftConAux = shift({ attendeeIds: ["w1", "w2", "aux"] });
+    const entries = [
+      entry({ workerId: "w1", cantidad: 40 }),
+      entry({ workerId: "w2", cantidad: 20 }),
+    ];
+    const r = calcularEstadisticas([shiftConAux], conAux, entries);
+
+    expect(r.filas.map((f) => f.workerId)).toEqual(["w1", "w2"]);
+    expect(r.totalHoras).toBe(16); // 8h x 2 recolectores, sin el auxiliar
+    expect(r.numTrabajadores).toBe(2);
   });
 
   it("evolucion diaria suma por fecha y ordena", () => {

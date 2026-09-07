@@ -281,8 +281,8 @@ Los detalles de cada punto están en **Backlog sin planificar** justo debajo.
 
 6. **Producto → separar "producto" y "variedad".** **HECHO (2026-09-07).** Dos campos
    en `Product` (`name` + `variedad?`), etiqueta "Naranja · Navelina".
-7. **Auxiliares** (trabajadores que no cobran a destajo). Bloquea "total auxiliares" y el
-   reparto en liquidación.
+7. **Auxiliares** (trabajadores que no cobran a destajo). **HECHO (2026-09-07).**
+   `Worker.funcion` + sección aparte en el parte + tarea/horas por día.
 8. **Cabecera del parte** (fecha, finca, producto, variedad, totales). Depende de 6, 7 y
    de un modelo nuevo de finca/variedad.
 
@@ -306,12 +306,26 @@ Los detalles de cada punto están en **Backlog sin planificar** justo debajo.
 
 ### Backlog sin planificar
 
-- **Auxiliares.** Además de los recolectores (que cobran a destajo por unidad), en muchas
-  cuadrillas hay personas que hacen otras tareas: carga de camiones, paletizado de cajas
-  en campo, pesaje de cajas (berries), etc. No cobran por recolección. Habría que poder
-  darlos de alta y reflejar su trabajo/pago de forma distinta al destajo por unidad
-  (¿jornal fijo? ¿por horas? ¿tarifa aparte?) — pendiente de definir el modelo con el
-  usuario.
+- **Auxiliares — hecho (2026-09-07).** Recolectores (destajo por unidad) vs auxiliares
+  (carga, paletizado, pesaje…). Decidido: rol **fijo en la ficha** (`Worker.funcion?:
+  "recolector" | "auxiliar"`, ausente = recolector), en el parte salen en **sección
+  aparte sin contador**, y por día se anota **tarea + horas (horas opcional)**. El
+  cálculo de pago del auxiliar (jornal/horas/tarifa) queda para el futuro panel de
+  empresa — la app del jefe no maneja economía.
+  - `Worker.funcion` (selector "Función" en `WorkerForm`). `Shift.auxiliares?:
+    AuxiliarDeJornada[]` (`{ workerId, tarea?, horas? }`), poblado bajo demanda.
+  - `jornada`: getters `recolectores` / `auxiliares` (`AuxiliarConTrabajo`), método
+    `actualizarAuxiliar(workerId, {tarea, horas})` (persiste en el Shift; si ambos vacíos
+    borra la entrada). Igual en `ParteDetalle` (`actualizarAuxiliar` local).
+  - UI: `Registro.svelte` lista recolectores con contador + bloque "Auxiliares" (tarea·
+    horas, tap → `AuxiliarSheet.svelte`); `ParteDetalle` los muestra en consulta (solo
+    lectura) y editables en edición; QR de un auxiliar se ignora. `EnviarAsistenciaSheet`
+    / `textoAsistenciaParte` separan "Trabajadores" y "Auxiliares".
+  - `stats.ts`: los auxiliares quedan **fuera** del ranking, medias y unidades/hora
+    (`funcion === "auxiliar"`). `attendance.ts` (tabla mensual) los sigue incluyendo
+    (gap: no separa totales por rol — va con "Cabecera del parte").
+  - Seed demo: el último trabajador es auxiliar. Tests: `shared/tests/stats.test.ts`,
+    `app/tests/jornada.test.ts`, `app/tests/asistencia-parte.test.ts`.
 - **Estructura de navegación.** Primer lote de renombrados de menús ya aplicado (ver
   arriba: "Iniciar parte", "Datos"). Quedan pendientes más cambios de nombres/estructura
   que el usuario irá explicando.
@@ -374,13 +388,13 @@ Los detalles de cada punto están en **Backlog sin planificar** justo debajo.
   exports) una cabecera con: **fecha, finca, producto, variedad, total recolectores,
   total auxiliares**, etc. Estado actual (`shared/src/types/shift.ts`): `Shift` ya tiene
   `fecha`, `productId`, `crewId`, `attendeeIds`, `groups?`; **faltan** `finca` y
-  `variedad` (¿campos libres en el parte? ¿entidades propias, tipo "Finca" con sus
-  variedades, elegibles al comenzar la jornada en `ComenzarJornadaSheet`?). "Total
-  recolectores" y "total auxiliares" salen de contar la asistencia por rol una vez exista
-  la distinción recolector/auxiliar (ver punto **Auxiliares** arriba). Sitio natural para
-  pintarla: cabecera de `Registro.svelte` (parte activo), `ParteDetalle.svelte`
-  (Historial) y las cabeceras de los exports de liquidación/estadísticas. Pendiente de
-  concretar el modelo de finca/variedad con el usuario.
+  `variedad`. `Product` ya tiene `name` + `variedad` (punto 6), así que la variedad de la
+  cabecera sale del producto; **falta `finca`** (¿campo libre en el parte? ¿entidad
+  propia "Finca" elegible al comenzar la jornada en `ComenzarJornadaSheet`?). "Total
+  recolectores" / "total auxiliares" ya se pueden contar: `Worker.funcion` existe (punto
+  7) — es filtrar `attendeeIds` por rol. Sitio natural para pintarla: cabecera de
+  `Registro.svelte` (parte activo), `ParteDetalle.svelte` (Historial) y las cabeceras de
+  los exports. Pendiente de concretar el modelo de finca con el usuario.
 - **Producto: producto + variedad — hecho (2026-09-07).** Decidido: **dos campos en el
   mismo `Product`** (no entidades separadas), variedad **opcional**. `Product` ahora
   `{ name, variedad?, activo }` (`name` = producto, p. ej. "Naranja"; `variedad`, p. ej.

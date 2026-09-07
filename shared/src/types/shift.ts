@@ -15,6 +15,17 @@ export interface GrupoDeJornada {
 }
 
 /**
+ * Trabajo de un auxiliar en ESTA jornada: qué tarea hizo y cuántas horas.
+ * Ambos opcionales — al empezar el parte se crea vacío y el jefe lo rellena.
+ */
+export interface AuxiliarDeJornada {
+  workerId: string;
+  tarea?: string;
+  /** Horas trabajadas ese día. Puede dejarse en blanco. */
+  horas?: number;
+}
+
+/**
  * Jornada de trabajo de una cuadrilla. Una jornada = un producto + una unidad.
  * Si la cuadrilla trabaja dos productos el mismo día, son dos jornadas.
  */
@@ -33,6 +44,12 @@ export interface Shift extends RegistroSincronizable {
    * composicion de ese dia. Ausente o vacio = registro por trabajador.
    */
   groups?: GrupoDeJornada[];
+  /**
+   * Auxiliares presentes ese día (subconjunto de `attendeeIds` con
+   * `Worker.funcion === "auxiliar"`), con su tarea/horas. Ausente = sin
+   * auxiliares o aún sin rellenar.
+   */
+  auxiliares?: AuxiliarDeJornada[];
   /**
    * Firma del jefe de cuadrilla al finalizar el parte (PNG en data URL).
    * Opcional: se puede finalizar sin firmar. Se captura una sola vez, al

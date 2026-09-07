@@ -109,6 +109,29 @@ describe("jornada store", () => {
     expect(guardado?.language).toBe("en");
   });
 
+  it("separa recolectores y auxiliares y guarda tarea/horas del auxiliar", async () => {
+    await db.workers.put({ ...WORKER, id: "aux1", alias: "AUX", funcion: "auxiliar" });
+    await db.shifts.put({ ...SHIFT, attendeeIds: ["w1", "aux1"] });
+    await jornada.cargar();
+
+    expect(jornada.recolectores.map((w) => w.id)).toEqual(["w1"]);
+    expect(jornada.auxiliares.map((a) => a.worker.id)).toEqual(["aux1"]);
+    expect(jornada.auxiliares[0].tarea).toBe("");
+    expect(jornada.auxiliares[0].horas).toBeNull();
+
+    await jornada.actualizarAuxiliar("aux1", { tarea: "  Carga camiones ", horas: 6 });
+    const guardado = await db.shifts.get("s1");
+    expect(guardado?.auxiliares).toEqual([
+      { workerId: "aux1", tarea: "Carga camiones", horas: 6 },
+    ]);
+    expect(jornada.auxiliares[0].tarea).toBe("Carga camiones");
+    expect(jornada.auxiliares[0].horas).toBe(6);
+
+    // Vaciar ambos elimina la entrada.
+    await jornada.actualizarAuxiliar("aux1", { tarea: "", horas: null });
+    expect((await db.shifts.get("s1"))?.auxiliares).toEqual([]);
+  });
+
   it("cerrarActual guarda firma y firmante en el parte", async () => {
     await jornada.cerrarActual("data:image/png;base64,AAA", "  Paco Jefe  ");
 

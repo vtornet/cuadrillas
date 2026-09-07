@@ -40,6 +40,17 @@
     "sin_datos": "No hay asistencia registrada este mes.",
     "exportar": "Exportar CSV"
   },
+  "auxiliar": {
+    "seccion": "Auxiliares",
+    "subtitulo": "Trabajo de hoy",
+    "tarea": "Tarea",
+    "tarea_ph": "Carga, paletizado, pesaje...",
+    "horas": "Horas (opcional)",
+    "horas_ph": "8",
+    "horas_error": "Introduce un numero de horas valido.",
+    "n_horas": "{n} h",
+    "sin_datos": "Sin tarea ni horas"
+  },
   "enviar_asis": {
     "abrir": "Enviar asistencia",
     "titulo": "Enviar asistencia",
@@ -203,6 +214,9 @@
     "nombre": "Nombre",
     "alias": "Alias o codigo",
     "idioma": "Idioma",
+    "funcion": "Funcion",
+    "funcion_recolector": "Recolector (destajo)",
+    "funcion_auxiliar": "Auxiliar (otras tareas)",
     "activo": "Activo en la cuadrilla",
     "paga_transporte": "Se le paga transporte",
     "transporte_importe": "Transporte por dia (EUR)",

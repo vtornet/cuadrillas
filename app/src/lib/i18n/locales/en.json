@@ -40,6 +40,17 @@
     "sin_datos": "No attendance recorded this month.",
     "exportar": "Export CSV"
   },
+  "auxiliar": {
+    "seccion": "Support workers",
+    "subtitulo": "Today's work",
+    "tarea": "Task",
+    "tarea_ph": "Loading, palletising, weighing...",
+    "horas": "Hours (optional)",
+    "horas_ph": "8",
+    "horas_error": "Enter a valid number of hours.",
+    "n_horas": "{n} h",
+    "sin_datos": "No task or hours"
+  },
   "enviar_asis": {
     "abrir": "Send attendance",
     "titulo": "Send attendance",
@@ -203,6 +214,9 @@
     "nombre": "Name",
     "alias": "Alias or code",
     "idioma": "Language",
+    "funcion": "Role",
+    "funcion_recolector": "Picker (piecework)",
+    "funcion_auxiliar": "Support worker (other tasks)",
     "activo": "Active in the crew",
     "paga_transporte": "Transport is paid",
     "transporte_importe": "Transport per day (EUR)",

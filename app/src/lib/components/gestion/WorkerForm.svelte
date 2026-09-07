@@ -1,6 +1,6 @@
 <script lang="ts">
   import { untrack } from "svelte";
-  import type { Idioma, Worker } from "@cuadrilla/shared";
+  import type { FuncionTrabajador, Idioma, Worker } from "@cuadrilla/shared";
   import { IDIOMAS } from "@cuadrilla/shared";
   import { i18n } from "../../i18n/i18n.svelte";
   import { sesion } from "../../stores/sesion.svelte";
@@ -32,6 +32,7 @@
         alias: reg?.alias ?? "",
         crewId: reg?.crewId ?? gestion.crews[0]?.id ?? "",
         language: (reg?.language ?? "es") as Idioma,
+        funcion: (reg?.funcion ?? "recolector") as FuncionTrabajador,
         activo: (reg?.activo ?? 1) === 1,
         qrCode: reg?.qrCode ?? "",
         pagaTransporte: transporte > 0,
@@ -44,6 +45,7 @@
   let alias = $state(ini.alias);
   let crewId = $state(ini.crewId);
   let language = $state<Idioma>(ini.language);
+  let funcion = $state<FuncionTrabajador>(ini.funcion);
   let activo = $state(ini.activo);
   let qrCode = $state(ini.qrCode);
   let pagaTransporte = $state(ini.pagaTransporte);
@@ -58,6 +60,7 @@
       alias.trim() !== ini.alias ||
       crewId !== ini.crewId ||
       language !== ini.language ||
+      funcion !== ini.funcion ||
       activo !== ini.activo ||
       qrCode.trim() !== ini.qrCode ||
       pagaTransporte !== ini.pagaTransporte ||
@@ -111,6 +114,7 @@
       alias: alias.trim(),
       crewId,
       language,
+      funcion: funcion === "auxiliar" ? "auxiliar" : undefined,
       activo: activo ? 1 : 0,
       qrCode: qrCode.trim() || undefined,
       transporteCentimos,
@@ -153,6 +157,13 @@
       {#each IDIOMAS as id (id)}
         <option value={id}>{IDIOMA_LABEL[id]}</option>
       {/each}
+    </select>
+  </label>
+  <label class="campo">
+    <span>{i18n.t("worker.funcion")}</span>
+    <select bind:value={funcion}>
+      <option value="recolector">{i18n.t("worker.funcion_recolector")}</option>
+      <option value="auxiliar">{i18n.t("worker.funcion_auxiliar")}</option>
     </select>
   </label>
   <label class="campo">

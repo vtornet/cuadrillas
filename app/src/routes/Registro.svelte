@@ -10,23 +10,40 @@
   import ComenzarJornadaSheet from "../lib/components/ComenzarJornadaSheet.svelte";
   import FirmaSheet from "../lib/components/FirmaSheet.svelte";
   import EnviarAsistenciaSheet from "../lib/components/EnviarAsistenciaSheet.svelte";
+  import AuxiliarSheet from "../lib/components/AuxiliarSheet.svelte";
 
   let q = $state("");
   let scannerAbierto = $state(false);
   let workerAbiertoId = $state<string | null>(null);
   let grupoAbiertoId = $state<string | null>(null);
+  let auxAbiertoId = $state<string | null>(null);
   let comenzarAbierto = $state(false);
   let firmaAbierta = $state(false);
   let enviarAsisAbierto = $state(false);
 
   const visiblesWorkers = $derived.by(() => {
     const t = q.trim().toLowerCase();
-    if (!t) return jornada.workers;
-    return jornada.workers.filter(
+    if (!t) return jornada.recolectores;
+    return jornada.recolectores.filter(
       (w) =>
         w.name.toLowerCase().includes(t) || w.alias.toLowerCase().includes(t),
     );
   });
+
+  const visiblesAux = $derived.by(() => {
+    const t = q.trim().toLowerCase();
+    if (!t) return jornada.auxiliares;
+    return jornada.auxiliares.filter((a) =>
+      a.worker.name.toLowerCase().includes(t) ||
+      a.worker.alias.toLowerCase().includes(t),
+    );
+  });
+
+  const auxAbierto = $derived(
+    auxAbiertoId
+      ? (jornada.auxiliares.find((a) => a.worker.id === auxAbiertoId) ?? null)
+      : null,
+  );
 
   const visiblesGrupos = $derived.by(() => {
     const t = q.trim().toLowerCase();
@@ -62,7 +79,7 @@
     const w = jornada.workers.find(
       (x) => x.qrCode === texto || x.alias.toLowerCase() === limpio,
     );
-    if (!w) return;
+    if (!w || w.funcion === "auxiliar") return;
     if (!jornada.trabajaPorGrupos) {
       await jornada.sumar(w.id, 1);
       return;
@@ -74,6 +91,13 @@
   async function finalizar(firma?: string, firmante?: string): Promise<void> {
     await jornada.cerrarActual(firma, firmante);
     firmaAbierta = false;
+  }
+
+  function resumenAux(a: { tarea: string; horas: number | null }): string {
+    const partes: string[] = [];
+    if (a.tarea) partes.push(a.tarea);
+    if (a.horas != null) partes.push(i18n.t("auxiliar.n_horas", { n: a.horas }));
+    return partes.length ? partes.join(" · ") : i18n.t("auxiliar.sin_datos");
   }
 </script>
 
@@ -154,6 +178,22 @@
         {/each}
       {/if}
 
+      {#if visiblesAux.length > 0}
+        <li class="aux-cab">{i18n.t("auxiliar.seccion")}</li>
+        {#each visiblesAux as a (a.worker.id)}
+          <li>
+            <button
+              type="button"
+              class="aux-fila"
+              onclick={() => (auxAbiertoId = a.worker.id)}
+            >
+              <span class="aux-nombre">{a.worker.name}</span>
+              <span class="aux-sub">{resumenAux(a)}</span>
+            </button>
+          </li>
+        {/each}
+      {/if}
+
       <li class="finalizar-item">
         <button
           type="button"
@@ -185,6 +225,17 @@
 
     {#if scannerAbierto}
       <QrScanner ondetect={onScan} onclose={() => (scannerAbierto = false)} />
+    {/if}
+
+    {#if auxAbierto}
+      {@const aa = auxAbierto}
+      {#key aa.worker.id}
+        <AuxiliarSheet
+          aux={aa}
+          onsave={(datos) => jornada.actualizarAuxiliar(aa.worker.id, datos)}
+          onclose={() => (auxAbiertoId = null)}
+        />
+      {/key}
     {/if}
 
     {#if workerAbierto}

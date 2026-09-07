@@ -88,6 +88,8 @@ export async function seedDemo(): Promise<void> {
     alias,
     crewId: CREW_ID,
     language: "es" as Idioma,
+    // El último es auxiliar (carga, paletizado…): no recolecta.
+    funcion: i === NOMBRES.length - 1 ? ("auxiliar" as const) : undefined,
     activo: 1,
     qrCode: alias,
     updatedAt: ahora,

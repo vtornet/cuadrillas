@@ -19,6 +19,7 @@
   import WorkerSheet from "./WorkerSheet.svelte";
   import GroupSheet from "./GroupSheet.svelte";
   import EnviarAsistenciaSheet from "./EnviarAsistenciaSheet.svelte";
+  import AuxiliarSheet from "./AuxiliarSheet.svelte";
 
   let { shiftId, onclose }: { shiftId: string; onclose: () => void } = $props();
 
@@ -33,12 +34,30 @@
   let confirmandoEditar = $state(false);
   let workerAbiertoId = $state<string | null>(null);
   let grupoAbiertoId = $state<string | null>(null);
+  let auxAbiertoId = $state<string | null>(null);
   let enviarAsisAbierto = $state(false);
 
   const conteos = $derived(sumarConteos(entries));
   const total = $derived(Object.values(conteos).reduce((a, b) => a + b, 0));
   const grupos = $derived(shift?.groups ?? []);
   const trabajaPorGrupos = $derived(grupos.length > 0);
+
+  const recolectores = $derived(
+    workers.filter((w) => w.funcion !== "auxiliar"),
+  );
+  const auxiliares = $derived(
+    workers
+      .filter((w) => w.funcion === "auxiliar")
+      .map((w) => {
+        const a = shift?.auxiliares?.find((x) => x.workerId === w.id);
+        return { worker: w, tarea: a?.tarea ?? "", horas: a?.horas ?? null };
+      }),
+  );
+  const auxAbierto = $derived(
+    auxAbiertoId
+      ? (auxiliares.find((a) => a.worker.id === auxAbiertoId) ?? null)
+      : null,
+  );
   const workerAbierto = $derived(
     workerAbiertoId
       ? (workers.find((w) => w.id === workerAbiertoId) ?? null)
@@ -128,6 +147,33 @@
     }
   }
 
+  async function actualizarAuxiliar(
+    workerId: string,
+    datos: { tarea: string; horas: number | null },
+  ): Promise<void> {
+    if (!shift) return;
+    const anterior = shift;
+    const tarea = datos.tarea.trim();
+    const horas =
+      datos.horas != null && Number.isFinite(datos.horas) && datos.horas > 0
+        ? datos.horas
+        : undefined;
+    const otros = (shift.auxiliares ?? []).filter(
+      (a) => a.workerId !== workerId,
+    );
+    const entrada = { workerId, tarea: tarea || undefined, horas };
+    const auxiliares =
+      entrada.tarea || entrada.horas != null ? [...otros, entrada] : otros;
+    const actualizado: Shift = { ...shift, auxiliares, updatedAt: Date.now() };
+    shift = actualizado;
+    try {
+      await guardarShift(actualizado);
+    } catch (e) {
+      shift = anterior;
+      console.error("[historial] no se pudo guardar el auxiliar", e);
+    }
+  }
+
   async function anular(entryId: string): Promise<void> {
     const entry = entries.find((e) => e.id === entryId);
     if (!entry || entry.deleted === 1) return;
@@ -163,6 +209,13 @@
       workers[i] = actual;
       console.error("[historial] no se pudo guardar el trabajador", e);
     }
+  }
+
+  function resumenAux(a: { tarea: string; horas: number | null }): string {
+    const partes: string[] = [];
+    if (a.tarea) partes.push(a.tarea);
+    if (a.horas != null) partes.push(i18n.t("auxiliar.n_horas", { n: a.horas }));
+    return partes.length ? partes.join(" · ") : i18n.t("auxiliar.sin_datos");
   }
 
   function pedirEditar(): void {
@@ -201,13 +254,19 @@
             </li>
           {/each}
         {:else}
-          {#each workers as w (w.id)}
+          {#each recolectores as w (w.id)}
             <li class="hist-fila">
               <span class="nombre">{w.name}</span>
               <span class="conteo">{conteoDe(w.id)}</span>
             </li>
           {/each}
         {/if}
+        {#each auxiliares as a (a.worker.id)}
+          <li class="hist-fila hist-fila-aux">
+            <span class="nombre">{a.worker.name}</span>
+            <span class="hist-aux-sub">{resumenAux(a)}</span>
+          </li>
+        {/each}
       </ul>
 
       {#if confirmandoEditar}
@@ -259,7 +318,7 @@
       </ul>
     {:else}
       <ul class="lista">
-        {#each workers as w (w.id)}
+        {#each recolectores as w (w.id)}
           <li>
             <WorkerRow
               item={w}
@@ -267,6 +326,24 @@
               onsumar={(n) => sumar(w.id, n)}
               onabrir={() => (workerAbiertoId = w.id)}
             />
+          </li>
+        {/each}
+      </ul>
+    {/if}
+
+    {#if modo === "edicion" && auxiliares.length > 0}
+      <ul class="lista">
+        <li class="aux-cab">{i18n.t("auxiliar.seccion")}</li>
+        {#each auxiliares as a (a.worker.id)}
+          <li>
+            <button
+              type="button"
+              class="aux-fila"
+              onclick={() => (auxAbiertoId = a.worker.id)}
+            >
+              <span class="aux-nombre">{a.worker.name}</span>
+              <span class="aux-sub">{resumenAux(a)}</span>
+            </button>
           </li>
         {/each}
       </ul>
@@ -308,6 +385,18 @@
       grupos={trabajaPorGrupos ? grupos : undefined}
       onclose={() => (enviarAsisAbierto = false)}
     />
+  {/if}
+
+  {#if auxAbierto}
+    {@const aa = auxAbierto}
+    {#key aa.worker.id}
+      <AuxiliarSheet
+        aux={aa}
+        soloLectura={modo === "consulta"}
+        onsave={(datos) => actualizarAuxiliar(aa.worker.id, datos)}
+        onclose={() => (auxAbiertoId = null)}
+      />
+    {/key}
   {/if}
 
   {#if workerAbierto}

@@ -1,4 +1,5 @@
 import type {
+  AuxiliarDeJornada,
   Entry,
   GrupoDeJornada,
   Idioma,
@@ -33,6 +34,14 @@ export interface CambiosWorker {
   alias: string;
   language: Idioma;
   activo: 0 | 1;
+}
+
+/** Un auxiliar de la jornada con su ficha y su trabajo de hoy. */
+export interface AuxiliarConTrabajo {
+  worker: Worker;
+  tarea: string;
+  /** `null` = sin horas. */
+  horas: number | null;
 }
 
 /**
@@ -157,6 +166,26 @@ class JornadaStore {
     return this.grupos.length > 0;
   }
 
+  /** Trabajadores presentes que recolectan (excluye auxiliares). */
+  get recolectores(): Worker[] {
+    return this.workers.filter((w) => w.funcion !== "auxiliar");
+  }
+
+  /** Auxiliares presentes, con su tarea/horas de hoy. */
+  get auxiliares(): AuxiliarConTrabajo[] {
+    const trabajo = this.shift?.auxiliares ?? [];
+    return this.workers
+      .filter((w) => w.funcion === "auxiliar")
+      .map((w) => {
+        const a = trabajo.find((x) => x.workerId === w.id);
+        return {
+          worker: w,
+          tarea: a?.tarea ?? "",
+          horas: a?.horas ?? null,
+        };
+      });
+  }
+
   conteoDe(id: string): number {
     return this.conteos[id] ?? 0;
   }
@@ -242,6 +271,41 @@ class JornadaStore {
     } catch (e) {
       this.workers[i] = actual;
       console.error("[jornada] no se pudo guardar el trabajador", e);
+      throw e;
+    }
+  }
+
+  /**
+   * Guarda la tarea/horas de un auxiliar para ESTA jornada. Si ambos quedan
+   * vacíos, se elimina su entrada de `Shift.auxiliares`.
+   */
+  async actualizarAuxiliar(
+    workerId: string,
+    datos: { tarea: string; horas: number | null },
+  ): Promise<void> {
+    if (!this.shift) return;
+    const base = $state.snapshot(this.shift) as Shift;
+    const anterior = base.auxiliares;
+
+    const tarea = datos.tarea.trim();
+    const horas =
+      datos.horas != null && Number.isFinite(datos.horas) && datos.horas > 0
+        ? datos.horas
+        : undefined;
+    const otros = (base.auxiliares ?? []).filter(
+      (a) => a.workerId !== workerId,
+    );
+    const entrada: AuxiliarDeJornada = { workerId, tarea: tarea || undefined, horas };
+    const auxiliares =
+      entrada.tarea || entrada.horas != null ? [...otros, entrada] : otros;
+
+    const actualizado: Shift = { ...base, auxiliares, updatedAt: Date.now() };
+    this.shift = actualizado;
+    try {
+      await guardarShift(actualizado);
+    } catch (e) {
+      this.shift = { ...actualizado, auxiliares: anterior };
+      console.error("[jornada] no se pudo guardar el auxiliar", e);
       throw e;
     }
   }

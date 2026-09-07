@@ -41,6 +41,23 @@ describe("textoAsistenciaParte", () => {
     expect(t).toContain("· Grupo A (1): Ana");
   });
 
+  it("lista los auxiliares en su propia sección", () => {
+    const t = textoAsistenciaParte({
+      cuadrilla: "C1",
+      fecha: "2026-09-07",
+      producto: "Naranja",
+      unidad: "Caja",
+      nombres: ["Ana", "Beto"],
+      auxiliares: ["Zoe", "Marco"],
+    });
+    expect(t).toContain("Trabajadores (2):");
+    expect(t).toContain("Auxiliares (2):");
+    const lineas = t.split("\n");
+    expect(lineas).toContain("Auxiliares (2):");
+    expect(lineas).toContain("1. Marco");
+    expect(lineas).toContain("2. Zoe");
+  });
+
   it("omite la línea de producto si no hay datos", () => {
     const t = textoAsistenciaParte({
       cuadrilla: "C1",
