@@ -61,6 +61,20 @@ class GestionStore {
     await this.#trasCambio();
   }
 
+  /**
+   * Alta en bloque de trabajadores (importacion desde Excel/CSV). Cada uno
+   * pasa por `persistir`, igual que un alta manual: se encola en `pendingOps`.
+   */
+  async importarWorkers(workers: Worker[]): Promise<void> {
+    for (const w of workers) {
+      await persistir("worker", tablaPorEntidad("worker"), {
+        ...w,
+        updatedAt: Date.now(),
+      });
+    }
+    await this.#trasCambio();
+  }
+
   async eliminar(
     tipo: TipoGestion,
     record: RegistroSincronizable,

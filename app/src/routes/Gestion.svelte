@@ -18,12 +18,15 @@
   import ProductForm from "../lib/components/gestion/ProductForm.svelte";
   import UnitForm from "../lib/components/gestion/UnitForm.svelte";
   import RateForm from "../lib/components/gestion/RateForm.svelte";
+  import ImportWorkersSheet from "../lib/components/gestion/ImportWorkersSheet.svelte";
 
   type Tab = "crews" | "workers" | "groups" | "products" | "units" | "rates";
   type Registro = Crew | Worker | Group | Product | UnitType | Rate;
 
   let tab = $state<Tab>("workers");
   let editando = $state<{ tab: Tab; registro: Registro | null } | null>(null);
+  let importAbierto = $state(false);
+  let mensaje = $state<string | null>(null);
 
   onMount(() => gestion.cargar());
 
@@ -152,11 +155,37 @@
     {/if}
   </div>
 
+  {#if mensaje}
+    <button
+      type="button"
+      class="gestion-aviso"
+      onclick={() => (mensaje = null)}
+    >
+      {mensaje}
+    </button>
+  {/if}
+
   <div class="acciones">
+    {#if tab === "workers"}
+      <button
+        type="button"
+        class="btn-secundario"
+        onclick={() => (importAbierto = true)}
+      >
+        {i18n.t("gestion.importar_trabajadores")}
+      </button>
+    {/if}
     <button type="button" class="btn-primario btn-anadir" onclick={nuevo}>
       {i18n.t("gestion.anadir")}
     </button>
   </div>
+
+  {#if importAbierto}
+    <ImportWorkersSheet
+      onclose={() => (importAbierto = false)}
+      onhecho={(n) => (mensaje = i18n.t("gestion.import_hecho", { n }))}
+    />
+  {/if}
 
   {#if editando}
     {@const e = editando}

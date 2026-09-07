@@ -232,6 +232,20 @@ Perfil de usuario bajo → simplificar. Plan en 4 fases:
   (Historial). No se pidió ni se implementó en Liquidación (vista agregada por
   trabajador/periodo, sin hueco natural para una firma por parte individual). Firmar es
   opcional a propósito — un parte se puede cerrar sin firma sin fricción extra.
+- **Renombrado de menús + import de trabajadores — hecho (2026-09-07).** En el menú,
+  "Registrar" pasa a **"Iniciar parte"** y "Gestión" a **"Datos"** (claves i18n
+  `menu.registrar` / `menu.gestion` y `gestion.titulo`; solo cambian los textos, no las
+  vistas ni las rutas `#/registro` `#/gestion`). Import de trabajadores desde Excel/CSV:
+  `app/src/lib/import/workers.ts` (`filasDeArchivo` carga SheetJS bajo demanda →
+  `sheet_to_json` matriz; `construirWorkers` puro: mapea cabeceras sin acentos/mayúsculas
+  —Nombre/Alias/Cuadrilla/Idioma/Transporte/QR/Activo—, valida fila a fila, dedup por
+  `crewId::alias` contra los existentes y dentro del propio archivo). UI:
+  `gestion/ImportWorkersSheet.svelte` (botón "Importar de Excel/CSV" en la pestaña
+  Trabajadores → hoja con `<input type=file>` oculto → previsualización de válidos +
+  errores por fila → confirmar). `gestion.importarWorkers()` persiste cada uno vía
+  `persistir` (se encola en `pendingOps` como un alta manual). Archivo de ejemplo en
+  `ejemplos/trabajadores-ejemplo.xlsx`. Solo Nombre es obligatorio; sin columna Cuadrilla
+  se usa la única que haya (error si hay varias).
 
 ### Backlog sin planificar
 
@@ -241,8 +255,9 @@ Perfil de usuario bajo → simplificar. Plan en 4 fases:
   darlos de alta y reflejar su trabajo/pago de forma distinta al destajo por unidad
   (¿jornal fijo? ¿por horas? ¿tarifa aparte?) — pendiente de definir el modelo con el
   usuario.
-- **Cambios en nombres de menús y estructura de navegación.** El usuario los explicará
-  más adelante; de momento solo anotado que van a cambiar.
+- **Estructura de navegación.** Primer lote de renombrados de menús ya aplicado (ver
+  arriba: "Iniciar parte", "Datos"). Quedan pendientes más cambios de nombres/estructura
+  que el usuario irá explicando.
 - **Aviso al finalizar si hay recolectores a 0.** Al cerrar una jornada, si algún
   recolector presente no tiene ninguna anotación, mostrar un aviso ("Fulano no tiene
   anotaciones, ¿finalizar con 0?") antes de cerrar, con opción de seguir de todas formas
