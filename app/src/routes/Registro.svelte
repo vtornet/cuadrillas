@@ -68,8 +68,8 @@
     if (grupo) await jornada.sumar(grupo.groupId, 1);
   }
 
-  async function finalizar(firma?: string): Promise<void> {
-    await jornada.cerrarActual(firma);
+  async function finalizar(firma?: string, firmante?: string): Promise<void> {
+    await jornada.cerrarActual(firma, firmante);
     firmaAbierta = false;
   }
 </script>
@@ -207,7 +207,7 @@
 
     {#if firmaAbierta}
       <FirmaSheet
-        onfinalizar={(firma) => finalizar(firma)}
+        onfinalizar={(firma, firmante) => finalizar(firma, firmante)}
         onclose={() => (firmaAbierta = false)}
       />
     {/if}

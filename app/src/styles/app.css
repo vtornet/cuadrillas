@@ -549,6 +549,48 @@ button:disabled {
   width: 100%;
 }
 
+.rgpd-zona {
+  margin-top: 22px;
+  padding-top: 14px;
+  border-top: 2px solid var(--c-borde);
+}
+
+.rgpd-zona h3 {
+  margin: 0 0 10px;
+  font-size: 15px;
+}
+
+.rgpd-zona .btn-ancho {
+  margin-top: 8px;
+}
+
+.rgpd-aviso {
+  margin: 12px 0 8px;
+  font-size: 14px;
+  color: var(--c-texto-suave);
+}
+
+.rgpd-acciones {
+  display: flex;
+  gap: 8px;
+}
+
+.rgpd-acciones button {
+  flex: 1;
+}
+
+.rgpd-ok {
+  margin: 8px 0 0;
+  color: var(--c-exito, #1a7f37);
+  font-size: 14px;
+}
+
+.rgpd-error {
+  margin: 8px 0 0;
+  color: var(--c-peligro, #b3261e);
+  font-size: 14px;
+}
+
 /* ---- Estadisticas ---- */
 .stat-cards {
   display: grid;
@@ -1011,6 +1053,17 @@ button:disabled {
   margin: 0 0 12px;
 }
 
+.firma-firmante {
+  margin: 4px 0 0;
+  font-weight: 600;
+}
+
+.firma-perfil-hint {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--c-texto-suave);
+}
+
 .lista-simple {
   list-style: none;
   margin: 0;
@@ -1255,6 +1308,17 @@ button:disabled {
 .login-demo {
   width: 100%;
   margin-top: 24px;
+}
+
+.link-privacidad {
+  margin-top: 18px;
+  border: none;
+  background: none;
+  min-height: auto;
+  padding: 4px;
+  color: var(--c-texto-suave);
+  text-decoration: underline;
+  font-size: 14px;
 }
 
 .login-ok {

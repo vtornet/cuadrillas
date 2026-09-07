@@ -4,10 +4,12 @@
   import { i18n } from "../lib/i18n/i18n.svelte";
   import { auth } from "../lib/auth/auth.svelte";
   import { syncStatus } from "../lib/sync/status.svelte";
+  import { router } from "../lib/stores/router.svelte";
   import { HAY_BACKEND } from "../lib/config";
   import { obtenerOrganizacion } from "../lib/db/repositories/organizations";
   import { irACheckout, irAPortal, type PlanPago } from "../lib/billing";
   import AppBar from "../lib/components/AppBar.svelte";
+  import PerfilForm from "../lib/components/PerfilForm.svelte";
 
   // --- Login (estado anonimo) ---
   let email = $state("");
@@ -153,6 +155,10 @@
       <button type="button" class="btn-secundario login-demo" onclick={() => auth.entrarModoDemo()}>
         {i18n.t("cuenta.modo_demo")}
       </button>
+
+      <button type="button" class="link-privacidad" onclick={() => router.ir("privacidad")}>
+        {i18n.t("privacidad.enlace")}
+      </button>
     </div>
   </div>
 {:else}
@@ -172,6 +178,11 @@
             </p>
           {/if}
         </div>
+      </section>
+
+      <section class="bloque">
+        <h2>{i18n.t("perfil.titulo")}</h2>
+        <PerfilForm />
       </section>
 
       {#if HAY_BACKEND && auth.estado === "autenticado"}

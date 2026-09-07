@@ -23,7 +23,8 @@
     "gestion": "Datos",
     "estadisticas": "Estadisticas",
     "liquidacion": "Liquidacion",
-    "cuenta": "Cuenta y sincronizacion"
+    "cuenta": "Cuenta y sincronizacion",
+    "privacidad": "Privacidad"
   },
   "liq": {
     "titulo": "Liquidacion",
@@ -213,7 +214,21 @@
     "anular": "Anular",
     "cambios_sin_guardar": "Tienes cambios sin guardar.",
     "seguir_editando": "Seguir editando",
-    "cerrar_sin_guardar": "Cerrar sin guardar"
+    "cerrar_sin_guardar": "Cerrar sin guardar",
+    "rgpd_titulo": "Datos personales (RGPD)",
+    "rgpd_exportar": "Exportar sus datos",
+    "rgpd_generando": "Generando...",
+    "rgpd_exportado": "Informe generado",
+    "rgpd_export_error": "No se pudo generar el informe",
+    "rgpd_anonimizar": "Anonimizar (borrar datos personales)",
+    "rgpd_anonimizar_aviso": "Se borraran el nombre, alias, codigo QR y transporte de este trabajador. Sus partes y anotaciones se conservan, pero figurara como \"Trabajador eliminado\". No se puede deshacer.",
+    "rgpd_confirmar": "Anonimizar",
+    "rgpd_generico": "Trabajador eliminado"
+  },
+  "privacidad": {
+    "titulo": "Politica de privacidad",
+    "volver": "Volver",
+    "enlace": "Politica de privacidad"
   },
   "grupo": {
     "ficha": "Ficha del grupo",
@@ -225,7 +240,20 @@
     "ayuda": "Firma en el recuadro para confirmar el cierre del parte (opcional).",
     "borrar": "Borrar firma",
     "finalizar_sin_firma": "Finalizar sin firmar",
-    "finalizar_con_firma": "Firmar y finalizar"
+    "finalizar_con_firma": "Firmar y finalizar",
+    "firmante": "Firma: {nombre}",
+    "tu_nombre": "Tu nombre",
+    "guardar_perfil": "Guardalo en Cuenta > Perfil para no escribirlo cada vez."
+  },
+  "perfil": {
+    "titulo": "Perfil",
+    "empresa": "Empresa o explotacion",
+    "nombre": "Tu nombre",
+    "telefono": "Telefono",
+    "nif": "NIF / CIF",
+    "guardar": "Guardar perfil",
+    "guardando": "Guardando...",
+    "guardado": "Perfil guardado"
   },
   "qr": {
     "apunta": "Apunta al codigo del trabajador",

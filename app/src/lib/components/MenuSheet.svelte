@@ -11,6 +11,7 @@
     { v: "liquidacion", label: i18n.t("menu.liquidacion") },
     { v: "gestion", label: i18n.t("menu.gestion") },
     { v: "cuenta", label: i18n.t("menu.cuenta") },
+    { v: "privacidad", label: i18n.t("menu.privacidad") },
   ];
 
   function onKey(e: KeyboardEvent): void {

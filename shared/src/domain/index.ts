@@ -3,3 +3,4 @@ export * from "./rates";
 export * from "./merge";
 export * from "./stats";
 export * from "./settlement";
+export * from "./rgpd";

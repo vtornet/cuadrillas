@@ -53,6 +53,15 @@ export async function guardarShift(shift: Shift): Promise<void> {
   await persistir("shift", db.shifts, shift);
 }
 
+/** Todas las jornadas (no borradas) de la organizacion. Sin ordenar. */
+export async function shiftsDeOrg(organizationId: string): Promise<Shift[]> {
+  const todos = await db.shifts
+    .where("organizationId")
+    .equals(organizationId)
+    .toArray();
+  return todos.filter((s) => s.deleted === 0);
+}
+
 /** Todas las jornadas (no borradas) de unas cuadrillas, mas recientes primero. */
 export async function shiftsDeCuadrillas(crewIds: string[]): Promise<Shift[]> {
   const todos = await db.shifts.where("crewId").anyOf(crewIds).toArray();

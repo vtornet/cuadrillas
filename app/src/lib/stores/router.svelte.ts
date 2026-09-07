@@ -4,7 +4,8 @@ export type Vista =
   | "estadisticas"
   | "liquidacion"
   | "gestion"
-  | "cuenta";
+  | "cuenta"
+  | "privacidad";
 
 const VISTAS: Vista[] = [
   "registro",
@@ -13,6 +14,7 @@ const VISTAS: Vista[] = [
   "liquidacion",
   "gestion",
   "cuenta",
+  "privacidad",
 ];
 
 /**

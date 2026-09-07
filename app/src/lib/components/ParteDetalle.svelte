@@ -270,9 +270,16 @@
       </ul>
     {/if}
 
-    {#if shift?.firma}
+    {#if shift && (shift.firma || shift.firmante)}
       <h3>{i18n.t("firma.titulo")}</h3>
-      <img class="firma-vista" src={shift.firma} alt={i18n.t("firma.titulo")} />
+      {#if shift.firma}
+        <img class="firma-vista" src={shift.firma} alt={i18n.t("firma.titulo")} />
+      {/if}
+      {#if shift.firmante}
+        <p class="firma-firmante">
+          {i18n.t("firma.firmante", { nombre: shift.firmante })}
+        </p>
+      {/if}
     {/if}
 
     <button type="button" class="btn-secundario btn-ancho" onclick={onclose}>

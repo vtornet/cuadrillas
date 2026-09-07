@@ -7,6 +7,7 @@ import type {
   UnitType,
   Worker,
 } from "@cuadrilla/shared";
+import { anonimizarWorker as anonimizarWorkerPuro } from "@cuadrilla/shared/domain";
 import { persistir } from "../db/repositories/base";
 import { tablaPorEntidad } from "../db/tablas";
 import { crewsDeOrg } from "../db/repositories/crews";
@@ -72,6 +73,20 @@ class GestionStore {
         updatedAt: Date.now(),
       });
     }
+    await this.#trasCambio();
+  }
+
+  /**
+   * RGPD (derecho de supresión): borra los datos personales del trabajador
+   * conservando el registro (para que el histórico siga resolviendo el nombre
+   * como genérico). No es una lápida. `nombreGenerico` llega ya traducido.
+   */
+  async anonimizarWorker(worker: Worker, nombreGenerico: string): Promise<void> {
+    await persistir(
+      "worker",
+      tablaPorEntidad("worker"),
+      anonimizarWorkerPuro(worker, nombreGenerico),
+    );
     await this.#trasCambio();
   }
 

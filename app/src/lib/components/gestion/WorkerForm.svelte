@@ -6,6 +6,9 @@
   import { sesion } from "../../stores/sesion.svelte";
   import { gestion } from "../../stores/gestion.svelte";
   import { centimosATexto, eurosACentimos } from "../../money";
+  import { generarInformeTrabajador } from "../../rgpd";
+  import { informeABlob } from "../../export/rgpd";
+  import { compartirArchivo, slug } from "../../export/compartir";
   import EditSheet from "../EditSheet.svelte";
 
   let { registro, onclose }: { registro: Worker | null; onclose: () => void } =
@@ -66,6 +69,39 @@
       !!crewId &&
       (!pagaTransporte || transporteCentimos > 0),
   );
+
+  // --- RGPD ---
+  let rgpdEstado = $state<"idle" | "generando" | "ok" | "error">("idle");
+  let confirmandoAnon = $state(false);
+  let anonimizando = $state(false);
+
+  async function exportarDatos(): Promise<void> {
+    if (!reg || rgpdEstado === "generando") return;
+    rgpdEstado = "generando";
+    try {
+      const informe = await generarInformeTrabajador(reg);
+      await compartirArchivo(
+        informeABlob(informe),
+        `datos-${slug(reg.name)}.txt`,
+      );
+      rgpdEstado = "ok";
+    } catch (e) {
+      console.error("[rgpd] export", e);
+      rgpdEstado = "error";
+    }
+  }
+
+  async function anonimizar(): Promise<void> {
+    if (!reg || anonimizando) return;
+    anonimizando = true;
+    try {
+      await gestion.anonimizarWorker(reg, i18n.t("worker.rgpd_generico"));
+      onclose();
+    } catch (e) {
+      console.error("[rgpd] anonimizar", e);
+      anonimizando = false;
+    }
+  }
 
   function construir(): Worker {
     return {
@@ -144,4 +180,54 @@
     <input type="checkbox" bind:checked={activo} />
     <span>{i18n.t("worker.activo")}</span>
   </label>
+
+  {#if reg}
+    <div class="rgpd-zona">
+      <h3>{i18n.t("worker.rgpd_titulo")}</h3>
+      <button
+        type="button"
+        class="btn-secundario btn-ancho"
+        disabled={rgpdEstado === "generando"}
+        onclick={exportarDatos}
+      >
+        {rgpdEstado === "generando"
+          ? i18n.t("worker.rgpd_generando")
+          : i18n.t("worker.rgpd_exportar")}
+      </button>
+      {#if rgpdEstado === "ok"}
+        <p class="rgpd-ok">{i18n.t("worker.rgpd_exportado")}</p>
+      {:else if rgpdEstado === "error"}
+        <p class="rgpd-error">{i18n.t("worker.rgpd_export_error")}</p>
+      {/if}
+
+      {#if confirmandoAnon}
+        <p class="rgpd-aviso">{i18n.t("worker.rgpd_anonimizar_aviso")}</p>
+        <div class="rgpd-acciones">
+          <button
+            type="button"
+            class="btn-secundario"
+            onclick={() => (confirmandoAnon = false)}
+          >
+            {i18n.t("pad.cancelar")}
+          </button>
+          <button
+            type="button"
+            class="btn-deshacer"
+            disabled={anonimizando}
+            onclick={anonimizar}
+          >
+            {i18n.t("worker.rgpd_confirmar")}
+          </button>
+        </div>
+      {:else}
+        <button
+          type="button"
+          class="btn-deshacer btn-ancho"
+          onclick={() => (confirmandoAnon = true)}
+        >
+          {i18n.t("worker.rgpd_anonimizar")}
+        </button>
+      {/if}
+    </div>
+  {/if}
 </EditSheet>

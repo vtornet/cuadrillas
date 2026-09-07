@@ -108,6 +108,22 @@ describe("jornada store", () => {
     expect(guardado?.name).toBe("Ana Ruiz");
     expect(guardado?.language).toBe("en");
   });
+
+  it("cerrarActual guarda firma y firmante en el parte", async () => {
+    await jornada.cerrarActual("data:image/png;base64,AAA", "  Paco Jefe  ");
+
+    const guardado = await db.shifts.get("s1");
+    expect(guardado?.estado).toBe("closed");
+    expect(guardado?.firma).toBe("data:image/png;base64,AAA");
+    expect(guardado?.firmante).toBe("Paco Jefe");
+  });
+
+  it("cerrarActual sin firmante deja el campo indefinido", async () => {
+    await jornada.cerrarActual();
+    const guardado = await db.shifts.get("s1");
+    expect(guardado?.estado).toBe("closed");
+    expect(guardado?.firmante).toBeUndefined();
+  });
 });
 
 const WORKER2: Worker = { ...WORKER, id: "w2", alias: "ANA2" };

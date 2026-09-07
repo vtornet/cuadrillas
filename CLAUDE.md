@@ -148,8 +148,7 @@ Sin `STRIPE_SECRET_KEY` los endpoints de pago responden 503 y la UI de plan no a
 ## Estado
 
 MVP completo (8 pasos). Fuera del MVP, preparado pero no implementado: panel
-multi-cuadrilla, vista del trabajador, NFC, i18n completo, fotos de albaranes, pantalla
-RGPD (política de privacidad + export/borrado de datos de un trabajador).
+multi-cuadrilla, vista del trabajador, NFC, i18n completo, fotos de albaranes.
 
 ### Despliegue (en marcha, 2026-09-05)
 
@@ -171,8 +170,9 @@ organización pasa a `plan: "foreman"` con `subscriptionStatus: "active"`. Pendi
 repetir con claves **live** cuando se quiera cobrar de verdad (clave secreta live,
 price ids live que ya existen en Stripe, webhook nuevo apuntando a producción). Con
 esto, **las 4 fases de `DEPLOY.md` están completas en modo test/demo** — el pendiente
-real antes de usuarios de pago es pasar Stripe a modo live, y antes de usuarios reales
-en general, la pantalla RGPD (ver más abajo).
+real antes de usuarios de pago es pasar Stripe a modo live. La pantalla RGPD ya está
+implementada (2026-09-07, ver más abajo); falta solo rellenar en la política los datos
+concretos de Appstracta (dirección, CIF, correo de contacto).
 
 ### Transporte (hecho)
 
@@ -247,6 +247,55 @@ Perfil de usuario bajo → simplificar. Plan en 4 fases:
   `ejemplos/trabajadores-ejemplo.xlsx`. Solo Nombre es obligatorio; sin columna Cuadrilla
   se usa la única que haya (error si hay varias).
 
+### Prioridades (orden sugerido, 2026-09-07)
+
+Los detalles de cada punto están en **Backlog sin planificar** justo debajo.
+
+**Antes de dar de alta usuarios reales**
+
+1. **Pantalla RGPD** (privacidad + export/borrado de datos de un trabajador). **HECHO
+   (2026-09-07)** salvo rellenar los datos de Appstracta en la política.
+2. **Perfil del jefe de cuadrilla** (nombre, empresa, NIF, teléfono). **HECHO
+   (2026-09-07).** Sección "Perfil" en Cuenta.
+   - 2b. **Nombre del jefe junto a la firma** (`Shift.firmante?`). **HECHO (2026-09-07).**
+
+**Pivote de producto: el jefe de cuadrilla no maneja economía** (decidido 2026-09-07)
+
+3. **Eliminar la sección Liquidación** (vista, entrada de menú, exports CSV/XLSX de
+   liquidación). La lógica de dominio `settlement.ts` se **conserva** para un futuro rol
+   gestor/owner; solo desaparece del cliente del jefe.
+4. **Tabla mensual de asistencia** — nueva vista que ocupa el hueco de Liquidación:
+   trabajadores en filas × días del mes en columnas, celdas coloreadas por asistencia.
+5. **Enviar asistencia desde un parte** — una vez creado un parte, opción de generar la
+   lista de trabajadores incluidos y enviarla (WhatsApp / email / compartir).
+
+**Modelo de datos (base para el resto)** — necesitan conversación de modelado con el usuario
+
+6. **Producto → separar "producto" y "variedad".** Bloquea la cabecera del parte; toca
+   `ComenzarJornadaSheet`, `stats.ts`, `settlement.ts`, exports.
+7. **Auxiliares** (trabajadores que no cobran a destajo). Bloquea "total auxiliares" y el
+   reparto en liquidación.
+8. **Cabecera del parte** (fecha, finca, producto, variedad, totales). Depende de 6, 7 y
+   de un modelo nuevo de finca/variedad.
+
+**Mejoras rápidas e independientes**
+
+9. **Aviso al finalizar si hay recolectores a 0** (`FirmaSheet` / `jornada.cerrarActual`).
+10. **Estadísticas por trabajador: integrar anotaciones de grupo** (gap conocido Fase D).
+
+**Bloqueadas esperando decisión del usuario**
+
+11. **Estructura de navegación** (más renombrados de menús / cambios de estructura).
+
+**Cuando toque cobrar de verdad**
+
+12. **Pasar Stripe a modo live** (ver `DEPLOY.md`).
+
+**Fuera de MVP (preparado, no implementado)**
+
+13. Panel multi-cuadrilla · vista del trabajador · NFC · i18n completo (ro/ar/fr) · fotos
+    de albaranes.
+
 ### Backlog sin planificar
 
 - **Auxiliares.** Además de los recolectores (que cobran a destajo por unidad), en muchas
@@ -258,21 +307,48 @@ Perfil de usuario bajo → simplificar. Plan en 4 fases:
 - **Estructura de navegación.** Primer lote de renombrados de menús ya aplicado (ver
   arriba: "Iniciar parte", "Datos"). Quedan pendientes más cambios de nombres/estructura
   que el usuario irá explicando.
-- **Perfil del jefe de cuadrilla + nombre en la firma del parte.** Hoy el usuario
-  autenticado solo tiene `email` / `role` / `organizationId` (`shared/src/types/user.ts`,
-  `api/src/models/auth.ts`); la `Organization` tiene `name` pero no se pide en ningún
-  sitio, y `Shift.firma` guarda solo el PNG, sin saber de quién es. Pendiente:
-  1. Nuevo apartado **"Perfil"** (¿pestaña en "Datos", o dentro de "Cuenta"?) donde el
-     jefe introduce su **nombre**, el **nombre de la empresa/explotación** y lo que haga
-     falta (¿teléfono? ¿NIF para las liquidaciones?). El nombre de empresa puede mapear a
-     `Organization.name` (ya es entidad sincronizada); el nombre de la persona necesita un
-     campo nuevo en `User` (y su `UserDoc`) — o una entidad de perfil aparte.
-  2. Al finalizar un parte, mostrar y guardar el **nombre del jefe junto a la firma**
-     (p. ej. `Shift.firmante?: string` poblado desde el perfil en `jornada.cerrarActual`),
-     y pintarlo bajo la firma en `ParteDetalle.svelte`. Si el perfil no tiene nombre aún,
-     `FirmaSheet` podría pedirlo la primera vez.
-  3. Encaja con el pendiente de RGPD (identificar quién firma) y con los exports de
-     liquidación (cabecera con empresa + responsable).
+- **Eliminar la sección Liquidación (2026-09-07).** El jefe de cuadrilla **no maneja
+  datos económicos**. Quitar del cliente: vista `app/src/routes/Liquidacion.svelte`, la
+  entrada `"liquidacion"` en `router.svelte.ts` (`Vista` + `VISTAS`) y en `MenuSheet`,
+  los exports de liquidación (`app/src/lib/export/csv.ts` y `xlsx.ts` en la parte de
+  liquidación, `compartir.ts` se reutiliza). La lógica de dominio `shared/src/domain/
+  settlement.ts` y sus tests **se conservan** (sirven para un futuro rol gestor/owner o
+  un panel de empresa). Revisar que `Estadisticas.svelte` no muestre importes (hoy usa
+  `stats.ts`, que es de unidades/horas, no dinero — confirmar). `Rate`/tarifas: decidir
+  si el jefe sigue viéndolas en "Datos" (probablemente sí, para que las unidades tengan
+  sentido) o también se ocultan.
+- **Tabla mensual de asistencia (2026-09-07).** Nueva vista (ocupa el hueco que deja
+  Liquidación en el menú). Tabla: **filas = trabajadores**, **columnas = días del mes**,
+  cada celda coloreada según si ese trabajador tuvo asistencia ese día. Fuente:
+  `Shift.attendeeIds` + `Shift.fecha` de los partes del mes (± registros `Entry` si se
+  quiere distinguir "presente pero sin anotaciones"). Selector de mes. Pensar export
+  (XLSX/CSV) y cómo se ve en móvil (scroll horizontal con primera columna fija). Sin
+  datos económicos.
+- **Enviar asistencia desde un parte (2026-09-07).** Una vez creado un parte (en
+  `Registro.svelte` con parte activo, y/o en `ParteDetalle.svelte`), botón "Enviar
+  asistencia" → genera una lista legible de los trabajadores incluidos en ese parte
+  (nombre, y quizá cuadrilla/grupo y fecha) → opción de enviar por **WhatsApp**
+  (`https://wa.me/?text=...`), **email** (`mailto:?body=...`) o compartir del sistema
+  (Web Share API, ya usada en `app/src/lib/export/compartir.ts`). Texto plano; sin
+  importes.
+- **Perfil del jefe de cuadrilla + nombre en la firma — hecho (2026-09-07).**
+  - **Modelo**: el perfil vive en el documento `Organization` (ya es entidad
+    sincronizada). `Organization` ahora `extends RegistroSincronizable` (lleva
+    `organizationId` = su propio `id`, como ya hacía el servidor; el seed también). Campos
+    nuevos: `contactName` (nombre de la persona), `contactPhone`, `taxId`; `name` = empresa
+    / explotación. Se sincroniza con la maquinaria normal (`persistir("organization", …)`
+    → `pendingOps`; el servidor guarda campos arbitrarios, `strict:false`). **No** se tocó
+    `User` ni se creó endpoint nuevo.
+  - **UI**: `perfil.svelte.ts` (store: `cargar`, `guardar`, getters `empresa` /
+    `nombreJefe`); `PerfilForm.svelte` en una sección "Perfil" de `Cuenta.svelte` (visible
+    en demo y autenticado).
+  - **Firma**: `Shift.firmante?: string`. `jornada.cerrarActual(firma?, firmante?)`.
+    `FirmaSheet.svelte` muestra "Firma: {nombre}" si el perfil lo tiene; si no, un campo
+    de texto para escribirlo esa vez (con aviso de guardarlo en Cuenta › Perfil).
+    `ParteDetalle.svelte` lo pinta bajo la firma. Editar un parte cerrado no lo cambia.
+  - Tests: `app/tests/perfil.test.ts`, casos nuevos en `app/tests/jornada.test.ts`.
+  - **Pendiente**: usar `contactName`/`name`/`taxId` en las cabeceras de exports (va con
+    "Cabecera del parte") y en el informe RGPD si se quiere.
 - **Cabecera del parte.** Cada parte debería mostrar (en pantalla y en el detalle /
   exports) una cabecera con: **fecha, finca, producto, variedad, total recolectores,
   total auxiliares**, etc. Estado actual (`shared/src/types/shift.ts`): `Shift` ya tiene
@@ -297,8 +373,29 @@ Perfil de usuario bajo → simplificar. Plan en 4 fases:
   recolector presente no tiene ninguna anotación, mostrar un aviso ("Fulano no tiene
   anotaciones, ¿finalizar con 0?") antes de cerrar, con opción de seguir de todas formas
   o volver a la lista. Encaja en el flujo de `FirmaSheet.svelte` / `jornada.cerrarActual`.
-- Pantalla RGPD (privacidad + export/borrado de datos de un trabajador) — recomendada
-  antes de dar de alta usuarios reales.
+- **Pantalla RGPD — hecho (2026-09-07).**
+  - **Borrado = anonimizar** (no borrado físico). `shared/src/domain/rgpd.ts`
+    → `anonimizarWorker(worker, nombreGenerico)`: conserva el `Worker` (`deleted: 0`)
+    para que el histórico siga resolviéndolo, pone `name` genérico, `alias`
+    `ELIMINADO-<id8>` (`aliasAnonimo`), borra `qrCode`/`transporteCentimos`, `language: "es"`,
+    `activo: 0`. Los `Entry` solo guardan `workerId`, nada más que raspar.
+    `gestion.anonimizarWorker()` lo persiste (encolado como update normal).
+  - **Export = hoja legible** (`.txt`), **sin importes de destajo**. Lógica pura
+    `informeTrabajador(worker, shifts, entries, resolutores)` en `shared/src/domain/rgpd.ts`;
+    glue `app/src/lib/rgpd.ts` (`generarInformeTrabajador`, carga shifts/entries de
+    IndexedDB + nombres del store `gestion`); render `app/src/lib/export/rgpd.ts`
+    (`informeATexto` / `informeABlob`) → `compartirArchivo`. Los partes por grupos se
+    listan como día presente sin desglose individual (mismo gap que Estadísticas).
+  - **Ubicación**: (a) sección "Datos personales (RGPD)" en `WorkerForm.svelte` (solo al
+    editar un trabajador existente) con Exportar / Anonimizar (confirmación inline);
+    (b) pantalla **"Privacidad"** (`app/src/routes/Privacidad.svelte`, `router` vista
+    `"privacidad"` — renderizada también en estado anónimo en `App.svelte`, entrada en
+    `MenuSheet` y enlace en el login de `Cuenta.svelte`).
+  - **Política de privacidad**: responsable = **Appstracta**. Texto en `Privacidad.svelte`
+    (no i18n, es un documento). **Pendiente rellenar** los marcadores `[dirección postal]`,
+    `[CIF/NIF]`, `[correo de contacto]` (aparece 2 veces). Encargados citados: MongoDB
+    Atlas, Railway, Cloudflare, Resend, Stripe.
+  - Tests: `shared/tests/rgpd.test.ts`, `app/tests/rgpd.test.ts`.
 - Estadísticas por trabajador: integrar las anotaciones de grupo (hoy se ignoran, gap
   conocido de la Fase D).
 - Pasar Stripe a modo live cuando se quiera cobrar de verdad (ver `DEPLOY.md`).

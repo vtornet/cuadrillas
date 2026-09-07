@@ -39,4 +39,10 @@ export interface Shift extends RegistroSincronizable {
    * cerrar la jornada; editar un parte cerrado despues no la modifica.
    */
   firma?: string;
+  /**
+   * Nombre de quien firma/cierra el parte. Se copia del perfil (o se escribe en
+   * `FirmaSheet` la primera vez) al cerrar la jornada; editar un parte cerrado
+   * después no lo modifica.
+   */
+  firmante?: string;
 }

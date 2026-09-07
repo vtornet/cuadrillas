@@ -1,20 +1,25 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { i18n } from "../i18n/i18n.svelte";
+  import { perfil } from "../stores/perfil.svelte";
 
   /**
    * Hoja final al cerrar un parte: aviso de que no se podra seguir
    * registrando + firma opcional (canvas). `onfinalizar` recibe la firma en
    * PNG (data URL) si se ha dibujado algo y se elige firmar, o `undefined`
-   * si se finaliza sin firmar.
+   * si se finaliza sin firmar, y el nombre de quien cierra (`firmante`).
    */
   let {
     onfinalizar,
     onclose,
   }: {
-    onfinalizar: (firma?: string) => Promise<void>;
+    onfinalizar: (firma?: string, firmante?: string) => Promise<void>;
     onclose: () => void;
   } = $props();
+
+  let nombreEscrito = $state("");
+  const nombrePerfil = $derived(perfil.nombreJefe);
+  const firmante = $derived(nombrePerfil || nombreEscrito.trim());
 
   let canvas: HTMLCanvasElement;
   let ctx: CanvasRenderingContext2D | null = null;
@@ -24,6 +29,8 @@
   let finalizando = $state(false);
 
   onMount(() => {
+    if (!perfil.org) void perfil.cargar();
+
     ctx = canvas.getContext("2d");
     const dpr = window.devicePixelRatio || 1;
     const rect = canvas.getBoundingClientRect();
@@ -76,7 +83,7 @@
     finalizando = true;
     try {
       const firma = conFirma && !vacio ? canvas.toDataURL("image/png") : undefined;
-      await onfinalizar(firma);
+      await onfinalizar(firma, firmante || undefined);
     } finally {
       finalizando = false;
     }
@@ -105,6 +112,23 @@
     <div class="hoja-cuerpo">
       <p class="aviso">{i18n.t("jornada.cerrar_confirmar")}</p>
       <p>{i18n.t("firma.ayuda")}</p>
+
+      {#if nombrePerfil}
+        <p class="firma-firmante">
+          {i18n.t("firma.firmante", { nombre: nombrePerfil })}
+        </p>
+      {:else}
+        <label class="campo">
+          <span>{i18n.t("firma.tu_nombre")}</span>
+          <input
+            type="text"
+            autocomplete="name"
+            bind:value={nombreEscrito}
+            placeholder={i18n.t("firma.tu_nombre")}
+          />
+        </label>
+        <p class="firma-perfil-hint">{i18n.t("firma.guardar_perfil")}</p>
+      {/if}
 
       <canvas
         bind:this={canvas}

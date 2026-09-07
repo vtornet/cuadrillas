@@ -116,6 +116,8 @@ mismo, no para usuarios reales.
 
 ## Pendiente antes de usuarios reales
 
-La pantalla RGPD (política de privacidad + exportación/borrado de los datos de
-un trabajador) todavía no está implementada — conviene tenerla antes de dar de
-alta a un jefe de cuadrilla real (fase 2 en adelante).
+La pantalla RGPD (política de privacidad + exportación/anonimización de los datos
+de un trabajador) ya está implementada (2026-09-07). Antes de dar de alta a un jefe
+de cuadrilla real hay que **rellenar en `app/src/routes/Privacidad.svelte` los datos
+de Appstracta**: dirección postal, CIF/NIF y correo de contacto para privacidad
+(los marcadores `[…]`).

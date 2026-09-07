@@ -44,6 +44,7 @@ export async function seedDemo(): Promise<void> {
 
   const org: Organization = {
     id: ORG_ID,
+    organizationId: ORG_ID,
     name: "Explotacion de demostracion",
     plan: "free",
     planLimits: { ...LIMITES_PLAN_GRATIS },

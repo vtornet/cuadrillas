@@ -6,6 +6,7 @@
   import Liquidacion from "./routes/Liquidacion.svelte";
   import Gestion from "./routes/Gestion.svelte";
   import Cuenta from "./routes/Cuenta.svelte";
+  import Privacidad from "./routes/Privacidad.svelte";
   import MenuSheet from "./lib/components/MenuSheet.svelte";
   import { i18n } from "./lib/i18n/i18n.svelte";
   import { router } from "./lib/stores/router.svelte";
@@ -47,7 +48,11 @@
 {#if !listo}
   <p class="cargando">{i18n.t("app.cargando")}</p>
 {:else if auth.estado === "anonimo"}
-  <Cuenta />
+  {#if router.vista === "privacidad"}
+    <Privacidad />
+  {:else}
+    <Cuenta />
+  {/if}
 {:else}
   <main>
     {#if router.vista === "historial"}
@@ -60,6 +65,8 @@
       <Gestion />
     {:else if router.vista === "cuenta"}
       <Cuenta />
+    {:else if router.vista === "privacidad"}
+      <Privacidad />
     {:else}
       <Registro />
     {/if}

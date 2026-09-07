@@ -23,7 +23,8 @@
     "gestion": "Data",
     "estadisticas": "Statistics",
     "liquidacion": "Settlement",
-    "cuenta": "Account and sync"
+    "cuenta": "Account and sync",
+    "privacidad": "Privacy"
   },
   "liq": {
     "titulo": "Settlement",
@@ -213,7 +214,21 @@
     "anular": "Void",
     "cambios_sin_guardar": "You have unsaved changes.",
     "seguir_editando": "Keep editing",
-    "cerrar_sin_guardar": "Close without saving"
+    "cerrar_sin_guardar": "Close without saving",
+    "rgpd_titulo": "Personal data (GDPR)",
+    "rgpd_exportar": "Export their data",
+    "rgpd_generando": "Generating...",
+    "rgpd_exportado": "Report generated",
+    "rgpd_export_error": "Could not generate the report",
+    "rgpd_anonimizar": "Anonymise (erase personal data)",
+    "rgpd_anonimizar_aviso": "This worker's name, alias, QR code and transport will be erased. Their shifts and records are kept, but they will appear as \"Deleted worker\". This cannot be undone.",
+    "rgpd_confirmar": "Anonymise",
+    "rgpd_generico": "Deleted worker"
+  },
+  "privacidad": {
+    "titulo": "Privacy policy",
+    "volver": "Back",
+    "enlace": "Privacy policy"
   },
   "grupo": {
     "ficha": "Group details",
@@ -225,7 +240,20 @@
     "ayuda": "Sign in the box to confirm closing the shift (optional).",
     "borrar": "Clear signature",
     "finalizar_sin_firma": "Finish without signing",
-    "finalizar_con_firma": "Sign and finish"
+    "finalizar_con_firma": "Sign and finish",
+    "firmante": "Signed: {nombre}",
+    "tu_nombre": "Your name",
+    "guardar_perfil": "Save it in Account > Profile so you don't type it every time."
+  },
+  "perfil": {
+    "titulo": "Profile",
+    "empresa": "Company or farm",
+    "nombre": "Your name",
+    "telefono": "Phone",
+    "nif": "Tax ID",
+    "guardar": "Save profile",
+    "guardando": "Saving...",
+    "guardado": "Profile saved"
   },
   "qr": {
     "apunta": "Point at the worker code",
