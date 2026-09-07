@@ -258,6 +258,41 @@ Perfil de usuario bajo → simplificar. Plan en 4 fases:
 - **Estructura de navegación.** Primer lote de renombrados de menús ya aplicado (ver
   arriba: "Iniciar parte", "Datos"). Quedan pendientes más cambios de nombres/estructura
   que el usuario irá explicando.
+- **Perfil del jefe de cuadrilla + nombre en la firma del parte.** Hoy el usuario
+  autenticado solo tiene `email` / `role` / `organizationId` (`shared/src/types/user.ts`,
+  `api/src/models/auth.ts`); la `Organization` tiene `name` pero no se pide en ningún
+  sitio, y `Shift.firma` guarda solo el PNG, sin saber de quién es. Pendiente:
+  1. Nuevo apartado **"Perfil"** (¿pestaña en "Datos", o dentro de "Cuenta"?) donde el
+     jefe introduce su **nombre**, el **nombre de la empresa/explotación** y lo que haga
+     falta (¿teléfono? ¿NIF para las liquidaciones?). El nombre de empresa puede mapear a
+     `Organization.name` (ya es entidad sincronizada); el nombre de la persona necesita un
+     campo nuevo en `User` (y su `UserDoc`) — o una entidad de perfil aparte.
+  2. Al finalizar un parte, mostrar y guardar el **nombre del jefe junto a la firma**
+     (p. ej. `Shift.firmante?: string` poblado desde el perfil en `jornada.cerrarActual`),
+     y pintarlo bajo la firma en `ParteDetalle.svelte`. Si el perfil no tiene nombre aún,
+     `FirmaSheet` podría pedirlo la primera vez.
+  3. Encaja con el pendiente de RGPD (identificar quién firma) y con los exports de
+     liquidación (cabecera con empresa + responsable).
+- **Cabecera del parte.** Cada parte debería mostrar (en pantalla y en el detalle /
+  exports) una cabecera con: **fecha, finca, producto, variedad, total recolectores,
+  total auxiliares**, etc. Estado actual (`shared/src/types/shift.ts`): `Shift` ya tiene
+  `fecha`, `productId`, `crewId`, `attendeeIds`, `groups?`; **faltan** `finca` y
+  `variedad` (¿campos libres en el parte? ¿entidades propias, tipo "Finca" con sus
+  variedades, elegibles al comenzar la jornada en `ComenzarJornadaSheet`?). "Total
+  recolectores" y "total auxiliares" salen de contar la asistencia por rol una vez exista
+  la distinción recolector/auxiliar (ver punto **Auxiliares** arriba). Sitio natural para
+  pintarla: cabecera de `Registro.svelte` (parte activo), `ParteDetalle.svelte`
+  (Historial) y las cabeceras de los exports de liquidación/estadísticas. Pendiente de
+  concretar el modelo de finca/variedad con el usuario.
+- **Producto: separar "producto" y "variedad".** Hoy `Product` es solo `{ name, activo }`
+  (`shared/src/types/product.ts`, form en `gestion/ProductForm.svelte`, clave i18n
+  `gestion.producto_nombre`). Debe pasar a tener **campo de producto** (p. ej. "Naranja")
+  **y campo de variedad** (p. ej. "Navelina"), además de lo ya existente. A decidir:
+  ¿dos campos en el mismo `Product` (`producto` + `variedad`, `name` pasa a derivado
+  "Naranja · Navelina"), o "producto" y "variedad" como entidades separadas? Afecta a
+  todo lo que hoy muestra `product.name`: `ComenzarJornadaSheet`, `Registro.svelte`
+  (`registro.jornada_info`), `stats.ts`, `settlement.ts`, exports CSV/XLSX y la cabecera
+  del parte de arriba. Migración: los `Product` actuales quedan con `variedad` vacía.
 - **Aviso al finalizar si hay recolectores a 0.** Al cerrar una jornada, si algún
   recolector presente no tiene ninguna anotación, mostrar un aviso ("Fulano no tiene
   anotaciones, ¿finalizar con 0?") antes de cerrar, con opción de seguir de todas formas
