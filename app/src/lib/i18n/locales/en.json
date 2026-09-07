@@ -41,7 +41,8 @@
   },
   "cabecera": {
     "recolectores": "{n} picker(s)",
-    "auxiliares": "{n} support worker(s)"
+    "auxiliares": "{n} support worker(s)",
+    "firma_pdf": "Signed by"
   },
   "auxiliar": {
     "seccion": "Support workers",
@@ -54,15 +55,27 @@
     "n_horas": "{n} h",
     "sin_datos": "No task or hours"
   },
-  "enviar_asis": {
-    "abrir": "Send attendance",
-    "titulo": "Send attendance",
-    "asunto": "Attendance {cuadrilla} {fecha}",
+  "compartir": {
+    "abrir": "Share shift",
+    "titulo": "Share shift",
+    "asunto": "Shift {cuadrilla} {fecha}",
+    "asistencia": "Attendance (worker list)",
+    "parte": "Work report",
+    "parte_ayuda": "Full report with the recorded units.",
     "copiar": "Copy",
     "copiado": "Copied",
     "whatsapp": "WhatsApp",
     "email": "Email",
-    "compartir": "Share"
+    "texto": "Share text",
+    "pdf": "PDF",
+    "excel": "Excel",
+    "generando": "Generating...",
+    "recolectores": "Pickers",
+    "unidades": "Units",
+    "hoja_asistencia": "Attendance",
+    "hoja_parte": "Report",
+    "pdf_titulo_asistencia": "Attendance",
+    "pdf_titulo_parte": "Work report"
   },
   "plan": {
     "titulo": "Plan",

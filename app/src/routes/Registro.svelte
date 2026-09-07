@@ -9,7 +9,7 @@
   import QrScanner from "../lib/components/QrScanner.svelte";
   import ComenzarJornadaSheet from "../lib/components/ComenzarJornadaSheet.svelte";
   import FirmaSheet from "../lib/components/FirmaSheet.svelte";
-  import EnviarAsistenciaSheet from "../lib/components/EnviarAsistenciaSheet.svelte";
+  import CompartirParteSheet from "../lib/components/CompartirParteSheet.svelte";
   import AuxiliarSheet from "../lib/components/AuxiliarSheet.svelte";
   import CabeceraParte from "../lib/components/CabeceraParte.svelte";
 
@@ -20,7 +20,7 @@
   let auxAbiertoId = $state<string | null>(null);
   let comenzarAbierto = $state(false);
   let firmaAbierta = $state(false);
-  let enviarAsisAbierto = $state(false);
+  let compartirAbierto = $state(false);
 
   const visiblesWorkers = $derived.by(() => {
     const t = q.trim().toLowerCase();
@@ -124,10 +124,10 @@
       {/if}
       <button
         type="button"
-        class="enviar-asis-link"
-        onclick={() => (enviarAsisAbierto = true)}
+        class="compartir-link"
+        onclick={() => (compartirAbierto = true)}
       >
-        {i18n.t("enviar_asis.abrir")}
+        {i18n.t("compartir.abrir")}
       </button>
       <div class="total">
         <span>{i18n.t("registro.total_jornada")}</span>
@@ -272,14 +272,14 @@
       />
     {/if}
 
-    {#if enviarAsisAbierto && jornada.shift}
-      <EnviarAsistenciaSheet
+    {#if compartirAbierto && jornada.shift}
+      <CompartirParteSheet
         shift={jornada.shift}
         workers={jornada.workers}
+        entries={jornada.entries}
         producto={etiquetaProducto(jornada.producto)}
         unidad={jornada.unidad?.name ?? ""}
-        grupos={jornada.trabajaPorGrupos ? jornada.grupos : undefined}
-        onclose={() => (enviarAsisAbierto = false)}
+        onclose={() => (compartirAbierto = false)}
       />
     {/if}
   {/if}

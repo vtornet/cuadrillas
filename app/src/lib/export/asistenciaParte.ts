@@ -1,61 +1,34 @@
+import type { InformeAsistencia } from "@cuadrilla/shared/domain";
+import { fechaES } from "@cuadrilla/shared/domain";
+
 /**
  * Texto plano de la asistencia de un parte, para enviar por WhatsApp / email /
- * compartir. Sin importes. Puro y testable.
+ * compartir. Sin importes. El PDF y el Excel se generan en `pdf.ts` / `xlsx.ts`.
  */
-
-export interface GrupoAsistencia {
-  nombre: string;
-  miembros: string[];
-}
-
-export interface DatosAsistenciaParte {
-  cuadrilla: string;
-  /** Fecha ISO `YYYY-MM-DD`. */
-  fecha: string;
-  /** Finca (opcional). */
-  finca?: string;
-  producto: string;
-  unidad: string;
-  /** Nombres de los recolectores presentes (se ordenan aquí). */
-  nombres: string[];
-  /** Nombres de los auxiliares presentes (se ordenan aquí). */
-  auxiliares?: string[];
-  /** Si el parte se trabaja por grupos: composición de hoy. */
-  grupos?: GrupoAsistencia[];
-}
-
-function fechaES(iso: string): string {
-  const [a, m, d] = iso.split("-");
-  return d && m && a ? `${d}/${m}/${a}` : iso;
-}
-
-export function textoAsistenciaParte(d: DatosAsistenciaParte): string {
-  const nombres = [...d.nombres].sort((a, b) => a.localeCompare(b, "es"));
+export function textoAsistenciaParte(inf: InformeAsistencia): string {
+  const { cabecera: c } = inf;
   const L: string[] = [];
 
-  L.push(`ASISTENCIA — ${d.cuadrilla}`);
-  L.push(`Fecha: ${fechaES(d.fecha)}`);
-  if (d.finca?.trim()) L.push(`Finca: ${d.finca.trim()}`);
-  if (d.producto || d.unidad) {
-    L.push(`Producto: ${[d.producto, d.unidad].filter(Boolean).join(" · ")}`);
-  }
+  L.push(`ASISTENCIA — ${c.cuadrilla}`);
+  L.push(`Fecha: ${fechaES(c.fecha)}`);
+  if (c.finca?.trim()) L.push(`Finca: ${c.finca.trim()}`);
+  if (c.producto) L.push(`Producto: ${c.producto}`);
+  if (c.unidad) L.push(`Unidad: ${c.unidad}`);
   L.push("");
-  L.push(`Trabajadores (${nombres.length}):`);
-  nombres.forEach((n, i) => L.push(`${i + 1}. ${n}`));
+  L.push(`Trabajadores (${inf.recolectores.length}):`);
+  inf.recolectores.forEach((n, i) => L.push(`${i + 1}. ${n}`));
 
-  const aux = [...(d.auxiliares ?? [])].sort((a, b) => a.localeCompare(b, "es"));
-  if (aux.length > 0) {
+  if (inf.auxiliares.length > 0) {
     L.push("");
-    L.push(`Auxiliares (${aux.length}):`);
-    aux.forEach((n, i) => L.push(`${i + 1}. ${n}`));
+    L.push(`Auxiliares (${inf.auxiliares.length}):`);
+    inf.auxiliares.forEach((n, i) => L.push(`${i + 1}. ${n}`));
   }
 
-  if (d.grupos && d.grupos.length > 0) {
+  if (inf.grupos.length > 0) {
     L.push("");
     L.push("Grupos:");
-    for (const g of d.grupos) {
-      const m = [...g.miembros].sort((a, b) => a.localeCompare(b, "es"));
-      L.push(`· ${g.nombre} (${m.length}): ${m.join(", ")}`);
+    for (const g of inf.grupos) {
+      L.push(`· ${g.nombre} (${g.miembros.length}): ${g.miembros.join(", ")}`);
     }
   }
 

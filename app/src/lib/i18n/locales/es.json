@@ -41,7 +41,8 @@
   },
   "cabecera": {
     "recolectores": "{n} recolector(es)",
-    "auxiliares": "{n} auxiliar(es)"
+    "auxiliares": "{n} auxiliar(es)",
+    "firma_pdf": "Firmado por"
   },
   "auxiliar": {
     "seccion": "Auxiliares",
@@ -54,15 +55,27 @@
     "n_horas": "{n} h",
     "sin_datos": "Sin tarea ni horas"
   },
-  "enviar_asis": {
-    "abrir": "Enviar asistencia",
-    "titulo": "Enviar asistencia",
-    "asunto": "Asistencia {cuadrilla} {fecha}",
+  "compartir": {
+    "abrir": "Compartir parte",
+    "titulo": "Compartir parte",
+    "asunto": "Parte {cuadrilla} {fecha}",
+    "asistencia": "Asistencia (lista de trabajadores)",
+    "parte": "Parte de trabajo",
+    "parte_ayuda": "Informe completo con las unidades registradas.",
     "copiar": "Copiar",
     "copiado": "Copiado",
     "whatsapp": "WhatsApp",
     "email": "Email",
-    "compartir": "Compartir"
+    "texto": "Compartir texto",
+    "pdf": "PDF",
+    "excel": "Excel",
+    "generando": "Generando...",
+    "recolectores": "Recolectores",
+    "unidades": "Unidades",
+    "hoja_asistencia": "Asistencia",
+    "hoja_parte": "Parte",
+    "pdf_titulo_asistencia": "Asistencia",
+    "pdf_titulo_parte": "Parte de trabajo"
   },
   "plan": {
     "titulo": "Plan",

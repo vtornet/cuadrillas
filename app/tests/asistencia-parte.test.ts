@@ -1,20 +1,31 @@
 import { describe, expect, it } from "vitest";
+import type { InformeAsistencia } from "@cuadrilla/shared/domain";
 import { textoAsistenciaParte } from "../src/lib/export/asistenciaParte";
 
-describe("textoAsistenciaParte", () => {
-  it("cabecera + lista numerada ordenada por nombre + total", () => {
-    const t = textoAsistenciaParte({
+function inf(p: Partial<InformeAsistencia> = {}): InformeAsistencia {
+  return {
+    cabecera: {
       cuadrilla: "Cuadrilla 1",
       fecha: "2026-09-07",
       producto: "Naranja",
       unidad: "Caja",
-      nombres: ["Beto", "Ana", "Carlos"],
-    });
+    },
+    recolectores: [],
+    auxiliares: [],
+    grupos: [],
+    ...p,
+  };
+}
+
+describe("textoAsistenciaParte", () => {
+  it("cabecera + lista numerada + total", () => {
+    const t = textoAsistenciaParte(inf({ recolectores: ["Ana", "Beto", "Carlos"] }));
     expect(t).toBe(
       [
         "ASISTENCIA — Cuadrilla 1",
         "Fecha: 07/09/2026",
-        "Producto: Naranja · Caja",
+        "Producto: Naranja",
+        "Unidad: Caja",
         "",
         "Trabajadores (3):",
         "1. Ana",
@@ -24,63 +35,35 @@ describe("textoAsistenciaParte", () => {
     );
   });
 
-  it("añade el desglose de grupos si el parte se trabaja por grupos", () => {
-    const t = textoAsistenciaParte({
-      cuadrilla: "C1",
-      fecha: "2026-09-07",
-      producto: "Fresa",
-      unidad: "Kilo",
-      nombres: ["Ana", "Beto"],
-      grupos: [
-        { nombre: "Grupo B", miembros: ["Beto"] },
-        { nombre: "Grupo A", miembros: ["Ana"] },
-      ],
-    });
-    expect(t).toContain("Grupos:");
-    expect(t).toContain("· Grupo B (1): Beto");
-    expect(t).toContain("· Grupo A (1): Ana");
-  });
-
-  it("lista los auxiliares en su propia sección", () => {
-    const t = textoAsistenciaParte({
-      cuadrilla: "C1",
-      fecha: "2026-09-07",
-      producto: "Naranja",
-      unidad: "Caja",
-      nombres: ["Ana", "Beto"],
-      auxiliares: ["Zoe", "Marco"],
-    });
-    expect(t).toContain("Trabajadores (2):");
-    expect(t).toContain("Auxiliares (2):");
-    const lineas = t.split("\n");
-    expect(lineas).toContain("Auxiliares (2):");
-    expect(lineas).toContain("1. Marco");
-    expect(lineas).toContain("2. Zoe");
-  });
-
   it("incluye la línea de finca cuando está presente", () => {
-    const t = textoAsistenciaParte({
-      cuadrilla: "C1",
-      fecha: "2026-09-07",
-      finca: "Finca La Loma",
-      producto: "Naranja",
-      unidad: "Caja",
-      nombres: ["Ana"],
-    });
-    expect(t).toContain("Finca: Finca La Loma");
+    const t = textoAsistenciaParte(
+      inf({
+        cabecera: {
+          cuadrilla: "C1",
+          fecha: "2026-09-07",
+          finca: "Finca La Loma",
+          producto: "Naranja",
+          unidad: "Caja",
+        },
+        recolectores: ["Ana"],
+      }),
+    );
     const lineas = t.split("\n");
     expect(lineas[1]).toBe("Fecha: 07/09/2026");
     expect(lineas[2]).toBe("Finca: Finca La Loma");
   });
 
-  it("omite la línea de producto si no hay datos", () => {
-    const t = textoAsistenciaParte({
-      cuadrilla: "C1",
-      fecha: "2026-09-07",
-      producto: "",
-      unidad: "",
-      nombres: ["Ana"],
-    });
-    expect(t).not.toContain("Producto:");
+  it("sección de auxiliares y de grupos", () => {
+    const t = textoAsistenciaParte(
+      inf({
+        recolectores: ["Ana", "Beto"],
+        auxiliares: ["Marco", "Zoe"],
+        grupos: [{ nombre: "Grupo A", miembros: ["Ana", "Beto"] }],
+      }),
+    );
+    expect(t).toContain("Auxiliares (2):");
+    expect(t).toContain("1. Marco");
+    expect(t).toContain("Grupos:");
+    expect(t).toContain("· Grupo A (2): Ana, Beto");
   });
 });

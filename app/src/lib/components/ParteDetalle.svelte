@@ -18,7 +18,7 @@
   import WorkerRow from "./WorkerRow.svelte";
   import WorkerSheet from "./WorkerSheet.svelte";
   import GroupSheet from "./GroupSheet.svelte";
-  import EnviarAsistenciaSheet from "./EnviarAsistenciaSheet.svelte";
+  import CompartirParteSheet from "./CompartirParteSheet.svelte";
   import AuxiliarSheet from "./AuxiliarSheet.svelte";
   import CabeceraParte from "./CabeceraParte.svelte";
 
@@ -36,7 +36,7 @@
   let workerAbiertoId = $state<string | null>(null);
   let grupoAbiertoId = $state<string | null>(null);
   let auxAbiertoId = $state<string | null>(null);
-  let enviarAsisAbierto = $state(false);
+  let compartirAbierto = $state(false);
 
   const conteos = $derived(sumarConteos(entries));
   const total = $derived(Object.values(conteos).reduce((a, b) => a + b, 0));
@@ -366,9 +366,9 @@
       <button
         type="button"
         class="btn-secundario btn-ancho"
-        onclick={() => (enviarAsisAbierto = true)}
+        onclick={() => (compartirAbierto = true)}
       >
-        {i18n.t("enviar_asis.abrir")}
+        {i18n.t("compartir.abrir")}
       </button>
     {/if}
 
@@ -377,14 +377,14 @@
     </button>
   </div>
 
-  {#if enviarAsisAbierto && shift}
-    <EnviarAsistenciaSheet
+  {#if compartirAbierto && shift}
+    <CompartirParteSheet
       {shift}
       {workers}
+      {entries}
       producto={etiquetaProducto(producto)}
       unidad={unidad?.name ?? ""}
-      grupos={trabajaPorGrupos ? grupos : undefined}
-      onclose={() => (enviarAsisAbierto = false)}
+      onclose={() => (compartirAbierto = false)}
     />
   {/if}
 

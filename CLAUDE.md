@@ -135,8 +135,11 @@ Sin `STRIPE_SECRET_KEY` los endpoints de pago responden 503 y la UI de plan no a
 - **Idioma**: tipos en inglés (`Worker`, `Shift`, `Entry`, `Rate`); funciones, variables y
   comentarios en español (`crearShift`, `persistir`, `sumarConteos`, `importeCentimos`).
 - **Sin dependencias pesadas**: CSS propio con tokens (`app/src/styles/tokens.css`),
-  gráficos en SVG/CSS a mano (nada de Chart.js), `xlsx` (SheetJS) solo con `import()`
-  dinámico. Justifica cualquier dependencia nueva.
+  gráficos en SVG/CSS a mano (nada de Chart.js). Únicas libs pesadas: `xlsx` (SheetJS) y
+  `jspdf` — **siempre con `import()` dinámico** (se cargan solo al exportar). Las
+  sub-dependencias de jspdf para `doc.html()`/SVG (`html2canvas`, `dompurify`, `canvg`)
+  no se usan y están fuera del precache del SW (`workbox.globIgnores` en
+  `app/vite.config.ts`). Justifica cualquier dependencia nueva.
 - **UI de campo**: objetivos táctiles ≥ 56 px (`--tap`), alto contraste, tema claro
   (uso a pleno sol). Modales = hojas inferiores (`.overlay` + `.hoja`). Las fichas
   editables (`EditSheet.svelte`) NO se cierran al tocar fuera y preguntan si hay cambios
@@ -274,7 +277,7 @@ Los detalles de cada punto están en **Backlog sin planificar** justo debajo.
 3. **Eliminar la sección Liquidación.** **HECHO (2026-09-07).** Fuera: vista, menú,
    exports CSV/XLSX, pestaña "Tarifas". `settlement.ts` + `rates.ts` + tests se conservan.
 4. **Tabla mensual de asistencia.** **HECHO (2026-09-07).** Vista `#/asistencia`.
-5. **Enviar asistencia desde un parte.** **HECHO (2026-09-07).** Botón en `Registro`
+5. **Compartir parte (asistencia + parte de trabajo) en texto/PDF/Excel.** **HECHO (2026-09-07).** Botón en `Registro`
    (parte activo) y `ParteDetalle` (Historial).
 
 **Modelo de datos (base para el resto)** — necesitan conversación de modelado con el usuario
@@ -319,7 +322,7 @@ Los detalles de cada punto están en **Backlog sin planificar** justo debajo.
     borra la entrada). Igual en `ParteDetalle` (`actualizarAuxiliar` local).
   - UI: `Registro.svelte` lista recolectores con contador + bloque "Auxiliares" (tarea·
     horas, tap → `AuxiliarSheet.svelte`); `ParteDetalle` los muestra en consulta (solo
-    lectura) y editables en edición; QR de un auxiliar se ignora. `EnviarAsistenciaSheet`
+    lectura) y editables en edición; QR de un auxiliar se ignora. `CompartirParteSheet`
     / `textoAsistenciaParte` separan "Trabajadores" y "Auxiliares".
   - `stats.ts`: los auxiliares quedan **fuera** del ranking, medias y unidades/hora
     (`funcion === "auxiliar"`). `attendance.ts` (tabla mensual) los sigue incluyendo
@@ -355,17 +358,22 @@ Los detalles de cada punto están en **Backlog sin planificar** justo debajo.
   `shared/tests/attendance.test.ts`, `app/tests/asistencia-export.test.ts`.
   Gap conocido: agrega todas las cuadrillas del jefe sin selector (para el plan
   multi-cuadrilla habría que añadirlo); no distingue "presente sin anotaciones".
-- **Enviar asistencia desde un parte — hecho (2026-09-07).** Botón "Enviar asistencia":
-  en `Registro.svelte` un enlace bajo la info de la jornada (parte activo); en
-  `ParteDetalle.svelte` (Historial, modo consulta) antes de "Volver". Abre
-  `EnviarAsistenciaSheet.svelte`: previsualización del texto + acciones **Copiar**
-  (`navigator.clipboard` con fallback `execCommand`), **WhatsApp** (`wa.me/?text=`),
-  **Email** (`mailto:?subject=&body=`) y **Compartir** (Web Share API `navigator.share
-  ({text})`, solo si existe). Texto plano en `app/src/lib/export/asistenciaParte.ts`
-  (`textoAsistenciaParte`, puro): cabecera (cuadrilla, fecha DD/MM/AAAA, producto·unidad)
-  + lista numerada de asistentes ordenada por nombre + total; si el parte es por grupos,
-  añade el desglose por grupo. Sin importes. Los asistentes salen de los `workers`
-  cargados (activos), igual que la pantalla. Test: `app/tests/asistencia-parte.test.ts`.
+- **Compartir parte: texto + PDF + Excel — hecho (2026-09-07).** Botón "Compartir parte"
+  en `Registro.svelte` (enlace bajo la cabecera, parte activo) y `ParteDetalle.svelte`
+  (Historial, modo consulta). Abre `CompartirParteSheet.svelte` con **dos informes**:
+  1. **Asistencia** (lista de trabajadores por rol + grupos): previsualización de texto +
+     **Copiar** / **WhatsApp** (`wa.me/?text=`) / **Email** (`mailto:`) / **Compartir
+     texto** (Web Share) + **PDF** + **Excel**.
+  2. **Parte de trabajo** (cabecera + recolectores/grupos con unidades + auxiliares con
+     tarea/horas + total + firma): **PDF** + **Excel**.
+  - Dominio puro `shared/domain/parte.ts`: `informeAsistencia(cabecera, shift, workers)`,
+    `informeParte(cabecera, shift, workers, entries)` (usa `sumarConteos`), `fechaES`.
+  - Render: `app/src/lib/export/pdf.ts` (jsPDF `import()` dinámico, trazado manual sin
+    autotable; la firma se pinta con `doc.addImage`) y `app/src/lib/export/xlsx.ts`
+    (SheetJS, recreado). Texto: `asistenciaParte.ts` → `textoAsistenciaParte(InformeAsistencia)`.
+  - Los archivos se comparten/descargan con `compartirArchivo` (Web Share con `files`, o
+    descarga). Nombre `asistencia_<cuadrilla>_<fecha>.pdf|xlsx` / `parte_...`.
+  - Tests: `shared/tests/parte.test.ts`, `app/tests/asistencia-parte.test.ts`.
 - **Perfil del jefe de cuadrilla + nombre en la firma — hecho (2026-09-07).**
   - **Modelo**: el perfil vive en el documento `Organization` (ya es entidad
     sincronizada). `Organization` ahora `extends RegistroSincronizable` (lleva
@@ -404,7 +412,7 @@ Los detalles de cada punto están en **Backlog sin planificar** justo debajo.
   "Navelina"). Helper puro `shared/domain/products.ts` → `etiquetaProducto(p)` =
   "Naranja · Navelina" o "Naranja" si no hay variedad; se usa en `Gestion` (lista +
   `nombreProducto` del store), `ComenzarJornadaSheet`, `UnitForm` (selector de producto),
-  `Registro`/`ParteDetalle` (`registro.jornada_info` + `EnviarAsistenciaSheet`),
+  `Registro`/`ParteDetalle` (`CabeceraParte` + `CompartirParteSheet`),
   `Historial`. Form: `ProductForm.svelte` con campo "Producto" + "Variedad (opcional)"
   (i18n `gestion.producto_nombre` ahora "Producto", nueva `gestion.producto_variedad`).
   Migración: no hace falta — `variedad` es opcional, los `Product` sin ella se muestran a
