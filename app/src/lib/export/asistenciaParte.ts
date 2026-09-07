@@ -12,6 +12,8 @@ export interface DatosAsistenciaParte {
   cuadrilla: string;
   /** Fecha ISO `YYYY-MM-DD`. */
   fecha: string;
+  /** Finca (opcional). */
+  finca?: string;
   producto: string;
   unidad: string;
   /** Nombres de los recolectores presentes (se ordenan aquí). */
@@ -33,6 +35,7 @@ export function textoAsistenciaParte(d: DatosAsistenciaParte): string {
 
   L.push(`ASISTENCIA — ${d.cuadrilla}`);
   L.push(`Fecha: ${fechaES(d.fecha)}`);
+  if (d.finca?.trim()) L.push(`Finca: ${d.finca.trim()}`);
   if (d.producto || d.unidad) {
     L.push(`Producto: ${[d.producto, d.unidad].filter(Boolean).join(" · ")}`);
   }

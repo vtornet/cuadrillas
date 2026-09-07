@@ -12,8 +12,7 @@
     "sin_jornada": "No open shift",
     "sin_jornada_ayuda": "Start a shift to begin recording.",
     "comenzar_jornada": "Start shift",
-    "finalizar_jornada": "Finish shift",
-    "jornada_info": "{producto} - {unidad} - {fecha}"
+    "finalizar_jornada": "Finish shift"
   },
   "menu": {
     "titulo": "Menu",
@@ -39,6 +38,10 @@
     "mes_siguiente": "Next month",
     "sin_datos": "No attendance recorded this month.",
     "exportar": "Export CSV"
+  },
+  "cabecera": {
+    "recolectores": "{n} picker(s)",
+    "auxiliares": "{n} support worker(s)"
   },
   "auxiliar": {
     "seccion": "Support workers",
@@ -190,6 +193,8 @@
     "cuadrilla": "Crew",
     "producto": "Product",
     "unidad": "Unit",
+    "finca": "Farm (optional)",
+    "finca_ph": "Farm name",
     "fecha": "Date",
     "hora_inicio": "Start time",
     "asistencia": "Attendance",

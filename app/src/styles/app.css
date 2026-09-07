@@ -126,12 +126,6 @@ button:disabled {
   object-fit: contain;
 }
 
-.jornada-info {
-  margin: 6px 0 0;
-  color: var(--c-texto-suave);
-  font-size: 14px;
-}
-
 .enviar-asis-link {
   margin: 6px 0 0;
   padding: 4px 0;

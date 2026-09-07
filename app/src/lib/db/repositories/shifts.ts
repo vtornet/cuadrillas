@@ -22,6 +22,8 @@ export interface NuevaShiftInput {
   productId: string;
   unitTypeId: string;
   fecha: string;
+  /** Finca (texto libre, opcional). */
+  finca?: string;
   horaInicio: string;
   attendeeIds: string[];
   /** Si se trabaja por grupos ese dia: su composicion inicial. */
@@ -35,6 +37,7 @@ export async function crearShift(input: NuevaShiftInput): Promise<Shift> {
     organizationId: input.organizationId,
     crewId: input.crewId,
     fecha: input.fecha,
+    finca: input.finca?.trim() || undefined,
     horaInicio: input.horaInicio,
     horaFin: null,
     productId: input.productId,
@@ -60,6 +63,16 @@ export async function shiftsDeOrg(organizationId: string): Promise<Shift[]> {
     .equals(organizationId)
     .toArray();
   return todos.filter((s) => s.deleted === 0);
+}
+
+/** Fincas distintas usadas en partes anteriores de unas cuadrillas (para autocompletar). */
+export async function fincasUsadas(crewIds: string[]): Promise<string[]> {
+  const todos = await db.shifts.where("crewId").anyOf(crewIds).toArray();
+  const set = new Set<string>();
+  for (const s of todos) {
+    if (s.deleted === 0 && s.finca?.trim()) set.add(s.finca.trim());
+  }
+  return [...set].sort((a, b) => a.localeCompare(b, "es"));
 }
 
 /** Todas las jornadas (no borradas) de unas cuadrillas, mas recientes primero. */

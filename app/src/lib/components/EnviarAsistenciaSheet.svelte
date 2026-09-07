@@ -39,6 +39,7 @@
   const datos = $derived<DatosAsistenciaParte>({
     cuadrilla,
     fecha: shift.fecha,
+    finca: shift.finca,
     producto,
     unidad,
     nombres: workers.filter((w) => w.funcion !== "auxiliar").map((w) => w.name),

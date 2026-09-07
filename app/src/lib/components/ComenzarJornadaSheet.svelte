@@ -16,7 +16,7 @@
   import { productosActivos, todasLasUnidades } from "../db/repositories/products";
   import { trabajadoresDeCuadrilla } from "../db/repositories/workers";
   import { gruposActivosDeCuadrilla } from "../db/repositories/groups";
-  import { crearShift } from "../db/repositories/shifts";
+  import { crearShift, fincasUsadas } from "../db/repositories/shifts";
 
   let { onclose, oncomenzado }: { onclose: () => void; oncomenzado: () => void } =
     $props();
@@ -39,6 +39,8 @@
   let crewId = $state("");
   let productId = $state("");
   let unitTypeId = $state("");
+  let finca = $state("");
+  let fincasPrevias = $state<string[]>([]);
   let fecha = $state(hoyISO());
   let horaInicio = $state(horaActual());
   let asistentes = $state<Set<string>>(new Set());
@@ -64,6 +66,7 @@
     crews = await crewsDelForeman(sesion.userId);
     products = await productosActivos(sesion.organizationId);
     allUnits = await todasLasUnidades(sesion.organizationId);
+    fincasPrevias = await fincasUsadas(crews.map((c) => c.id));
 
     const wpc: Record<string, Worker[]> = {};
     const gpc: Record<string, Group[]> = {};
@@ -140,6 +143,7 @@
         crewId,
         productId,
         unitTypeId,
+        finca,
         fecha,
         horaInicio,
         attendeeIds: [...asistentes],
@@ -204,6 +208,22 @@
               <option value={u.id}>{u.name} ({u.abbr})</option>
             {/each}
           </select>
+        </label>
+
+        <label class="campo">
+          <span>{i18n.t("jornada.finca")}</span>
+          <input
+            type="text"
+            bind:value={finca}
+            autocomplete="off"
+            list="fincas-previas"
+            placeholder={i18n.t("jornada.finca_ph")}
+          />
+          <datalist id="fincas-previas">
+            {#each fincasPrevias as f (f)}
+              <option value={f}></option>
+            {/each}
+          </datalist>
         </label>
 
         <div class="campo-fila">

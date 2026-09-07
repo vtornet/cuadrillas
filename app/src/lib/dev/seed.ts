@@ -101,6 +101,7 @@ export async function seedDemo(): Promise<void> {
     organizationId: ORG_ID,
     crewId: CREW_ID,
     fecha: HOY,
+    finca: "Finca El Naranjal",
     horaInicio: "08:00",
     horaFin: null,
     productId: PRODUCT_ID,

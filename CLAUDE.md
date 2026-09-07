@@ -283,8 +283,8 @@ Los detalles de cada punto están en **Backlog sin planificar** justo debajo.
    en `Product` (`name` + `variedad?`), etiqueta "Naranja · Navelina".
 7. **Auxiliares** (trabajadores que no cobran a destajo). **HECHO (2026-09-07).**
    `Worker.funcion` + sección aparte en el parte + tarea/horas por día.
-8. **Cabecera del parte** (fecha, finca, producto, variedad, totales). Depende de 6, 7 y
-   de un modelo nuevo de finca/variedad.
+8. **Cabecera del parte** (fecha, finca, producto·variedad, nº recolectores/auxiliares).
+   **HECHO (2026-09-07).** `Shift.finca` (texto libre) + `CabeceraParte.svelte`.
 
 **Mejoras rápidas e independientes**
 
@@ -384,17 +384,20 @@ Los detalles de cada punto están en **Backlog sin planificar** justo debajo.
   - Tests: `app/tests/perfil.test.ts`, casos nuevos en `app/tests/jornada.test.ts`.
   - **Pendiente**: usar `contactName`/`name`/`taxId` en las cabeceras de exports (va con
     "Cabecera del parte") y en el informe RGPD si se quiere.
-- **Cabecera del parte.** Cada parte debería mostrar (en pantalla y en el detalle /
-  exports) una cabecera con: **fecha, finca, producto, variedad, total recolectores,
-  total auxiliares**, etc. Estado actual (`shared/src/types/shift.ts`): `Shift` ya tiene
-  `fecha`, `productId`, `crewId`, `attendeeIds`, `groups?`; **faltan** `finca` y
-  `variedad`. `Product` ya tiene `name` + `variedad` (punto 6), así que la variedad de la
-  cabecera sale del producto; **falta `finca`** (¿campo libre en el parte? ¿entidad
-  propia "Finca" elegible al comenzar la jornada en `ComenzarJornadaSheet`?). "Total
-  recolectores" / "total auxiliares" ya se pueden contar: `Worker.funcion` existe (punto
-  7) — es filtrar `attendeeIds` por rol. Sitio natural para pintarla: cabecera de
-  `Registro.svelte` (parte activo), `ParteDetalle.svelte` (Historial) y las cabeceras de
-  los exports. Pendiente de concretar el modelo de finca con el usuario.
+- **Cabecera del parte — hecho (2026-09-07).** `Shift.finca?: string` (**texto libre**,
+  no entidad; decidido con el usuario). Se escribe al comenzar el parte en
+  `ComenzarJornadaSheet` (campo "Finca (opcional)" con `<datalist>` de fincas ya usadas —
+  `fincasUsadas(crewIds)` en `db/repositories/shifts`). Componente `CabeceraParte.svelte`
+  (título `producto · unidad`; línea meta `finca · fecha · N recolector(es) · M
+  auxiliar(es)`) reemplaza la antigua línea `jornada-info` en `Registro.svelte` y
+  `ParteDetalle.svelte` — eliminadas la clave i18n `registro.jornada_info` y la clase CSS
+  `.jornada-info`. Los conteos salen de `jornada.recolectores.length` /
+  `jornada.auxiliares.length` (y equivalentes en `ParteDetalle`). La finca aparece
+  también en las filas del Historial y en el texto de "Enviar asistencia"
+  (`textoAsistenciaParte` → línea "Finca:"). Seed demo: "Finca El Naranjal". Tests:
+  `app/tests/shifts.test.ts` (`fincasUsadas`), `app/tests/asistencia-parte.test.ts`.
+  Gap: la tabla mensual de asistencia (`attendance.ts`) sigue sin separar totales por rol
+  ni mostrar finca.
 - **Producto: producto + variedad — hecho (2026-09-07).** Decidido: **dos campos en el
   mismo `Product`** (no entidades separadas), variedad **opcional**. `Product` ahora
   `{ name, variedad?, activo }` (`name` = producto, p. ej. "Naranja"; `variedad`, p. ej.

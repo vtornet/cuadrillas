@@ -58,6 +58,21 @@ describe("textoAsistenciaParte", () => {
     expect(lineas).toContain("2. Zoe");
   });
 
+  it("incluye la línea de finca cuando está presente", () => {
+    const t = textoAsistenciaParte({
+      cuadrilla: "C1",
+      fecha: "2026-09-07",
+      finca: "Finca La Loma",
+      producto: "Naranja",
+      unidad: "Caja",
+      nombres: ["Ana"],
+    });
+    expect(t).toContain("Finca: Finca La Loma");
+    const lineas = t.split("\n");
+    expect(lineas[1]).toBe("Fecha: 07/09/2026");
+    expect(lineas[2]).toBe("Finca: Finca La Loma");
+  });
+
   it("omite la línea de producto si no hay datos", () => {
     const t = textoAsistenciaParte({
       cuadrilla: "C1",

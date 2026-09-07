@@ -74,7 +74,9 @@
               {nombreProducto(s.productId)} · {nombreUnidad(s.unitTypeId)}
             </span>
             <span class="fg-sub">
-              {crewNombre[s.crewId] ?? "?"} &middot; {s.fecha}
+              {[crewNombre[s.crewId] ?? "?", s.fecha, s.finca]
+                .filter(Boolean)
+                .join(" · ")}
             </span>
           </button>
         {/each}

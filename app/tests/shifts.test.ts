@@ -2,7 +2,11 @@ import "fake-indexeddb/auto";
 import { beforeEach, describe, expect, it } from "vitest";
 import type { Crew, Product, UnitType, Worker } from "@cuadrilla/shared";
 import { db } from "../src/lib/db/dexie";
-import { crearShift, jornadasAbiertas } from "../src/lib/db/repositories/shifts";
+import {
+  crearShift,
+  fincasUsadas,
+  jornadasAbiertas,
+} from "../src/lib/db/repositories/shifts";
 import { getMeta } from "../src/lib/db/meta";
 import { jornada } from "../src/lib/stores/jornada.svelte";
 
@@ -88,6 +92,18 @@ describe("apertura y cierre de jornada", () => {
     expect(s.horaFin).toBeNull();
     expect(await jornadasAbiertas()).toHaveLength(1);
     expect(await db.pendingOps.count()).toBe(1);
+  });
+
+  it("guarda la finca (recortada) y fincasUsadas devuelve las distintas", async () => {
+    await crearShift({ ...nuevaInput(), finca: "  Finca La Loma  " });
+    await crearShift({ ...nuevaInput(), fecha: "2026-09-05", finca: "Finca La Loma" });
+    await crearShift({ ...nuevaInput(), fecha: "2026-09-06", finca: "El Cerro" });
+    await crearShift({ ...nuevaInput(), fecha: "2026-09-07" }); // sin finca
+
+    expect((await db.shifts.where("fecha").equals("2026-09-04").first())?.finca).toBe(
+      "Finca La Loma",
+    );
+    expect(await fincasUsadas(["c1"])).toEqual(["El Cerro", "Finca La Loma"]);
   });
 
   it("activar fija la jornada activa y cargar la resuelve", async () => {

@@ -12,8 +12,7 @@
     "sin_jornada": "No hay ningun parte abierto",
     "sin_jornada_ayuda": "Comienza una jornada para empezar a registrar.",
     "comenzar_jornada": "Comenzar jornada",
-    "finalizar_jornada": "Finalizar jornada",
-    "jornada_info": "{producto} - {unidad} - {fecha}"
+    "finalizar_jornada": "Finalizar jornada"
   },
   "menu": {
     "titulo": "Menu",
@@ -39,6 +38,10 @@
     "mes_siguiente": "Mes siguiente",
     "sin_datos": "No hay asistencia registrada este mes.",
     "exportar": "Exportar CSV"
+  },
+  "cabecera": {
+    "recolectores": "{n} recolector(es)",
+    "auxiliares": "{n} auxiliar(es)"
   },
   "auxiliar": {
     "seccion": "Auxiliares",
@@ -190,6 +193,8 @@
     "cuadrilla": "Cuadrilla",
     "producto": "Producto",
     "unidad": "Unidad",
+    "finca": "Finca (opcional)",
+    "finca_ph": "Nombre de la finca",
     "fecha": "Fecha",
     "hora_inicio": "Hora de inicio",
     "asistencia": "Asistencia",

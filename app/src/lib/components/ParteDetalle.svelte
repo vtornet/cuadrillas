@@ -20,6 +20,7 @@
   import GroupSheet from "./GroupSheet.svelte";
   import EnviarAsistenciaSheet from "./EnviarAsistenciaSheet.svelte";
   import AuxiliarSheet from "./AuxiliarSheet.svelte";
+  import CabeceraParte from "./CabeceraParte.svelte";
 
   let { shiftId, onclose }: { shiftId: string; onclose: () => void } = $props();
 
@@ -67,15 +68,6 @@
     grupoAbiertoId
       ? (grupos.find((g) => g.groupId === grupoAbiertoId) ?? null)
       : null,
-  );
-  const infoParte = $derived(
-    shift && producto && unidad
-      ? i18n.t("registro.jornada_info", {
-          producto: etiquetaProducto(producto),
-          unidad: unidad.name,
-          fecha: shift.fecha,
-        })
-      : "",
   );
 
   onMount(cargar);
@@ -230,7 +222,16 @@
 <div class="pantalla">
   <header class="cabecera">
     <AppBar titulo={i18n.t("historial.titulo")} />
-    {#if infoParte}<p class="jornada-info">{infoParte}</p>{/if}
+    {#if shift && producto && unidad}
+      <CabeceraParte
+        fecha={shift.fecha}
+        finca={shift.finca}
+        producto={etiquetaProducto(producto)}
+        unidad={unidad.name}
+        nRecolectores={recolectores.length}
+        nAuxiliares={auxiliares.length}
+      />
+    {/if}
     {#if !cargando && shift}
       <div class="total">
         <span>{i18n.t("registro.total_jornada")}</span>

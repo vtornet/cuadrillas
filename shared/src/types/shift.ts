@@ -32,6 +32,8 @@ export interface AuxiliarDeJornada {
 export interface Shift extends RegistroSincronizable {
   crewId: string;
   fecha: FechaISO;
+  /** Finca donde se trabaja ese día. Texto libre (opcional). */
+  finca?: string;
   horaInicio: HoraISO | null;
   horaFin: HoraISO | null;
   productId: string;

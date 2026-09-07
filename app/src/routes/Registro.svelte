@@ -11,6 +11,7 @@
   import FirmaSheet from "../lib/components/FirmaSheet.svelte";
   import EnviarAsistenciaSheet from "../lib/components/EnviarAsistenciaSheet.svelte";
   import AuxiliarSheet from "../lib/components/AuxiliarSheet.svelte";
+  import CabeceraParte from "../lib/components/CabeceraParte.svelte";
 
   let q = $state("");
   let scannerAbierto = $state(false);
@@ -63,15 +64,6 @@
       : null,
   );
 
-  const infoJornada = $derived(
-    jornada.producto && jornada.unidad && jornada.shift
-      ? i18n.t("registro.jornada_info", {
-          producto: etiquetaProducto(jornada.producto),
-          unidad: jornada.unidad.name,
-          fecha: jornada.shift.fecha,
-        })
-      : "",
-  );
 
   async function onScan(texto: string): Promise<void> {
     scannerAbierto = false;
@@ -120,8 +112,15 @@
   {:else}
     <header class="cabecera">
       <AppBar titulo={i18n.t("app.nombre")} />
-      {#if infoJornada}
-        <p class="jornada-info">{infoJornada}</p>
+      {#if jornada.shift && jornada.producto && jornada.unidad}
+        <CabeceraParte
+          fecha={jornada.shift.fecha}
+          finca={jornada.shift.finca}
+          producto={etiquetaProducto(jornada.producto)}
+          unidad={jornada.unidad.name}
+          nRecolectores={jornada.recolectores.length}
+          nAuxiliares={jornada.auxiliares.length}
+        />
       {/if}
       <button
         type="button"
