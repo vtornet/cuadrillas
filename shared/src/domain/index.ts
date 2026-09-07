@@ -5,3 +5,4 @@ export * from "./stats";
 export * from "./settlement";
 export * from "./rgpd";
 export * from "./attendance";
+export * from "./products";

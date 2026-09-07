@@ -6,7 +6,10 @@ import type {
   UnitType,
   Worker,
 } from "@cuadrilla/shared";
-import { anonimizarWorker as anonimizarWorkerPuro } from "@cuadrilla/shared/domain";
+import {
+  anonimizarWorker as anonimizarWorkerPuro,
+  etiquetaProducto,
+} from "@cuadrilla/shared/domain";
 import { persistir } from "../db/repositories/base";
 import { tablaPorEntidad } from "../db/tablas";
 import { crewsDeOrg } from "../db/repositories/crews";
@@ -102,7 +105,8 @@ class GestionStore {
 
   nombreProducto(id: string | null): string {
     if (!id) return "";
-    return this.products.find((p) => p.id === id)?.name ?? "?";
+    const p = this.products.find((p) => p.id === id);
+    return p ? etiquetaProducto(p) : "?";
   }
   nombreUnidad(id: string): string {
     return this.units.find((u) => u.id === id)?.name ?? "?";

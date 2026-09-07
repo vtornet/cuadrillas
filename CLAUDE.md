@@ -43,8 +43,10 @@ código fuente `.ts` vía alias (`@cuadrilla/shared` → `shared/src/index.ts`,
 
 - **`shared/`** — tipos + **lógica de dominio pura** (`shared/src/domain/`). Sin IO, sin
   framework. Se usa **igual en cliente y servidor**. Aquí vive todo lo testeable de verdad:
-  `merge.ts` (LWW), `settlement.ts` (liquidación), `stats.ts` (estadísticas),
-  `rates.ts` (tarifa vigente), `entries.ts` (conteos).
+  `merge.ts` (LWW), `settlement.ts` (liquidación — sin UI en el cliente del jefe, ver
+  nota en "Dinero"), `stats.ts` (estadísticas), `rates.ts` (tarifa vigente),
+  `entries.ts` (conteos), `attendance.ts` (tabla mensual de asistencia), `rgpd.ts`
+  (informe + anonimización de un trabajador), `products.ts` (`etiquetaProducto`).
 - **`app/`** — PWA Vite + Svelte 5 (runes) + `vite-plugin-pwa`. IndexedDB con Dexie.
 - **`api/`** — Express 4 + Mongoose 8 + zod. Enlace mágico + `/sync` + Stripe.
 
@@ -277,8 +279,8 @@ Los detalles de cada punto están en **Backlog sin planificar** justo debajo.
 
 **Modelo de datos (base para el resto)** — necesitan conversación de modelado con el usuario
 
-6. **Producto → separar "producto" y "variedad".** Bloquea la cabecera del parte; toca
-   `ComenzarJornadaSheet`, `stats.ts`, `settlement.ts`, exports.
+6. **Producto → separar "producto" y "variedad".** **HECHO (2026-09-07).** Dos campos
+   en `Product` (`name` + `variedad?`), etiqueta "Naranja · Navelina".
 7. **Auxiliares** (trabajadores que no cobran a destajo). Bloquea "total auxiliares" y el
    reparto en liquidación.
 8. **Cabecera del parte** (fecha, finca, producto, variedad, totales). Depende de 6, 7 y
@@ -379,15 +381,19 @@ Los detalles de cada punto están en **Backlog sin planificar** justo debajo.
   pintarla: cabecera de `Registro.svelte` (parte activo), `ParteDetalle.svelte`
   (Historial) y las cabeceras de los exports de liquidación/estadísticas. Pendiente de
   concretar el modelo de finca/variedad con el usuario.
-- **Producto: separar "producto" y "variedad".** Hoy `Product` es solo `{ name, activo }`
-  (`shared/src/types/product.ts`, form en `gestion/ProductForm.svelte`, clave i18n
-  `gestion.producto_nombre`). Debe pasar a tener **campo de producto** (p. ej. "Naranja")
-  **y campo de variedad** (p. ej. "Navelina"), además de lo ya existente. A decidir:
-  ¿dos campos en el mismo `Product` (`producto` + `variedad`, `name` pasa a derivado
-  "Naranja · Navelina"), o "producto" y "variedad" como entidades separadas? Afecta a
-  todo lo que hoy muestra `product.name`: `ComenzarJornadaSheet`, `Registro.svelte`
-  (`registro.jornada_info`), `stats.ts`, `settlement.ts`, exports CSV/XLSX y la cabecera
-  del parte de arriba. Migración: los `Product` actuales quedan con `variedad` vacía.
+- **Producto: producto + variedad — hecho (2026-09-07).** Decidido: **dos campos en el
+  mismo `Product`** (no entidades separadas), variedad **opcional**. `Product` ahora
+  `{ name, variedad?, activo }` (`name` = producto, p. ej. "Naranja"; `variedad`, p. ej.
+  "Navelina"). Helper puro `shared/domain/products.ts` → `etiquetaProducto(p)` =
+  "Naranja · Navelina" o "Naranja" si no hay variedad; se usa en `Gestion` (lista +
+  `nombreProducto` del store), `ComenzarJornadaSheet`, `UnitForm` (selector de producto),
+  `Registro`/`ParteDetalle` (`registro.jornada_info` + `EnviarAsistenciaSheet`),
+  `Historial`. Form: `ProductForm.svelte` con campo "Producto" + "Variedad (opcional)"
+  (i18n `gestion.producto_nombre` ahora "Producto", nueva `gestion.producto_variedad`).
+  Migración: no hace falta — `variedad` es opcional, los `Product` sin ella se muestran a
+  secas y sincronizan igual (`strict:false` en el servidor). Seed demo: Naranja ·
+  Navelina. `settlement.ts`/`stats.ts` usan `productId` (id), no el nombre — sin cambios.
+  Tests: `shared/tests/products.test.ts`, caso nuevo en `app/tests/gestion.test.ts`.
 - **Aviso al finalizar si hay recolectores a 0.** Al cerrar una jornada, si algún
   recolector presente no tiene ninguna anotación, mostrar un aviso ("Fulano no tiene
   anotaciones, ¿finalizar con 0?") antes de cerrar, con opción de seguir de todas formas

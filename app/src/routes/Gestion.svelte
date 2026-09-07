@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import type { Crew, Group, Product, UnitType, Worker } from "@cuadrilla/shared";
+  import { etiquetaProducto } from "@cuadrilla/shared/domain";
   import { i18n } from "../lib/i18n/i18n.svelte";
   import { gestion } from "../lib/stores/gestion.svelte";
   import AppBar from "../lib/components/AppBar.svelte";
@@ -102,7 +103,7 @@
     {:else if tab === "products"}
       {#each gestion.products as p (p.id)}
         <button type="button" class="fila-gestion" onclick={() => editar(p)}>
-          <span class="fg-main">{p.name}</span>
+          <span class="fg-main">{etiquetaProducto(p)}</span>
           {#if p.activo === 0}
             <span class="fg-sub">{i18n.t("gestion.inactivo")}</span>
           {/if}

@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import type { Entry, Product, Shift, UnitType, Worker } from "@cuadrilla/shared";
-  import { sumarConteos } from "@cuadrilla/shared/domain";
+  import { etiquetaProducto, sumarConteos } from "@cuadrilla/shared/domain";
   import { i18n } from "../i18n/i18n.svelte";
   import { sesion } from "../stores/sesion.svelte";
   import type { CambiosWorker } from "../stores/jornada.svelte";
@@ -52,7 +52,7 @@
   const infoParte = $derived(
     shift && producto && unidad
       ? i18n.t("registro.jornada_info", {
-          producto: producto.name,
+          producto: etiquetaProducto(producto),
           unidad: unidad.name,
           fecha: shift.fecha,
         })
@@ -303,7 +303,7 @@
     <EnviarAsistenciaSheet
       {shift}
       {workers}
-      producto={producto?.name ?? ""}
+      producto={etiquetaProducto(producto)}
       unidad={unidad?.name ?? ""}
       grupos={trabajaPorGrupos ? grupos : undefined}
       onclose={() => (enviarAsisAbierto = false)}

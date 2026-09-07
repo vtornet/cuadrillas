@@ -81,6 +81,21 @@ describe("gestion store CRUD", () => {
     expect(await db.pendingOps.count()).toBe(2);
   });
 
+  it("guarda producto con variedad y nombreProducto muestra la etiqueta", async () => {
+    await gestion.guardar(
+      "product",
+      producto({ id: "p1", name: "Naranja", variedad: "Navelina" }),
+    );
+    expect((await db.products.get("p1"))?.variedad).toBe("Navelina");
+    expect(gestion.nombreProducto("p1")).toBe("Naranja · Navelina");
+
+    await gestion.guardar(
+      "product",
+      producto({ id: "p2", name: "Limon" }),
+    );
+    expect(gestion.nombreProducto("p2")).toBe("Limon");
+  });
+
   it("eliminar marca lapida y lo saca de la lista", async () => {
     const p = producto({ id: "p1" });
     await gestion.guardar("product", p);

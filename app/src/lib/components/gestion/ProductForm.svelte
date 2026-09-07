@@ -13,14 +13,23 @@
     const reg = registro;
     return {
       reg,
-      ini: { name: reg?.name ?? "", activo: (reg?.activo ?? 1) === 1 },
+      ini: {
+        name: reg?.name ?? "",
+        variedad: reg?.variedad ?? "",
+        activo: (reg?.activo ?? 1) === 1,
+      },
     };
   });
 
   let name = $state(ini.name);
+  let variedad = $state(ini.variedad);
   let activo = $state(ini.activo);
 
-  const dirty = $derived(name.trim() !== ini.name || activo !== ini.activo);
+  const dirty = $derived(
+    name.trim() !== ini.name ||
+      variedad.trim() !== ini.variedad ||
+      activo !== ini.activo,
+  );
   const valido = $derived(name.trim().length > 0);
 
   function construir(): Product {
@@ -28,6 +37,7 @@
       id: reg?.id ?? crypto.randomUUID(),
       organizationId: reg?.organizationId ?? sesion.organizationId,
       name: name.trim(),
+      variedad: variedad.trim() || undefined,
       activo: activo ? 1 : 0,
       updatedAt: Date.now(),
       deleted: 0,
@@ -49,6 +59,10 @@
   <label class="campo">
     <span>{i18n.t("gestion.producto_nombre")}</span>
     <input type="text" bind:value={name} autocomplete="off" />
+  </label>
+  <label class="campo">
+    <span>{i18n.t("gestion.producto_variedad")}</span>
+    <input type="text" bind:value={variedad} autocomplete="off" />
   </label>
   <label class="campo campo-check">
     <input type="checkbox" bind:checked={activo} />

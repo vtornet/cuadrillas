@@ -1,6 +1,7 @@
 <script lang="ts">
   import { untrack } from "svelte";
   import type { UnitType } from "@cuadrilla/shared";
+  import { etiquetaProducto } from "@cuadrilla/shared/domain";
   import { i18n } from "../../i18n/i18n.svelte";
   import { sesion } from "../../stores/sesion.svelte";
   import { gestion } from "../../stores/gestion.svelte";
@@ -67,7 +68,7 @@
     <select bind:value={productId}>
       <option value="">{i18n.t("gestion.global")}</option>
       {#each gestion.products as p (p.id)}
-        <option value={p.id}>{p.name}</option>
+        <option value={p.id}>{etiquetaProducto(p)}</option>
       {/each}
     </select>
   </label>

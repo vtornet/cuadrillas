@@ -65,6 +65,7 @@ export async function seedDemo(): Promise<void> {
     id: PRODUCT_ID,
     organizationId: ORG_ID,
     name: "Naranja",
+    variedad: "Navelina",
     activo: 1,
     updatedAt: ahora,
     deleted: 0,

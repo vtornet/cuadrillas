@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { etiquetaProducto } from "@cuadrilla/shared/domain";
   import { jornada } from "../lib/stores/jornada.svelte";
   import { i18n } from "../lib/i18n/i18n.svelte";
   import AppBar from "../lib/components/AppBar.svelte";
@@ -48,7 +49,7 @@
   const infoJornada = $derived(
     jornada.producto && jornada.unidad && jornada.shift
       ? i18n.t("registro.jornada_info", {
-          producto: jornada.producto.name,
+          producto: etiquetaProducto(jornada.producto),
           unidad: jornada.unidad.name,
           fecha: jornada.shift.fecha,
         })
@@ -225,7 +226,7 @@
       <EnviarAsistenciaSheet
         shift={jornada.shift}
         workers={jornada.workers}
-        producto={jornada.producto?.name ?? ""}
+        producto={etiquetaProducto(jornada.producto)}
         unidad={jornada.unidad?.name ?? ""}
         grupos={jornada.trabajaPorGrupos ? jornada.grupos : undefined}
         onclose={() => (enviarAsisAbierto = false)}

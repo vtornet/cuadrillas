@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import type { Product, Shift, UnitType } from "@cuadrilla/shared";
+  import { etiquetaProducto } from "@cuadrilla/shared/domain";
   import { i18n } from "../lib/i18n/i18n.svelte";
   import { sesion } from "../lib/stores/sesion.svelte";
   import { crewsDelForeman } from "../lib/db/repositories/crews";
@@ -37,7 +38,8 @@
   });
 
   function nombreProducto(id: string): string {
-    return productos.find((p) => p.id === id)?.name ?? "?";
+    const p = productos.find((p) => p.id === id);
+    return p ? etiquetaProducto(p) : "?";
   }
   function nombreUnidad(id: string): string {
     return unidades.find((u) => u.id === id)?.name ?? "?";

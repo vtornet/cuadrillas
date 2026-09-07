@@ -8,6 +8,7 @@
     UnitType,
     Worker,
   } from "@cuadrilla/shared";
+  import { etiquetaProducto } from "@cuadrilla/shared/domain";
   import { i18n } from "../i18n/i18n.svelte";
   import { sesion } from "../stores/sesion.svelte";
   import { jornada } from "../stores/jornada.svelte";
@@ -191,7 +192,7 @@
           <span>{i18n.t("jornada.producto")}</span>
           <select bind:value={productId} onchange={alCambiarProducto}>
             {#each products as p (p.id)}
-              <option value={p.id}>{p.name}</option>
+              <option value={p.id}>{etiquetaProducto(p)}</option>
             {/each}
           </select>
         </label>
