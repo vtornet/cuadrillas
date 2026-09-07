@@ -2,7 +2,6 @@ import type {
   Crew,
   Group,
   Product,
-  Rate,
   RegistroSincronizable,
   UnitType,
   Worker,
@@ -17,15 +16,16 @@ import {
   todasLasUnidades,
   todosLosProductos,
 } from "../db/repositories/products";
-import { todasLasTarifas } from "../db/repositories/rates";
 import { sesion } from "./sesion.svelte";
 import { jornada } from "./jornada.svelte";
 
+// Nota: las tarifas (`Rate`) ya no se editan desde la app del jefe de cuadrilla
+// (no maneja datos económicos). La entidad sigue existiendo y sincronizándose
+// para un futuro panel de empresa/gestor que calcule liquidaciones.
 export type TipoGestion =
   | "worker"
   | "product"
   | "unitType"
-  | "rate"
   | "crew"
   | "group";
 
@@ -39,7 +39,6 @@ class GestionStore {
   groups = $state<Group[]>([]);
   products = $state<Product[]>([]);
   units = $state<UnitType[]>([]);
-  rates = $state<Rate[]>([]);
 
   async cargar(): Promise<void> {
     const org = sesion.organizationId;
@@ -48,7 +47,6 @@ class GestionStore {
     this.groups = await todosLosGrupos(org);
     this.products = await todosLosProductos(org);
     this.units = await todasLasUnidades(org);
-    this.rates = await todasLasTarifas(org);
   }
 
   async guardar(

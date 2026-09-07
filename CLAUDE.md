@@ -5,7 +5,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Qué es
 
 PWA para jefes de cuadrilla que trabajan a destajo. Registro en campo **sin cobertura**,
-estadísticas y liquidaciones. Monorepo pnpm con 3 paquetes.
+estadísticas y asistencia. Monorepo pnpm con 3 paquetes.
 
 ## Comandos
 
@@ -99,8 +99,8 @@ Stores singleton en archivos `*.svelte.ts`:
   síncrono <100 ms, IndexedDB + cola después). `activeShiftId` en `meta`. **Un solo parte
   activo a la vez** (simplificación deliberada, sin selector de "otras jornadas abiertas").
 - `gestion.svelte.ts` — CRUD genérico `guardar(tipo, record)` / `eliminar(tipo, record)`.
-- `router.svelte.ts` — router por hash (`#/registro`, …). Vistas: registro, estadisticas,
-  liquidacion, gestion, cuenta. **No hay pantalla "jornada" separada**: `Registro.svelte`
+- `router.svelte.ts` — router por hash (`#/registro`, …). Vistas: registro, historial,
+  estadisticas, gestion, cuenta, privacidad. **No hay pantalla "jornada" separada**: `Registro.svelte`
   es autosuficiente — con parte activo muestra el registro normal y un botón "Finalizar
   jornada" al final de la lista; sin parte activo, un botón "Comenzar jornada" que abre
   `ComenzarJornadaSheet.svelte` (hoja modal con cuadrilla/producto/unidad/fecha/hora/
@@ -112,6 +112,13 @@ Stores singleton en archivos `*.svelte.ts`:
 Siempre **céntimos enteros**. `Rate.amountPerUnit` = céntimos. Conversiones en
 `app/src/lib/money.ts`. La tarifa se resuelve por `Shift.fecha` (día natural), **no** por
 el timestamp de cada registro (`resolverTarifa` en `shared/domain/rates.ts`).
+
+**Nota (2026-09-07):** la app del jefe de cuadrilla **ya no maneja datos económicos**.
+La pantalla Liquidación, sus exports y la pestaña "Tarifas" de Datos se han quitado. La
+entidad `Rate` sigue sincronizándose y `shared/domain/settlement.ts` + `rates.ts` +
+tests se conservan intactos para un futuro **panel de empresa/gestor** que calcule
+liquidaciones. `money.ts` sigue en uso (transporte en `WorkerForm`, importes en el
+informe RGPD, parseo en el import de trabajadores).
 
 ### Planes / Stripe
 
@@ -176,12 +183,13 @@ concretos de Appstracta (dirección, CIF, correo de contacto).
 
 ### Transporte (hecho)
 
-`Worker.transporteCentimos` (0 = no se le paga). En la liquidación,
-`calcularLiquidacion` cuenta `diasTrabajados` (fechas distintas con asistencia o
-registro) y `transporteCentimos = transporte/día × diasTrabajados`. `Liquidacion` separa
-`destajoCentimos` / `transporteCentimos` / `totalCentimos`. La pantalla y los exports
-(CSV resumen por trabajador, XLSX hoja "Resumen") muestran el transporte en columna
-aparte. Formulario en `gestion/WorkerForm.svelte` (checkbox + importe).
+`Worker.transporteCentimos` (0 = no se le paga). Formulario en
+`gestion/WorkerForm.svelte` (checkbox + importe). En `settlement.ts` (dominio, ya sin
+pantalla en la app del jefe — ver nota en "Dinero"), `calcularLiquidacion` cuenta
+`diasTrabajados` (fechas distintas con asistencia o registro) y
+`transporteCentimos = transporte/día × diasTrabajados`; `Liquidacion` separa
+`destajoCentimos` / `transporteCentimos` / `totalCentimos`. Queda para el futuro panel
+de empresa/gestor.
 
 ### Reestructuración "el parte" (en marcha, 2026-09-04)
 
@@ -261,9 +269,8 @@ Los detalles de cada punto están en **Backlog sin planificar** justo debajo.
 
 **Pivote de producto: el jefe de cuadrilla no maneja economía** (decidido 2026-09-07)
 
-3. **Eliminar la sección Liquidación** (vista, entrada de menú, exports CSV/XLSX de
-   liquidación). La lógica de dominio `settlement.ts` se **conserva** para un futuro rol
-   gestor/owner; solo desaparece del cliente del jefe.
+3. **Eliminar la sección Liquidación.** **HECHO (2026-09-07).** Fuera: vista, menú,
+   exports CSV/XLSX, pestaña "Tarifas". `settlement.ts` + `rates.ts` + tests se conservan.
 4. **Tabla mensual de asistencia** — nueva vista que ocupa el hueco de Liquidación:
    trabajadores en filas × días del mes en columnas, celdas coloreadas por asistencia.
 5. **Enviar asistencia desde un parte** — una vez creado un parte, opción de generar la
@@ -307,16 +314,18 @@ Los detalles de cada punto están en **Backlog sin planificar** justo debajo.
 - **Estructura de navegación.** Primer lote de renombrados de menús ya aplicado (ver
   arriba: "Iniciar parte", "Datos"). Quedan pendientes más cambios de nombres/estructura
   que el usuario irá explicando.
-- **Eliminar la sección Liquidación (2026-09-07).** El jefe de cuadrilla **no maneja
-  datos económicos**. Quitar del cliente: vista `app/src/routes/Liquidacion.svelte`, la
-  entrada `"liquidacion"` en `router.svelte.ts` (`Vista` + `VISTAS`) y en `MenuSheet`,
-  los exports de liquidación (`app/src/lib/export/csv.ts` y `xlsx.ts` en la parte de
-  liquidación, `compartir.ts` se reutiliza). La lógica de dominio `shared/src/domain/
-  settlement.ts` y sus tests **se conservan** (sirven para un futuro rol gestor/owner o
-  un panel de empresa). Revisar que `Estadisticas.svelte` no muestre importes (hoy usa
-  `stats.ts`, que es de unidades/horas, no dinero — confirmar). `Rate`/tarifas: decidir
-  si el jefe sigue viéndolas en "Datos" (probablemente sí, para que las unidades tengan
-  sentido) o también se ocultan.
+- **Eliminar la sección Liquidación — hecho (2026-09-07).** El jefe de cuadrilla no
+  maneja datos económicos. Borrados: `Liquidacion.svelte`, `export/csv.ts`,
+  `export/xlsx.ts`, `RateForm.svelte`, `export.test.ts` (el test de `slug` pasó a
+  `compartir.test.ts`). Quitada la vista `"liquidacion"` de `router` + `MenuSheet` +
+  `App.svelte`, la pestaña **"Tarifas"** de `Gestion.svelte` y `"rate"` de
+  `gestion.svelte.ts` (`TipoGestion`, `gestion.rates`). Conservados intactos:
+  `shared/domain/settlement.ts` + `rates.ts` (dominio) y sus tests, `app/.../repositories/
+  rates.ts`, la entidad `Rate` en `ENTIDADES`/`tablas.ts`/schema Dexie (sigue
+  sincronizando) — para un futuro panel de empresa/gestor. `Estadisticas.svelte` ya era
+  de unidades/horas, sin dinero (confirmado). `xlsx` (dependencia) se queda: lo usa el
+  import de trabajadores. i18n: fuera `menu.liquidacion`, secciones `liq`/`export`,
+  claves `gestion.tarifa*`/`desde_fecha`.
 - **Tabla mensual de asistencia (2026-09-07).** Nueva vista (ocupa el hueco que deja
   Liquidación en el menú). Tabla: **filas = trabajadores**, **columnas = días del mes**,
   cada celda coloreada según si ese trabajador tuvo asistencia ese día. Fuente:

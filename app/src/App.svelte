@@ -3,7 +3,6 @@
   import Registro from "./routes/Registro.svelte";
   import Historial from "./routes/Historial.svelte";
   import Estadisticas from "./routes/Estadisticas.svelte";
-  import Liquidacion from "./routes/Liquidacion.svelte";
   import Gestion from "./routes/Gestion.svelte";
   import Cuenta from "./routes/Cuenta.svelte";
   import Privacidad from "./routes/Privacidad.svelte";
@@ -59,8 +58,6 @@
       <Historial />
     {:else if router.vista === "estadisticas"}
       <Estadisticas />
-    {:else if router.vista === "liquidacion"}
-      <Liquidacion />
     {:else if router.vista === "gestion"}
       <Gestion />
     {:else if router.vista === "cuenta"}

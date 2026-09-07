@@ -724,7 +724,7 @@ button:disabled {
   margin-top: 4px;
 }
 
-/* ---- Liquidacion ---- */
+/* ---- Aviso (recuadro naranja) ---- */
 .aviso-tarifa {
   padding: 10px 12px;
   border: 2px solid var(--c-aviso);
@@ -733,87 +733,6 @@ button:disabled {
   color: var(--c-aviso);
   font-size: 14px;
   margin: 10px 0;
-}
-
-.liq-lista {
-  list-style: none;
-  margin: 10px 0 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.liq-fila {
-  border: 2px solid var(--c-borde);
-  border-radius: var(--radio);
-  padding: 10px;
-  background: var(--c-superficie);
-}
-
-.lf-cab {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 10px;
-}
-
-.lf-nombre {
-  font-weight: 600;
-}
-
-.lf-importe {
-  font-weight: 800;
-  font-variant-numeric: tabular-nums;
-  color: var(--c-primario);
-}
-
-.lf-linea {
-  display: flex;
-  justify-content: space-between;
-  gap: 10px;
-  font-size: 13px;
-  color: var(--c-texto-suave);
-  margin-top: 4px;
-}
-
-.lf-sin {
-  color: var(--c-peligro);
-  font-style: normal;
-  margin-left: 6px;
-}
-
-.liq-desglose {
-  display: flex;
-  justify-content: space-between;
-  font-size: 14px;
-  color: var(--c-texto-suave);
-  margin-top: 8px;
-}
-
-.liq-desglose + .liq-desglose {
-  margin-top: 2px;
-}
-
-.liq-total {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  margin-top: 10px;
-  padding-top: 12px;
-  border-top: 2px solid var(--c-borde);
-}
-
-.liq-total strong {
-  font-size: var(--f-conteo);
-  color: var(--c-primario);
-  font-variant-numeric: tabular-nums;
-}
-
-.liq-msg {
-  margin-top: 12px;
-  color: var(--c-ok);
-  font-weight: 600;
 }
 
 /* ---- Planes ---- */

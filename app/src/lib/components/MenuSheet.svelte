@@ -8,7 +8,6 @@
     { v: "registro", label: i18n.t("menu.registrar") },
     { v: "historial", label: i18n.t("menu.historial") },
     { v: "estadisticas", label: i18n.t("menu.estadisticas") },
-    { v: "liquidacion", label: i18n.t("menu.liquidacion") },
     { v: "gestion", label: i18n.t("menu.gestion") },
     { v: "cuenta", label: i18n.t("menu.cuenta") },
     { v: "privacidad", label: i18n.t("menu.privacidad") },

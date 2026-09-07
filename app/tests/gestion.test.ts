@@ -1,6 +1,6 @@
 import "fake-indexeddb/auto";
 import { beforeEach, describe, expect, it } from "vitest";
-import type { Crew, Group, Product, Rate, Worker } from "@cuadrilla/shared";
+import type { Crew, Group, Product, Worker } from "@cuadrilla/shared";
 import { db } from "../src/lib/db/dexie";
 import { gestion } from "../src/lib/stores/gestion.svelte";
 import { sesion } from "../src/lib/stores/sesion.svelte";
@@ -89,25 +89,6 @@ describe("gestion store CRUD", () => {
     expect(gestion.products.find((x) => x.id === "p1")).toBeUndefined();
     const guardado = await db.products.get("p1");
     expect(guardado?.deleted).toBe(1);
-  });
-
-  it("guarda una tarifa con importe en centimos", async () => {
-    const r: Rate = {
-      id: "r1",
-      organizationId: ORG,
-      productId: "p1",
-      unitTypeId: "u1",
-      amountPerUnit: 18,
-      validFrom: "2026-01-01",
-      validTo: null,
-      updatedAt: 1,
-      deleted: 0,
-    };
-    await gestion.guardar("rate", r);
-
-    const guardada = await db.rates.get("r1");
-    expect(guardada?.amountPerUnit).toBe(18);
-    expect(gestion.rates).toHaveLength(1);
   });
 
   it("crea una cuadrilla y aparece en la lista", async () => {
