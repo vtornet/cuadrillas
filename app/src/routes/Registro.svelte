@@ -8,6 +8,7 @@
   import QrScanner from "../lib/components/QrScanner.svelte";
   import ComenzarJornadaSheet from "../lib/components/ComenzarJornadaSheet.svelte";
   import FirmaSheet from "../lib/components/FirmaSheet.svelte";
+  import EnviarAsistenciaSheet from "../lib/components/EnviarAsistenciaSheet.svelte";
 
   let q = $state("");
   let scannerAbierto = $state(false);
@@ -15,6 +16,7 @@
   let grupoAbiertoId = $state<string | null>(null);
   let comenzarAbierto = $state(false);
   let firmaAbierta = $state(false);
+  let enviarAsisAbierto = $state(false);
 
   const visiblesWorkers = $derived.by(() => {
     const t = q.trim().toLowerCase();
@@ -96,6 +98,13 @@
       {#if infoJornada}
         <p class="jornada-info">{infoJornada}</p>
       {/if}
+      <button
+        type="button"
+        class="enviar-asis-link"
+        onclick={() => (enviarAsisAbierto = true)}
+      >
+        {i18n.t("enviar_asis.abrir")}
+      </button>
       <div class="total">
         <span>{i18n.t("registro.total_jornada")}</span>
         <strong>{jornada.total}</strong>
@@ -209,6 +218,17 @@
       <FirmaSheet
         onfinalizar={(firma, firmante) => finalizar(firma, firmante)}
         onclose={() => (firmaAbierta = false)}
+      />
+    {/if}
+
+    {#if enviarAsisAbierto && jornada.shift}
+      <EnviarAsistenciaSheet
+        shift={jornada.shift}
+        workers={jornada.workers}
+        producto={jornada.producto?.name ?? ""}
+        unidad={jornada.unidad?.name ?? ""}
+        grupos={jornada.trabajaPorGrupos ? jornada.grupos : undefined}
+        onclose={() => (enviarAsisAbierto = false)}
       />
     {/if}
   {/if}

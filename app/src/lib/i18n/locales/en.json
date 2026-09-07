@@ -40,6 +40,16 @@
     "sin_datos": "No attendance recorded this month.",
     "exportar": "Export CSV"
   },
+  "enviar_asis": {
+    "abrir": "Send attendance",
+    "titulo": "Send attendance",
+    "asunto": "Attendance {cuadrilla} {fecha}",
+    "copiar": "Copy",
+    "copiado": "Copied",
+    "whatsapp": "WhatsApp",
+    "email": "Email",
+    "compartir": "Share"
+  },
   "plan": {
     "titulo": "Plan",
     "free": "Free plan",

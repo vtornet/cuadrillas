@@ -40,6 +40,16 @@
     "sin_datos": "No hay asistencia registrada este mes.",
     "exportar": "Exportar CSV"
   },
+  "enviar_asis": {
+    "abrir": "Enviar asistencia",
+    "titulo": "Enviar asistencia",
+    "asunto": "Asistencia {cuadrilla} {fecha}",
+    "copiar": "Copiar",
+    "copiado": "Copiado",
+    "whatsapp": "WhatsApp",
+    "email": "Email",
+    "compartir": "Compartir"
+  },
   "plan": {
     "titulo": "Plan",
     "free": "Plan gratuito",

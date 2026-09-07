@@ -18,6 +18,7 @@
   import WorkerRow from "./WorkerRow.svelte";
   import WorkerSheet from "./WorkerSheet.svelte";
   import GroupSheet from "./GroupSheet.svelte";
+  import EnviarAsistenciaSheet from "./EnviarAsistenciaSheet.svelte";
 
   let { shiftId, onclose }: { shiftId: string; onclose: () => void } = $props();
 
@@ -32,6 +33,7 @@
   let confirmandoEditar = $state(false);
   let workerAbiertoId = $state<string | null>(null);
   let grupoAbiertoId = $state<string | null>(null);
+  let enviarAsisAbierto = $state(false);
 
   const conteos = $derived(sumarConteos(entries));
   const total = $derived(Object.values(conteos).reduce((a, b) => a + b, 0));
@@ -282,10 +284,31 @@
       {/if}
     {/if}
 
+    {#if !cargando && shift && modo === "consulta"}
+      <button
+        type="button"
+        class="btn-secundario btn-ancho"
+        onclick={() => (enviarAsisAbierto = true)}
+      >
+        {i18n.t("enviar_asis.abrir")}
+      </button>
+    {/if}
+
     <button type="button" class="btn-secundario btn-ancho" onclick={onclose}>
       {i18n.t("historial.volver")}
     </button>
   </div>
+
+  {#if enviarAsisAbierto && shift}
+    <EnviarAsistenciaSheet
+      {shift}
+      {workers}
+      producto={producto?.name ?? ""}
+      unidad={unidad?.name ?? ""}
+      grupos={trabajaPorGrupos ? grupos : undefined}
+      onclose={() => (enviarAsisAbierto = false)}
+    />
+  {/if}
 
   {#if workerAbierto}
     {@const wa = workerAbierto}

@@ -272,8 +272,8 @@ Los detalles de cada punto están en **Backlog sin planificar** justo debajo.
 3. **Eliminar la sección Liquidación.** **HECHO (2026-09-07).** Fuera: vista, menú,
    exports CSV/XLSX, pestaña "Tarifas". `settlement.ts` + `rates.ts` + tests se conservan.
 4. **Tabla mensual de asistencia.** **HECHO (2026-09-07).** Vista `#/asistencia`.
-5. **Enviar asistencia desde un parte** — una vez creado un parte, opción de generar la
-   lista de trabajadores incluidos y enviarla (WhatsApp / email / compartir).
+5. **Enviar asistencia desde un parte.** **HECHO (2026-09-07).** Botón en `Registro`
+   (parte activo) y `ParteDetalle` (Historial).
 
 **Modelo de datos (base para el resto)** — necesitan conversación de modelado con el usuario
 
@@ -339,13 +339,17 @@ Los detalles de cada punto están en **Backlog sin planificar** justo debajo.
   `shared/tests/attendance.test.ts`, `app/tests/asistencia-export.test.ts`.
   Gap conocido: agrega todas las cuadrillas del jefe sin selector (para el plan
   multi-cuadrilla habría que añadirlo); no distingue "presente sin anotaciones".
-- **Enviar asistencia desde un parte (2026-09-07).** Una vez creado un parte (en
-  `Registro.svelte` con parte activo, y/o en `ParteDetalle.svelte`), botón "Enviar
-  asistencia" → genera una lista legible de los trabajadores incluidos en ese parte
-  (nombre, y quizá cuadrilla/grupo y fecha) → opción de enviar por **WhatsApp**
-  (`https://wa.me/?text=...`), **email** (`mailto:?body=...`) o compartir del sistema
-  (Web Share API, ya usada en `app/src/lib/export/compartir.ts`). Texto plano; sin
-  importes.
+- **Enviar asistencia desde un parte — hecho (2026-09-07).** Botón "Enviar asistencia":
+  en `Registro.svelte` un enlace bajo la info de la jornada (parte activo); en
+  `ParteDetalle.svelte` (Historial, modo consulta) antes de "Volver". Abre
+  `EnviarAsistenciaSheet.svelte`: previsualización del texto + acciones **Copiar**
+  (`navigator.clipboard` con fallback `execCommand`), **WhatsApp** (`wa.me/?text=`),
+  **Email** (`mailto:?subject=&body=`) y **Compartir** (Web Share API `navigator.share
+  ({text})`, solo si existe). Texto plano en `app/src/lib/export/asistenciaParte.ts`
+  (`textoAsistenciaParte`, puro): cabecera (cuadrilla, fecha DD/MM/AAAA, producto·unidad)
+  + lista numerada de asistentes ordenada por nombre + total; si el parte es por grupos,
+  añade el desglose por grupo. Sin importes. Los asistentes salen de los `workers`
+  cargados (activos), igual que la pantalla. Test: `app/tests/asistencia-parte.test.ts`.
 - **Perfil del jefe de cuadrilla + nombre en la firma — hecho (2026-09-07).**
   - **Modelo**: el perfil vive en el documento `Organization` (ya es entidad
     sincronizada). `Organization` ahora `extends RegistroSincronizable` (lleva
