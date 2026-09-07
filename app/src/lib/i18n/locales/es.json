@@ -22,8 +22,23 @@
     "historial": "Historial",
     "gestion": "Datos",
     "estadisticas": "Estadisticas",
+    "asistencia": "Asistencia",
     "cuenta": "Cuenta y sincronizacion",
     "privacidad": "Privacidad"
+  },
+  "export": {
+    "compartido": "Archivo compartido",
+    "descargado": "Archivo descargado",
+    "error": "No se pudo generar el archivo"
+  },
+  "asistencia": {
+    "titulo": "Asistencia",
+    "trabajador": "Trabajador",
+    "total": "Total",
+    "mes_anterior": "Mes anterior",
+    "mes_siguiente": "Mes siguiente",
+    "sin_datos": "No hay asistencia registrada este mes.",
+    "exportar": "Exportar CSV"
   },
   "plan": {
     "titulo": "Plan",

@@ -22,8 +22,23 @@
     "historial": "History",
     "gestion": "Data",
     "estadisticas": "Statistics",
+    "asistencia": "Attendance",
     "cuenta": "Account and sync",
     "privacidad": "Privacy"
+  },
+  "export": {
+    "compartido": "File shared",
+    "descargado": "File downloaded",
+    "error": "Could not generate the file"
+  },
+  "asistencia": {
+    "titulo": "Attendance",
+    "trabajador": "Worker",
+    "total": "Total",
+    "mes_anterior": "Previous month",
+    "mes_siguiente": "Next month",
+    "sin_datos": "No attendance recorded this month.",
+    "exportar": "Export CSV"
   },
   "plan": {
     "titulo": "Plan",

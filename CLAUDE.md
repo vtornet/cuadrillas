@@ -100,7 +100,7 @@ Stores singleton en archivos `*.svelte.ts`:
   activo a la vez** (simplificación deliberada, sin selector de "otras jornadas abiertas").
 - `gestion.svelte.ts` — CRUD genérico `guardar(tipo, record)` / `eliminar(tipo, record)`.
 - `router.svelte.ts` — router por hash (`#/registro`, …). Vistas: registro, historial,
-  estadisticas, gestion, cuenta, privacidad. **No hay pantalla "jornada" separada**: `Registro.svelte`
+  estadisticas, asistencia, gestion, cuenta, privacidad. **No hay pantalla "jornada" separada**: `Registro.svelte`
   es autosuficiente — con parte activo muestra el registro normal y un botón "Finalizar
   jornada" al final de la lista; sin parte activo, un botón "Comenzar jornada" que abre
   `ComenzarJornadaSheet.svelte` (hoja modal con cuadrilla/producto/unidad/fecha/hora/
@@ -271,8 +271,7 @@ Los detalles de cada punto están en **Backlog sin planificar** justo debajo.
 
 3. **Eliminar la sección Liquidación.** **HECHO (2026-09-07).** Fuera: vista, menú,
    exports CSV/XLSX, pestaña "Tarifas". `settlement.ts` + `rates.ts` + tests se conservan.
-4. **Tabla mensual de asistencia** — nueva vista que ocupa el hueco de Liquidación:
-   trabajadores en filas × días del mes en columnas, celdas coloreadas por asistencia.
+4. **Tabla mensual de asistencia.** **HECHO (2026-09-07).** Vista `#/asistencia`.
 5. **Enviar asistencia desde un parte** — una vez creado un parte, opción de generar la
    lista de trabajadores incluidos y enviarla (WhatsApp / email / compartir).
 
@@ -326,13 +325,20 @@ Los detalles de cada punto están en **Backlog sin planificar** justo debajo.
   de unidades/horas, sin dinero (confirmado). `xlsx` (dependencia) se queda: lo usa el
   import de trabajadores. i18n: fuera `menu.liquidacion`, secciones `liq`/`export`,
   claves `gestion.tarifa*`/`desde_fecha`.
-- **Tabla mensual de asistencia (2026-09-07).** Nueva vista (ocupa el hueco que deja
-  Liquidación en el menú). Tabla: **filas = trabajadores**, **columnas = días del mes**,
-  cada celda coloreada según si ese trabajador tuvo asistencia ese día. Fuente:
-  `Shift.attendeeIds` + `Shift.fecha` de los partes del mes (± registros `Entry` si se
-  quiere distinguir "presente pero sin anotaciones"). Selector de mes. Pensar export
-  (XLSX/CSV) y cómo se ve en móvil (scroll horizontal con primera columna fija). Sin
-  datos económicos.
+- **Tabla mensual de asistencia — hecho (2026-09-07).** Vista `Asistencia.svelte`
+  (`router` `"asistencia"`, entrada en `MenuSheet` entre Estadísticas y Datos). Dominio
+  puro `shared/domain/attendance.ts` → `asistenciaMensual(shifts, workers, anio, mes)`:
+  rejilla días 1..N (con `finDeSemana`), fila por trabajador con `presente[]` (true si
+  está en `Shift.attendeeIds` de algún parte no borrado de ese día), `total` por
+  trabajador, `totalPorDia`, `totalGeneral`. Incluye trabajadores `activo:1` **o**
+  inactivos con actividad ese mes; excluye borrados. Vista: nav de mes (‹ mes ›, "mes
+  siguiente" bloqueado en el mes actual), tabla con **primera columna y cabecera
+  sticky**, scroll horizontal, fin de semana y día de hoy resaltados, fila de totales.
+  Export CSV (`app/src/lib/export/asistencia.ts` → `asistenciaACsv`, "X" por asistencia +
+  fila de totales) vía `compartirArchivo`. Sin datos económicos. Tests:
+  `shared/tests/attendance.test.ts`, `app/tests/asistencia-export.test.ts`.
+  Gap conocido: agrega todas las cuadrillas del jefe sin selector (para el plan
+  multi-cuadrilla habría que añadirlo); no distingue "presente sin anotaciones".
 - **Enviar asistencia desde un parte (2026-09-07).** Una vez creado un parte (en
   `Registro.svelte` con parte activo, y/o en `ParteDetalle.svelte`), botón "Enviar
   asistencia" → genera una lista legible de los trabajadores incluidos en ese parte

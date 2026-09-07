@@ -2,6 +2,7 @@ export type Vista =
   | "registro"
   | "historial"
   | "estadisticas"
+  | "asistencia"
   | "gestion"
   | "cuenta"
   | "privacidad";
@@ -10,6 +11,7 @@ const VISTAS: Vista[] = [
   "registro",
   "historial",
   "estadisticas",
+  "asistencia",
   "gestion",
   "cuenta",
   "privacidad",
