@@ -247,7 +247,7 @@ export function construirWorkers(
 
 /** Lee un .xlsx/.xls/.csv a matriz de celdas. SheetJS se carga bajo demanda. */
 export async function filasDeArchivo(file: File): Promise<unknown[][]> {
-  const XLSX = await import("xlsx");
+  const XLSX = (await import("xlsx-js-style")).default;
   const buf = await file.arrayBuffer();
   const wb = XLSX.read(buf, { type: "array" });
   const hoja = wb.Sheets[wb.SheetNames[0]];

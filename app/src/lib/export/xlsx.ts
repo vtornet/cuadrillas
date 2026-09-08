@@ -2,80 +2,136 @@ import type {
   InformeAsistencia,
   InformeParte,
 } from "@cuadrilla/shared/domain";
-import { fechaES } from "@cuadrilla/shared/domain";
 import { i18n } from "../i18n/i18n.svelte";
+import {
+  docAsistencia,
+  docParte,
+  type Align,
+  type Documento,
+} from "./documento";
 
 /**
- * Generación de Excel (.xlsx) de los informes de un parte. SheetJS se carga
- * bajo demanda.
+ * Excel (.xlsx) de los informes de un parte, con el mismo formato que el PDF:
+ * cabecera del parte en un bloque gris, cabeceras de columna en negrita
+ * centradas y bordes en todas las celdas con datos. Usa `xlsx-js-style` (fork
+ * de SheetJS con estilos), cargado bajo demanda.
  */
 
 const MIME =
   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
 
-type Fila = (string | number)[];
+const BORDE = { style: "thin", color: { rgb: "BFBFBF" } } as const;
+const BORDES = { top: BORDE, bottom: BORDE, left: BORDE, right: BORDE };
+const GRIS_CAB = "EBEBEB";
+const GRIS_CAJA = "F5F5F5";
 
-function filasCabecera(c: InformeAsistencia["cabecera"]): Fila[] {
-  const f: Fila[] = [
-    [i18n.t("jornada.cuadrilla"), c.cuadrilla],
-    [i18n.t("jornada.fecha"), fechaES(c.fecha)],
-  ];
-  if (c.finca) f.splice(1, 0, [i18n.t("jornada.finca").replace(/ \(.*\)$/, ""), c.finca]);
-  f.push([i18n.t("jornada.producto"), c.producto]);
-  if (c.unidad) f.push([i18n.t("jornada.unidad"), c.unidad]);
-  if (c.firmante) f.push([i18n.t("cabecera.firma_pdf"), c.firmante]);
-  return f;
-}
+type Estilo = Record<string, unknown>;
 
-async function libroABlob(aoas: { nombre: string; filas: Fila[] }[]): Promise<Blob> {
-  const XLSX = await import("xlsx");
-  const wb = XLSX.utils.book_new();
-  for (const { nombre, filas } of aoas) {
-    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(filas), nombre);
+const estiloCabColumna: Estilo = {
+  font: { bold: true },
+  fill: { fgColor: { rgb: GRIS_CAB } },
+  alignment: { horizontal: "center", vertical: "center" },
+  border: BORDES,
+};
+const estiloDato = (align: Align): Estilo => ({
+  alignment: { horizontal: align, vertical: "center" },
+  border: BORDES,
+});
+const estiloTotal = (align: Align): Estilo => ({
+  font: { bold: true },
+  alignment: { horizontal: align, vertical: "center" },
+  border: { ...BORDES, top: { style: "medium", color: { rgb: "808080" } } },
+});
+const estiloCaja: Estilo = {
+  fill: { fgColor: { rgb: GRIS_CAJA } },
+  border: BORDES,
+};
+
+async function libro(documento: Documento, hoja: string): Promise<Blob> {
+  const XLSX = (await import("xlsx-js-style")).default;
+
+  const ncols = Math.max(2, ...documento.tablas.map((t) => t.columnas.length));
+  const ws: Record<string, unknown> = {};
+  const merges: { s: { r: number; c: number }; e: { r: number; c: number } }[] =
+    [];
+  let R = 0;
+
+  const set = (r: number, c: number, v: string | number, s?: Estilo): void => {
+    const ref = XLSX.utils.encode_cell({ r, c });
+    ws[ref] = {
+      v,
+      t: typeof v === "number" ? "n" : "s",
+      ...(s ? { s } : {}),
+    };
+  };
+
+  // Título.
+  set(R, 0, documento.titulo, {
+    font: { bold: true, sz: 14 },
+    alignment: { horizontal: "left" },
+  });
+  merges.push({ s: { r: R, c: 0 }, e: { r: R, c: ncols - 1 } });
+  R += 2;
+
+  // Cabecera del parte (bloque gris).
+  for (const { etiqueta, valor } of documento.cabecera) {
+    set(R, 0, etiqueta, { ...estiloCaja, font: { bold: true } });
+    set(R, 1, valor, estiloCaja);
+    for (let c = 2; c < ncols; c++) set(R, c, "", estiloCaja);
+    if (ncols > 2) merges.push({ s: { r: R, c: 1 }, e: { r: R, c: ncols - 1 } });
+    R++;
   }
-  const buffer = XLSX.write(wb, { type: "array", bookType: "xlsx" }) as ArrayBuffer;
+  R++;
+
+  // Tablas.
+  for (const t of documento.tablas) {
+    set(R, 0, t.titulo, { font: { bold: true, sz: 11 } });
+    R++;
+    t.columnas.forEach((col, i) => set(R, i, col.titulo, estiloCabColumna));
+    R++;
+    for (const fila of t.filas) {
+      t.columnas.forEach((col, i) => {
+        const v = fila[i];
+        set(R, i, v == null ? "" : v, estiloDato(col.align));
+      });
+      R++;
+    }
+    if (t.total) {
+      t.columnas.forEach((col, i) => {
+        const v = t.total?.[i];
+        set(R, i, v == null ? "" : v, estiloTotal(col.align));
+      });
+      R++;
+    }
+    R++;
+  }
+
+  ws["!ref"] = XLSX.utils.encode_range({
+    s: { r: 0, c: 0 },
+    e: { r: Math.max(R, 1), c: ncols - 1 },
+  });
+  ws["!merges"] = merges;
+  ws["!cols"] = [
+    { wch: 16 },
+    { wch: 34 },
+    { wch: 16 },
+    { wch: 46 },
+  ].slice(0, ncols);
+
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, hoja);
+  const buffer = XLSX.write(wb, {
+    type: "array",
+    bookType: "xlsx",
+    cellStyles: true,
+  }) as ArrayBuffer;
   return new Blob([buffer], { type: MIME });
 }
 
 export function asistenciaAXlsx(inf: InformeAsistencia): Promise<Blob> {
-  const filas: Fila[] = [
-    ...filasCabecera(inf.cabecera),
-    [],
-    [i18n.t("compartir.recolectores")],
-    ...inf.recolectores.map((n) => [n]),
-  ];
-  if (inf.auxiliares.length > 0) {
-    filas.push([], [i18n.t("auxiliar.seccion")], ...inf.auxiliares.map((n) => [n]));
-  }
-  for (const g of inf.grupos) {
-    filas.push([], [`${g.nombre} (${g.miembros.length})`], ...g.miembros.map((n) => [n]));
-  }
-  return libroABlob([{ nombre: i18n.t("compartir.hoja_asistencia"), filas }]);
+  return libro(docAsistencia(inf), i18n.t("compartir.hoja_asistencia"));
 }
 
 export function parteAXlsx(inf: InformeParte): Promise<Blob> {
-  const ud = inf.cabecera.unidad || i18n.t("compartir.unidades");
-  const filas: Fila[] = [...filasCabecera(inf.cabecera), []];
-
-  if (inf.grupos.length > 0) {
-    filas.push([i18n.t("gestion.grupos"), i18n.t("compartir.unidades"), i18n.t("grupo.miembros_hoy")]);
-    for (const g of inf.grupos) {
-      filas.push([g.nombre, g.unidades, g.miembros.join(", ")]);
-    }
-  } else {
-    filas.push([i18n.t("compartir.recolectores"), i18n.t("compartir.unidades")]);
-    for (const r of inf.recolectores) filas.push([r.nombre, r.unidades]);
-  }
-
-  if (inf.auxiliares.length > 0) {
-    filas.push(
-      [],
-      [i18n.t("auxiliar.seccion"), i18n.t("auxiliar.tarea"), i18n.t("auxiliar.horas")],
-      ...inf.auxiliares.map((a) => [a.nombre, a.tarea, a.horas ?? ""]),
-    );
-  }
-
-  filas.push([], [i18n.t("registro.total_jornada"), inf.totalUnidades]);
-
-  return libroABlob([{ nombre: i18n.t("compartir.hoja_parte"), filas }]);
+  return libro(docParte(inf), i18n.t("compartir.hoja_parte"));
 }

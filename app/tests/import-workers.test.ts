@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import * as XLSX from "xlsx";
+import XLSX from "xlsx-js-style";
 import type { Crew, Worker } from "@cuadrilla/shared";
 import {
   construirWorkers,

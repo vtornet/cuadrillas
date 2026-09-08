@@ -135,11 +135,12 @@ Sin `STRIPE_SECRET_KEY` los endpoints de pago responden 503 y la UI de plan no a
 - **Idioma**: tipos en inglés (`Worker`, `Shift`, `Entry`, `Rate`); funciones, variables y
   comentarios en español (`crearShift`, `persistir`, `sumarConteos`, `importeCentimos`).
 - **Sin dependencias pesadas**: CSS propio con tokens (`app/src/styles/tokens.css`),
-  gráficos en SVG/CSS a mano (nada de Chart.js). Únicas libs pesadas: `xlsx` (SheetJS) y
-  `jspdf` — **siempre con `import()` dinámico** (se cargan solo al exportar). Las
-  sub-dependencias de jspdf para `doc.html()`/SVG (`html2canvas`, `dompurify`, `canvg`)
-  no se usan y están fuera del precache del SW (`workbox.globIgnores` en
-  `app/vite.config.ts`). Justifica cualquier dependencia nueva.
+  gráficos en SVG/CSS a mano (nada de Chart.js). Únicas libs pesadas: `xlsx-js-style`
+  (fork de SheetJS con estilos; import + export de Excel) y `jspdf` — **siempre con
+  `import()` dinámico** (se cargan solo al importar/exportar). Fuera del precache del SW
+  (`workbox.globIgnores` en `app/vite.config.ts`): `xlsx-js-style` (~870 KB) y las
+  sub-deps de jspdf para `doc.html()`/SVG (`html2canvas`, `dompurify`, `canvg`) que no se
+  usan. `jspdf` sí se precachea (PDF offline). Justifica cualquier dependencia nueva.
 - **UI de campo**: objetivos táctiles ≥ 56 px (`--tap`), alto contraste, tema claro
   (uso a pleno sol). Modales = hojas inferiores (`.overlay` + `.hoja`). Las fichas
   editables (`EditSheet.svelte`) NO se cierran al tocar fuera y preguntan si hay cambios
@@ -395,12 +396,21 @@ Los detalles de cada punto están en **Backlog sin planificar** justo debajo.
      tarea/horas + total + firma): **PDF** + **Excel**.
   - Dominio puro `shared/domain/parte.ts`: `informeAsistencia(cabecera, shift, workers)`,
     `informeParte(cabecera, shift, workers, entries)` (usa `sumarConteos`), `fechaES`.
-  - Render: `app/src/lib/export/pdf.ts` (jsPDF `import()` dinámico, trazado manual sin
-    autotable; la firma se pinta con `doc.addImage`) y `app/src/lib/export/xlsx.ts`
-    (SheetJS, recreado). Texto: `asistenciaParte.ts` → `textoAsistenciaParte(InformeAsistencia)`.
+  - **Formato profesional (2026-09-08).** `app/src/lib/export/documento.ts` construye un
+    modelo intermedio `Documento` (título · cabecera del parte como pares etiqueta/valor ·
+    tablas con `columnas`/`filas`/`total`) desde el informe, y **tanto el PDF como el
+    Excel renderizan ese mismo modelo**, así quedan idénticos: cabecera del parte en un
+    recuadro/bloque gris con etiquetas en negrita, cabeceras de columna en negrita con
+    fondo gris y centradas, bordes en todas las celdas con datos, fila de TOTAL en negrita
+    con borde superior grueso. `pdf.ts` dibuja las tablas a mano (rect/line/text).
+    `xlsx.ts` usa **`xlsx-js-style`** (fork de SheetJS con estilos de celda) — reemplaza a
+    `xlsx` también en el import de trabajadores; ~870 KB, fuera del precache del SW
+    (`vite.config.ts` globIgnores) y cargado con `import()`. i18n `compartir.numero/
+    trabajador/grupo/miembros/tarea/horas/total`.
   - Los archivos se comparten/descargan con `compartirArchivo` (Web Share con `files`, o
     descarga). Nombre `asistencia_<cuadrilla>_<fecha>.pdf|xlsx` / `parte_...`.
-  - Tests: `shared/tests/parte.test.ts`, `app/tests/asistencia-parte.test.ts`.
+  - Tests: `shared/tests/parte.test.ts`, `app/tests/asistencia-parte.test.ts`,
+    `app/tests/documento.test.ts`.
 - **Perfil del jefe de cuadrilla + nombre en la firma — hecho (2026-09-07).**
   - **Modelo**: el perfil vive en el documento `Organization` (ya es entidad
     sincronizada). `Organization` ahora `extends RegistroSincronizable` (lleva

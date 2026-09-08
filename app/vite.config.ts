@@ -18,13 +18,16 @@ export default defineConfig({
       injectRegister: null,
       workbox: {
         globPatterns: ["**/*.{js,css,html,svg,woff2,png}"],
-        // Dependencias que jsPDF solo carga para `doc.html()` / SVG — nunca se
-        // usan aquí (solo texto + imagen PNG). Fuera del precache para no
-        // descargar ~600 KB inútiles en el service worker.
+        // Fuera del precache del SW (se cachean en runtime al usarlos por
+        // primera vez, con conexión):
+        //  - sub-deps de jsPDF para doc.html()/SVG que nunca se usan aquí,
+        //  - xlsx-js-style (~870 KB), solo para importar/exportar Excel — no es
+        //    crítico en campo. El PDF (jsPDF, ~390 KB) sí se precachea.
         globIgnores: [
           "**/html2canvas*.js",
           "**/purify.es*.js",
           "**/index.es-*.js",
+          "**/xlsx*.js",
         ],
         navigateFallback: "index.html",
       },
