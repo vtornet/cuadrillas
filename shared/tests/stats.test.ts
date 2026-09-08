@@ -108,6 +108,40 @@ describe("calcularEstadisticas", () => {
     expect(r.numTrabajadores).toBe(2);
   });
 
+  it("reparte las anotaciones de grupo a partes iguales entre sus miembros", () => {
+    const ws = [worker("w1", "Ana"), worker("w2", "Beto"), worker("w3", "Cira")];
+    const s = shift({
+      attendeeIds: ["w1", "w2", "w3"],
+      groups: [{ groupId: "g1", name: "Grupo A", memberIds: ["w1", "w2", "w3"] }],
+    });
+    const entries = [
+      entry({ groupId: "g1", workerId: undefined, cantidad: 90 }),
+      entry({ workerId: "w1", cantidad: 12 }), // Ana además registra individual
+    ];
+    const r = calcularEstadisticas([s], ws, entries);
+
+    const porId = Object.fromEntries(r.filas.map((f) => [f.workerId, f.unidades]));
+    expect(porId.w1).toBe(42); // 30 del grupo + 12 individual
+    expect(porId.w2).toBe(30);
+    expect(porId.w3).toBe(30);
+    expect(r.totalUnidades).toBe(102);
+  });
+
+  it("reparto de grupo con decimales (100 / 3)", () => {
+    const ws = [worker("w1", "Ana"), worker("w2", "Beto"), worker("w3", "Cira")];
+    const s = shift({
+      attendeeIds: ["w1", "w2", "w3"],
+      groups: [{ groupId: "g1", name: "G", memberIds: ["w1", "w2", "w3"] }],
+    });
+    const r = calcularEstadisticas(
+      [s],
+      ws,
+      [entry({ groupId: "g1", workerId: undefined, cantidad: 100 })],
+    );
+    expect(r.filas.every((f) => f.unidades === 33.3)).toBe(true);
+    expect(r.totalUnidades).toBe(100);
+  });
+
   it("evolucion diaria suma por fecha y ordena", () => {
     const s1 = shift({ id: "s1", fecha: "2026-09-02" });
     const s2 = shift({ id: "s2", fecha: "2026-09-01" });

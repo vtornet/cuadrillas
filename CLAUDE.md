@@ -233,9 +233,9 @@ Perfil de usuario bajo → simplificar. Plan en 4 fases:
   por el que esté presente. En liquidación (`settlement.ts`), las unidades y el importe
   de cada anotación de grupo se reparten **a partes iguales** en céntimos exactos
   (floor + reparto determinista del resto) entre los `memberIds` del snapshot de ESE
-  parte — sin arrastrar ausencias de otros días. Fuera de alcance de esta fase (gap
-  conocido, no corrupción): Estadísticas por trabajador ignora las anotaciones de
-  grupo (`stats.ts`, guardado explícitamente).
+  parte — sin arrastrar ausencias de otros días. **`stats.ts` también reparte las
+  anotaciones de grupo** entre sus miembros (mismo criterio, 2026-09-08) — ya no las
+  ignora.
 - **Firma del jefe al finalizar — hecho.** Al pulsar "Finalizar jornada" en
   `Registro.svelte` se abre `FirmaSheet.svelte`: aviso de cierre + un `<canvas>` táctil
   (Pointer Events, con `setPointerCapture` para no perder el trazo al salir del recuadro)
@@ -293,7 +293,8 @@ Los detalles de cada punto están en **Backlog sin planificar** justo debajo.
 
 9. **Aviso al finalizar si hay recolectores a 0.** **HECHO (2026-09-08).**
    `AvisoSinAnotarSheet` antes de `FirmaSheet`.
-10. **Estadísticas por trabajador: integrar anotaciones de grupo** (gap conocido Fase D).
+10. **Estadísticas por trabajador: integrar anotaciones de grupo.** **HECHO (2026-09-08).**
+    `stats.ts` reparte las entradas de grupo entre sus miembros (como `settlement.ts`).
 
 **Bloqueadas esperando decisión del usuario**
 
@@ -450,6 +451,10 @@ Los detalles de cada punto están en **Backlog sin planificar** justo debajo.
     `[CIF/NIF]`, `[correo de contacto]` (aparece 2 veces). Encargados citados: MongoDB
     Atlas, Railway, Cloudflare, Resend, Stripe.
   - Tests: `shared/tests/rgpd.test.ts`, `app/tests/rgpd.test.ts`.
-- Estadísticas por trabajador: integrar las anotaciones de grupo (hoy se ignoran, gap
-  conocido de la Fase D).
+- **Estadísticas: anotaciones de grupo — hecho (2026-09-08).** `calcularEstadisticas`
+  (`stats.ts`) reparte cada `Entry.groupId` a partes iguales (`cantidad / n`) entre los
+  `memberIds` del snapshot de ESE parte, mismo criterio que `settlement.ts` (aquí las
+  unidades pueden salir con decimales; `FilaTrabajador.unidades` y `totalUnidades` se
+  redondean a 1 decimal, las medias usan el total sin redondear). `BarrasRanking` formatea
+  con coma decimal. Tests en `shared/tests/stats.test.ts` (reparto entero y 100/3).
 - Pasar Stripe a modo live cuando se quiera cobrar de verdad (ver `DEPLOY.md`).

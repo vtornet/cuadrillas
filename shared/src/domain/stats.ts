@@ -81,10 +81,20 @@ export function calcularEstadisticas(
     if (e.deleted) continue;
     const s = porShift.get(e.shiftId);
     if (!s) continue;
-    // Los registros de grupo (Entry.groupId) no se desglosan por trabajador
-    // aqui todavia; si cuentan en la evolucion diaria (total de la cuadrilla).
+
     if (e.workerId && !esAuxiliar.has(e.workerId)) {
       unidades.set(e.workerId, (unidades.get(e.workerId) ?? 0) + e.cantidad);
+    } else if (e.groupId) {
+      // Registro de grupo: se reparte a partes iguales entre los miembros del
+      // snapshot de ESA jornada (igual criterio que `settlement.ts`).
+      const miembros = s.groups?.find((g) => g.groupId === e.groupId)?.memberIds;
+      if (miembros && miembros.length > 0) {
+        const cuota = e.cantidad / miembros.length;
+        for (const wid of miembros) {
+          if (esAuxiliar.has(wid)) continue;
+          unidades.set(wid, (unidades.get(wid) ?? 0) + cuota);
+        }
+      }
     }
     evolucionMap.set(s.fecha, (evolucionMap.get(s.fecha) ?? 0) + e.cantidad);
   }
@@ -119,7 +129,8 @@ export function calcularEstadisticas(
       return {
         workerId: id,
         name: nombre.get(id) ?? "?",
-        unidades: u,
+        // El reparto de grupos puede dar decimales.
+        unidades: redondear(u, 1),
         horas: redondear(h, 2),
         unidadesPorHora: h > 0 ? redondear(u / h, 2) : null,
       };
@@ -128,7 +139,8 @@ export function calcularEstadisticas(
       (a, b) => b.unidades - a.unidades || a.name.localeCompare(b.name, "es"),
     );
 
-  const totalUnidades = [...unidades.values()].reduce((a, b) => a + b, 0);
+  const totalUnidadesRaw = [...unidades.values()].reduce((a, b) => a + b, 0);
+  const totalUnidades = redondear(totalUnidadesRaw, 1);
   const totalHoras = redondear(
     [...horasPorTrabajador.values()].reduce((a, b) => a + b, 0),
     2,
@@ -143,10 +155,10 @@ export function calcularEstadisticas(
     filas,
     totalUnidades,
     mediaUnidades:
-      conActividad > 0 ? redondear(totalUnidades / conActividad, 1) : 0,
+      conActividad > 0 ? redondear(totalUnidadesRaw / conActividad, 1) : 0,
     totalHoras,
     mediaUnidadesPorHora:
-      totalHoras > 0 ? redondear(totalUnidades / totalHoras, 2) : null,
+      totalHoras > 0 ? redondear(totalUnidadesRaw / totalHoras, 2) : null,
     evolucion,
     numTrabajadores: participantes.size,
   };

@@ -4,6 +4,9 @@
   let { filas }: { filas: FilaTrabajador[] } = $props();
 
   const max = $derived(Math.max(1, ...filas.map((f) => f.unidades)));
+
+  const fmt = (n: number): string =>
+    n.toLocaleString("es-ES", { maximumFractionDigits: 1 });
 </script>
 
 <ul class="ranking">
@@ -15,9 +18,9 @@
         <span style={`width:${(f.unidades / max) * 100}%`}></span>
       </span>
       <span class="rk-valor">
-        {f.unidades}
+        {fmt(f.unidades)}
         {#if f.unidadesPorHora !== null}
-          <small>{f.unidadesPorHora}/h</small>
+          <small>{fmt(f.unidadesPorHora)}/h</small>
         {/if}
       </span>
     </li>
