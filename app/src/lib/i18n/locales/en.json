@@ -278,6 +278,12 @@
     "tu_nombre": "Your name",
     "guardar_perfil": "Save it in Account > Profile so you don't type it every time."
   },
+  "sin_anotar": {
+    "titulo": "No records",
+    "texto": "These present have no records at all. Finish the shift anyway?",
+    "volver": "Back to the list",
+    "seguir": "Finish anyway"
+  },
   "perfil": {
     "titulo": "Profile",
     "empresa": "Company or farm",

@@ -132,6 +132,17 @@ describe("jornada store", () => {
     expect((await db.shifts.get("s1"))?.auxiliares).toEqual([]);
   });
 
+  it("sinAnotar lista los recolectores presentes con conteo 0 y auxiliares no cuentan", async () => {
+    await db.workers.put({ ...WORKER, id: "aux1", alias: "AUX", funcion: "auxiliar" });
+    await db.shifts.put({ ...SHIFT, attendeeIds: ["w1", "aux1"] });
+    await jornada.cargar();
+
+    expect(jornada.sinAnotar).toEqual(["Ana"]); // el auxiliar no aparece
+
+    await jornada.sumar("w1", 3);
+    expect(jornada.sinAnotar).toEqual([]);
+  });
+
   it("cerrarActual guarda firma y firmante en el parte", async () => {
     await jornada.cerrarActual("data:image/png;base64,AAA", "  Paco Jefe  ");
 
@@ -198,5 +209,11 @@ describe("jornada store con grupos", () => {
     expect(jornada.grupos[0].memberIds).toEqual(["w1"]);
     const guardado = await db.shifts.get("s2");
     expect(guardado?.groups?.[0].memberIds).toEqual(["w1"]);
+  });
+
+  it("sinAnotar mira los grupos cuando se trabaja por grupos", async () => {
+    expect(jornada.sinAnotar).toEqual(["Grupo A"]);
+    await jornada.sumar("g1", 2);
+    expect(jornada.sinAnotar).toEqual([]);
   });
 });

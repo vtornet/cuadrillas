@@ -11,6 +11,7 @@
   import FirmaSheet from "../lib/components/FirmaSheet.svelte";
   import CompartirParteSheet from "../lib/components/CompartirParteSheet.svelte";
   import AuxiliarSheet from "../lib/components/AuxiliarSheet.svelte";
+  import AvisoSinAnotarSheet from "../lib/components/AvisoSinAnotarSheet.svelte";
   import CabeceraParte from "../lib/components/CabeceraParte.svelte";
 
   let q = $state("");
@@ -20,7 +21,13 @@
   let auxAbiertoId = $state<string | null>(null);
   let comenzarAbierto = $state(false);
   let firmaAbierta = $state(false);
+  let avisoSinAnotar = $state(false);
   let compartirAbierto = $state(false);
+
+  function intentarFinalizar(): void {
+    if (jornada.sinAnotar.length === 0) firmaAbierta = true;
+    else avisoSinAnotar = true;
+  }
 
   const visiblesWorkers = $derived.by(() => {
     const t = q.trim().toLowerCase();
@@ -197,7 +204,7 @@
         <button
           type="button"
           class="btn-deshacer finalizar-btn"
-          onclick={() => (firmaAbierta = true)}
+          onclick={intentarFinalizar}
         >
           {i18n.t("registro.finalizar_jornada")}
         </button>
@@ -263,6 +270,17 @@
           onclose={() => (grupoAbiertoId = null)}
         />
       {/key}
+    {/if}
+
+    {#if avisoSinAnotar}
+      <AvisoSinAnotarSheet
+        nombres={jornada.sinAnotar}
+        onseguir={() => {
+          avisoSinAnotar = false;
+          firmaAbierta = true;
+        }}
+        onvolver={() => (avisoSinAnotar = false)}
+      />
     {/if}
 
     {#if firmaAbierta}

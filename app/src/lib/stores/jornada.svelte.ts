@@ -190,6 +190,22 @@ class JornadaStore {
     return this.conteos[id] ?? 0;
   }
 
+  /**
+   * Nombres de los "sujetos" presentes sin ninguna anotación (recolectores, o
+   * grupos si se trabaja por grupos). Para el aviso al finalizar la jornada.
+   * Los auxiliares no cuentan (no recolectan).
+   */
+  get sinAnotar(): string[] {
+    if (this.trabajaPorGrupos) {
+      return this.grupos
+        .filter((g) => this.conteoDe(g.groupId) === 0)
+        .map((g) => g.name);
+    }
+    return this.recolectores
+      .filter((w) => this.conteoDe(w.id) === 0)
+      .map((w) => w.name);
+  }
+
   nombreTrabajador(id: string): string {
     return this.workers.find((w) => w.id === id)?.name ?? "?";
   }

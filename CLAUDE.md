@@ -291,7 +291,8 @@ Los detalles de cada punto están en **Backlog sin planificar** justo debajo.
 
 **Mejoras rápidas e independientes**
 
-9. **Aviso al finalizar si hay recolectores a 0** (`FirmaSheet` / `jornada.cerrarActual`).
+9. **Aviso al finalizar si hay recolectores a 0.** **HECHO (2026-09-08).**
+   `AvisoSinAnotarSheet` antes de `FirmaSheet`.
 10. **Estadísticas por trabajador: integrar anotaciones de grupo** (gap conocido Fase D).
 
 **Bloqueadas esperando decisión del usuario**
@@ -419,10 +420,13 @@ Los detalles de cada punto están en **Backlog sin planificar** justo debajo.
   secas y sincronizan igual (`strict:false` en el servidor). Seed demo: Naranja ·
   Navelina. `settlement.ts`/`stats.ts` usan `productId` (id), no el nombre — sin cambios.
   Tests: `shared/tests/products.test.ts`, caso nuevo en `app/tests/gestion.test.ts`.
-- **Aviso al finalizar si hay recolectores a 0.** Al cerrar una jornada, si algún
-  recolector presente no tiene ninguna anotación, mostrar un aviso ("Fulano no tiene
-  anotaciones, ¿finalizar con 0?") antes de cerrar, con opción de seguir de todas formas
-  o volver a la lista. Encaja en el flujo de `FirmaSheet.svelte` / `jornada.cerrarActual`.
+- **Aviso al finalizar si hay recolectores a 0 — hecho (2026-09-08).** Getter
+  `jornada.sinAnotar`: nombres de los recolectores presentes con `conteoDe === 0` (o de
+  los grupos con 0 si `trabajaPorGrupos`); los auxiliares no cuentan. En
+  `Registro.svelte`, "Finalizar jornada" pasa por `intentarFinalizar()`: si
+  `sinAnotar.length === 0` abre `FirmaSheet` directamente; si no, `AvisoSinAnotarSheet`
+  (lista de nombres + "Volver a la lista" / "Finalizar de todas formas" → `FirmaSheet`).
+  i18n `sin_anotar.*`. Test en `app/tests/jornada.test.ts`.
 - **Pantalla RGPD — hecho (2026-09-07).**
   - **Borrado = anonimizar** (no borrado físico). `shared/src/domain/rgpd.ts`
     → `anonimizarWorker(worker, nombreGenerico)`: conserva el `Worker` (`deleted: 0`)

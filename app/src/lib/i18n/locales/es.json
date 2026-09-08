@@ -278,6 +278,12 @@
     "tu_nombre": "Tu nombre",
     "guardar_perfil": "Guardalo en Cuenta > Perfil para no escribirlo cada vez."
   },
+  "sin_anotar": {
+    "titulo": "Sin anotaciones",
+    "texto": "Estos presentes no tienen ninguna anotacion. Finalizar la jornada de todas formas?",
+    "volver": "Volver a la lista",
+    "seguir": "Finalizar de todas formas"
+  },
   "perfil": {
     "titulo": "Perfil",
     "empresa": "Empresa o explotacion",
