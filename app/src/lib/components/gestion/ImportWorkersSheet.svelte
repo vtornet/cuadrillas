@@ -169,7 +169,7 @@
   }
   .import-errores {
     margin: 0.25rem 0 0;
-    padding-left: 1.2rem;
+    padding-inline-start: 1.2rem;
     max-height: 40vh;
     overflow-y: auto;
     font-size: 0.9rem;

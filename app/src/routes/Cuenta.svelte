@@ -10,6 +10,7 @@
   import { irACheckout, irAPortal, type PlanPago } from "../lib/billing";
   import AppBar from "../lib/components/AppBar.svelte";
   import PerfilForm from "../lib/components/PerfilForm.svelte";
+  import SelectorIdioma from "../lib/components/SelectorIdioma.svelte";
 
   // --- Login (estado anonimo) ---
   let email = $state("");
@@ -156,6 +157,8 @@
         {i18n.t("cuenta.modo_demo")}
       </button>
 
+      <SelectorIdioma compacto />
+
       <button type="button" class="link-privacidad" onclick={() => router.ir("privacidad")}>
         {i18n.t("privacidad.enlace")}
       </button>
@@ -178,6 +181,11 @@
             </p>
           {/if}
         </div>
+      </section>
+
+      <section class="bloque">
+        <h2>{i18n.t("cuenta.idioma")}</h2>
+        <SelectorIdioma />
       </section>
 
       <section class="bloque">

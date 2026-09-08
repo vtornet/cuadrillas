@@ -34,8 +34,8 @@
   </span>
 
   <div class="botones">
-    <button type="button" class="mas" onclick={() => onsumar(1)}>+1</button>
-    <button type="button" class="mas" onclick={() => onsumar(5)}>+5</button>
+    <button type="button" class="mas" dir="ltr" onclick={() => onsumar(1)}>+1</button>
+    <button type="button" class="mas" dir="ltr" onclick={() => onsumar(5)}>+5</button>
     <button
       type="button"
       class="pad"

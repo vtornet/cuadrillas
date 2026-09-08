@@ -15,6 +15,15 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 
+/* RTL (árabe): la maquetación se refleja con dir="rtl"; solo hace falta
+   voltear los glifos direccionales (flechas, chevrones). */
+[dir="rtl"] .chevron,
+[dir="rtl"] .mes-btn,
+[dir="rtl"] .volver-icono {
+  display: inline-block;
+  transform: scaleX(-1);
+}
+
 #app {
   max-width: 640px;
   margin: 0 auto;
@@ -207,7 +216,7 @@ button:disabled {
   width: 100%;
   min-height: var(--tap);
   padding: 8px 12px;
-  text-align: left;
+  text-align: start;
   background: var(--c-superficie);
   border: 2px solid var(--c-borde);
   border-radius: var(--radio);
@@ -247,7 +256,7 @@ button:disabled {
   background: transparent;
   padding: 4px 0;
   min-height: 0;
-  text-align: left;
+  text-align: start;
   cursor: pointer;
 }
 
@@ -260,7 +269,7 @@ button:disabled {
 }
 
 .fila .nombre .chevron {
-  margin-left: 6px;
+  margin-inline-start: 6px;
   color: var(--c-texto-suave);
   font-weight: 400;
 }
@@ -276,7 +285,7 @@ button:disabled {
   font-weight: 800;
   font-variant-numeric: tabular-nums;
   min-width: 2ch;
-  text-align: right;
+  text-align: end;
 }
 
 .fila .botones {
@@ -355,7 +364,7 @@ button:disabled {
   display: block;
   width: 100%;
   margin-bottom: 8px;
-  text-align: left;
+  text-align: start;
   cursor: pointer;
 }
 
@@ -518,7 +527,7 @@ button:disabled {
   padding: 10px;
   border: 2px solid var(--c-borde);
   border-radius: var(--radio);
-  text-align: left;
+  text-align: start;
   cursor: pointer;
 }
 
@@ -527,7 +536,7 @@ button:disabled {
 }
 
 .fg-main em {
-  margin-left: 4px;
+  margin-inline-start: 4px;
   font-style: normal;
   font-weight: 400;
   font-size: 14px;
@@ -555,7 +564,7 @@ button:disabled {
   display: block;
   width: 100%;
   padding: 12px 16px;
-  text-align: left;
+  text-align: start;
   background: var(--c-exito-suave, #e7f6ec);
   color: var(--c-texto);
   border: none;
@@ -709,7 +718,7 @@ button:disabled {
 .rk-valor small {
   font-weight: 400;
   color: var(--c-texto-suave);
-  margin-left: 4px;
+  margin-inline-start: 4px;
 }
 
 .rk-barra {
@@ -826,7 +835,7 @@ button:disabled {
 }
 
 .menu-item {
-  text-align: left;
+  text-align: start;
   min-height: var(--tap);
   font-size: var(--f-base);
   font-weight: 600;
@@ -865,7 +874,7 @@ button:disabled {
   display: block;
   font-size: 40px;
   font-weight: 800;
-  text-align: right;
+  text-align: end;
   font-variant-numeric: tabular-nums;
 }
 
@@ -1055,7 +1064,7 @@ button:disabled {
 .hist-fila-aux .hist-aux-sub {
   font-size: 14px;
   color: var(--c-texto-suave);
-  text-align: right;
+  text-align: end;
 }
 
 .crew-workers {
@@ -1076,7 +1085,7 @@ button:disabled {
   padding: 0 12px;
   border: 2px solid var(--c-borde);
   border-radius: var(--radio);
-  text-align: left;
+  text-align: start;
 }
 
 .crew-worker-btn .chevron {
@@ -1123,11 +1132,11 @@ button:disabled {
 .r-etq {
   color: var(--c-peligro);
   font-size: 13px;
-  margin-left: auto;
+  margin-inline-start: auto;
 }
 
 .r-anular {
-  margin-left: auto;
+  margin-inline-start: auto;
   min-height: 40px;
   padding: 0 12px;
   font-size: 14px;
@@ -1136,7 +1145,7 @@ button:disabled {
 }
 
 .r-confirm {
-  margin-left: auto;
+  margin-inline-start: auto;
   display: flex;
   gap: 6px;
 }

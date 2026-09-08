@@ -116,6 +116,7 @@
   },
   "cuenta": {
     "titulo": "Account",
+    "idioma": "Language",
     "entrar": "Sign in to Cuadrillas",
     "ayuda": "We email you a sign-in link. No passwords.",
     "email": "Email address",

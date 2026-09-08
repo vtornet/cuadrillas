@@ -18,6 +18,7 @@
   let listo = $state(false);
 
   onMount(async () => {
+    await i18n.cargar();
     await auth.cargar();
 
     // Retorno del enlace magico: #/entrar?token=XXX

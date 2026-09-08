@@ -144,8 +144,13 @@ Sin `STRIPE_SECRET_KEY` los endpoints de pago responden 503 y la UI de plan no a
   (uso a pleno sol). Modales = hojas inferiores (`.overlay` + `.hoja`). Las fichas
   editables (`EditSheet.svelte`) NO se cierran al tocar fuera y preguntan si hay cambios
   sin guardar.
-- **i18n**: `i18n.t("clave", { var })`, locales en `app/src/lib/i18n/locales/`. `es` es el
-  fallback. `ro/ar/fr` están preparados pero sin traducir (MVP: solo es/en).
+- **i18n**: `i18n.t("clave", { var })`, locales en `app/src/lib/i18n/locales/`
+  (`es/en/ro/ar/fr`, mismas claves en todos; `es` es el fallback si falta alguna).
+  El idioma se elige en Cuenta (`SelectorIdioma.svelte`), se guarda en `meta.locale` y
+  se aplica en `App.svelte` al arrancar (`i18n.cargar()` — usa el guardado o
+  `navigator.language`). Árabe = RTL: `i18n.cambiar()` pone `document.documentElement.dir`.
+  El CSS usa propiedades lógicas (`margin-inline-start`, `text-align: start`, …) y
+  `[dir="rtl"]` solo voltea glifos direccionales (chevrones, flechas).
 - **Datos demo** (`app/src/lib/dev/seed.ts`): solo en modo demo; se borran al hacer login
   real o `auth.salir()`. Se escriben SIN encolar en `pendingOps`.
 
@@ -160,7 +165,8 @@ Sin `STRIPE_SECRET_KEY` los endpoints de pago responden 503 y la UI de plan no a
 ## Estado
 
 MVP completo (8 pasos). Fuera del MVP, preparado pero no implementado: panel
-multi-cuadrilla, vista del trabajador, NFC, i18n completo, fotos de albaranes.
+multi-cuadrilla, vista del trabajador, NFC, fotos de albaranes. (i18n completo ro/ar/fr
++ selector de idioma + RTL — hecho 2026-09-08.)
 
 ### Despliegue (en marcha, 2026-09-05)
 
@@ -306,8 +312,20 @@ Los detalles de cada punto están en **Backlog sin planificar** justo debajo.
 
 **Fuera de MVP (preparado, no implementado)**
 
-13. Panel multi-cuadrilla · vista del trabajador · NFC · i18n completo (ro/ar/fr) · fotos
-    de albaranes.
+13. **i18n completo (ro/ar/fr) + selector de idioma + RTL. HECHO (2026-09-08).** Queda:
+    panel multi-cuadrilla · vista del trabajador · NFC · fotos de albaranes.
+    - `i18n.svelte.ts`: `Locale = Idioma` (es/en/ro/ar/fr), `DICCIONARIOS` con los 5,
+      `cargar()` (lee `meta.locale` o `navigator.language`), `cambiar()` (persiste +
+      `document.documentElement.dir/lang`), getter `rtl`. `NOMBRE_IDIOMA` para el selector.
+    - `locales/ro.json`, `ar.json`, `fr.json` (261 claves cada uno, traducción completa).
+    - `SelectorIdioma.svelte` en Cuenta (autenticado y login). `App.svelte` llama
+      `i18n.cargar()` antes de `auth.cargar()`.
+    - RTL (árabe): CSS pasado a propiedades lógicas (`margin-inline-start`,
+      `text-align: start/end`, `inset-inline-start`, `border-inline-end`); `[dir="rtl"]`
+      voltea chevrones/flechas; `dir="ltr"` en los botones `+1/+5`.
+    - Tests: `app/tests/i18n.test.ts` (incluye chequeo de paridad de claves).
+    - Pendiente (pulido): números/fechas siguen formateándose con `"es-ES"` y algunos
+      `localeCompare(..., "es")` — cosmético.
 
 ### Backlog sin planificar
 

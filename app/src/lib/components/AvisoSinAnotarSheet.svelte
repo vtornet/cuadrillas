@@ -60,7 +60,7 @@
 <style>
   .sin-anotar-lista {
     margin: 10px 0 0;
-    padding-left: 1.3rem;
+    padding-inline-start: 1.3rem;
   }
   .sin-anotar-lista li {
     margin: 4px 0;

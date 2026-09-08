@@ -116,6 +116,7 @@
   },
   "cuenta": {
     "titulo": "Cuenta",
+    "idioma": "Idioma",
     "entrar": "Entrar en Cuadrillas",
     "ayuda": "Te enviamos un enlace de acceso a tu correo. Sin contrasenas.",
     "email": "Correo electronico",

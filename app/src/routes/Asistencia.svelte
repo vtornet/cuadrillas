@@ -214,7 +214,7 @@
     min-width: 26px;
     height: 32px;
     text-align: center;
-    border-right: 1px solid var(--c-borde);
+    border-inline-end: 1px solid var(--c-borde);
     border-bottom: 1px solid var(--c-borde);
   }
   .asis-tabla thead th {
@@ -227,10 +227,10 @@
   .asis-nombre,
   .asis-esq {
     position: sticky;
-    left: 0;
+    inset-inline-start: 0;
     width: 128px;
     min-width: 128px;
-    text-align: left;
+    text-align: start;
     padding: 0 8px;
     background: var(--c-superficie);
     font-weight: 600;

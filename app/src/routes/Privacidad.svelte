@@ -12,7 +12,7 @@
   <header class="cabecera">
     <div class="appbar">
       <button type="button" class="appbar-menu" onclick={volver}>
-        <span aria-hidden="true">&larr;</span>
+        <span class="volver-icono" aria-hidden="true">&larr;</span>
       </button>
       <h1>{i18n.t("privacidad.titulo")}</h1>
     </div>
@@ -136,7 +136,7 @@
   }
   .legal ul {
     margin: 0.3rem 0;
-    padding-left: 1.2rem;
+    padding-inline-start: 1.2rem;
   }
   .legal li {
     margin: 0.2rem 0;
