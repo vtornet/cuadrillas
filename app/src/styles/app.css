@@ -486,6 +486,20 @@ button:disabled {
   flex: 0 0 auto;
 }
 
+.asistencia li label.grupo-ocupado {
+  border-style: dashed;
+  color: var(--c-texto-suave);
+  background: var(--c-fondo);
+}
+
+.grupo-nota {
+  margin-inline-start: auto;
+  font-style: normal;
+  font-size: 13px;
+  color: var(--c-aviso);
+  white-space: nowrap;
+}
+
 .btn-abrir {
   width: 100%;
   min-height: var(--tap-grande);

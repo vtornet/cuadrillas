@@ -190,7 +190,8 @@
     "grupo_nombre": "Nombre del grupo",
     "grupo_activo": "Grupo activo",
     "grupo_sin_cuadrilla": "Elige antes una cuadrilla con trabajadores.",
-    "grupo_sin_miembros": "Elige al menos un miembro."
+    "grupo_sin_miembros": "Elige al menos un miembro.",
+    "grupo_ya_en": "en {grupo}"
   },
   "historial": {
     "titulo": "Historial",

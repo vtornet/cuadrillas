@@ -1,6 +1,7 @@
 <script lang="ts">
   import { untrack } from "svelte";
   import type { Group } from "@cuadrilla/shared";
+  import { gruposPorTrabajador } from "@cuadrilla/shared/domain";
   import { i18n } from "../../i18n/i18n.svelte";
   import { sesion } from "../../stores/sesion.svelte";
   import { gestion } from "../../stores/gestion.svelte";
@@ -32,6 +33,12 @@
   const trabajadores = $derived(
     crewId ? gestion.trabajadoresDe(crewId) : [],
   );
+
+  // Un trabajador solo puede estar en un grupo: mapa workerId -> nombre del OTRO
+  // grupo activo al que ya pertenece. Bloquea añadirlo.
+  const otroGrupoPorWorker = $derived(
+    gruposPorTrabajador(gestion.groups, reg?.id),
+  );
   $effect(() => {
     const validos = new Set(trabajadores.map((w) => w.id));
     const filtrados = [...miembros].filter((id) => validos.has(id));
@@ -39,6 +46,8 @@
   });
 
   function toggle(id: string): void {
+    // No se puede añadir a un trabajador que ya está en otro grupo.
+    if (!miembros.has(id) && otroGrupoPorWorker.has(id)) return;
     const s = new Set(miembros);
     if (s.has(id)) s.delete(id);
     else s.add(id);
@@ -101,14 +110,22 @@
   {:else}
     <ul class="asistencia">
       {#each trabajadores as w (w.id)}
+        {@const enOtro = otroGrupoPorWorker.get(w.id)}
+        {@const bloqueado = !!enOtro && !miembros.has(w.id)}
         <li>
-          <label>
+          <label class:grupo-ocupado={bloqueado}>
             <input
               type="checkbox"
               checked={miembros.has(w.id)}
+              disabled={bloqueado}
               onchange={() => toggle(w.id)}
             />
             <span>{w.name}</span>
+            {#if enOtro}
+              <em class="grupo-nota">
+                {i18n.t("gestion.grupo_ya_en", { grupo: enOtro })}
+              </em>
+            {/if}
           </label>
         </li>
       {/each}

@@ -7,3 +7,4 @@ export * from "./rgpd";
 export * from "./attendance";
 export * from "./products";
 export * from "./parte";
+export * from "./groups";

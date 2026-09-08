@@ -242,6 +242,13 @@ Perfil de usuario bajo → simplificar. Plan en 4 fases:
   parte — sin arrastrar ausencias de otros días. **`stats.ts` también reparte las
   anotaciones de grupo** entre sus miembros (mismo criterio, 2026-09-08) — ya no las
   ignora.
+  - **Un trabajador solo puede estar en un grupo (2026-09-08).** En `GroupForm.svelte`,
+    los trabajadores que ya pertenecen a otro grupo **activo** salen con borde punteado,
+    atenuados y con la nota "en {grupo}" (`gestion.grupo_ya_en`), y su checkbox
+    deshabilitado (`toggle` también lo bloquea). Helper puro
+    `shared/domain/groups.ts` → `gruposPorTrabajador(groups, exceptoId?)` (mapa
+    workerId→nombre de grupo, ignora inactivos/borrados y el grupo que se edita).
+    Test: `shared/tests/groups.test.ts`.
 - **Firma del jefe al finalizar — hecho.** Al pulsar "Finalizar jornada" en
   `Registro.svelte` se abre `FirmaSheet.svelte`: aviso de cierre + un `<canvas>` táctil
   (Pointer Events, con `setPointerCapture` para no perder el trazo al salir del recuadro)

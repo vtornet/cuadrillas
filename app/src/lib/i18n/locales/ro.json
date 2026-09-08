@@ -190,7 +190,8 @@
     "grupo_nombre": "Numele grupului",
     "grupo_activo": "Grup activ",
     "grupo_sin_cuadrilla": "Alege mai întâi o echipă cu lucrători.",
-    "grupo_sin_miembros": "Alege cel puțin un membru."
+    "grupo_sin_miembros": "Alege cel puțin un membru.",
+    "grupo_ya_en": "în {grupo}"
   },
   "historial": {
     "titulo": "Istoric",

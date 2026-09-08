@@ -190,7 +190,8 @@
     "grupo_nombre": "Nom du groupe",
     "grupo_activo": "Groupe actif",
     "grupo_sin_cuadrilla": "Choisis d'abord une équipe avec des travailleurs.",
-    "grupo_sin_miembros": "Choisis au moins un membre."
+    "grupo_sin_miembros": "Choisis au moins un membre.",
+    "grupo_ya_en": "dans {grupo}"
   },
   "historial": {
     "titulo": "Historique",

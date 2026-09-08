@@ -190,7 +190,8 @@
     "grupo_nombre": "Group name",
     "grupo_activo": "Active group",
     "grupo_sin_cuadrilla": "Pick a crew with workers first.",
-    "grupo_sin_miembros": "Pick at least one member."
+    "grupo_sin_miembros": "Pick at least one member.",
+    "grupo_ya_en": "in {grupo}"
   },
   "historial": {
     "titulo": "History",

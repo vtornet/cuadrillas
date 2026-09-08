@@ -190,7 +190,8 @@
     "grupo_nombre": "اسم المجموعة",
     "grupo_activo": "مجموعة نشطة",
     "grupo_sin_cuadrilla": "اختر أولًا فرقة بها عمال.",
-    "grupo_sin_miembros": "اختر عضوًا واحدًا على الأقل."
+    "grupo_sin_miembros": "اختر عضوًا واحدًا على الأقل.",
+    "grupo_ya_en": "في {grupo}"
   },
   "historial": {
     "titulo": "السجل",

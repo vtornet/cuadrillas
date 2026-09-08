@@ -77,6 +77,12 @@ offline con datos de ejemplo — sin tocar Railway, Mongo ni Stripe.
    Cloudflare) — el `api/railway.json` ya define el build/start command
    (`pnpm --filter @cuadrilla/api build` / `start`), que necesita ver el
    `pnpm-workspace.yaml` para resolver `@cuadrilla/shared`.
+
+   > **Fallo visto (2026-09-08):** build "failed during the build process — The
+   > configured root directory was not found in the deployed source". Es
+   > **config del servicio, no del código**: el campo *Settings → Source → Root
+   > Directory* apuntaba a una ruta inexistente (o se había reseteado). Solución:
+   > ponerlo en `/` (o activarlo y dejarlo en `/`) y volver a desplegar.
 3. Variables en Railway (Settings → Variables):
    - `MONGODB_URI` = el connection string de Atlas (con el nombre de BD, p. ej.
      `.../cuadrilla?retryWrites=true&w=majority`)
