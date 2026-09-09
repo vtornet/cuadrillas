@@ -1,3 +1,4 @@
+import type { Entry } from "../types/entry";
 import type { Shift } from "../types/shift";
 import type { Worker } from "../types/worker";
 
@@ -27,8 +28,16 @@ export interface FilaAsistencia {
   funcion: FuncionTrabajador;
   /** `presente[i]` corresponde a `dias[i]`. */
   presente: boolean[];
+  /**
+   * `conAnotacion[i]`: presente ese día **y** con al menos una anotación
+   * (registro propio, de un grupo suyo, o tarea/horas si es auxiliar).
+   * Implica `presente[i]`.
+   */
+  conAnotacion: boolean[];
   /** Nº de días asistidos en el mes. */
   total: number;
+  /** Días presentes pero sin ninguna anotación. */
+  sinAnotar: number;
 }
 
 export interface AsistenciaMensual {
@@ -44,6 +53,8 @@ export interface AsistenciaMensual {
   totalPorDiaRol: Record<FuncionTrabajador, number[]>;
   /** Suma de todas las asistencias del mes. */
   totalGeneral: number;
+  /** Total de días presente-sin-anotar (suma de `filas[].sinAnotar`). */
+  totalSinAnotar: number;
   /** Fincas distintas trabajadas cada día (índice = posición en `dias`). */
   fincasPorDia: string[][];
   /** Fincas distintas trabajadas en el mes, ordenadas. */
@@ -59,6 +70,7 @@ export function asistenciaMensual(
   workers: Worker[],
   anio: number,
   mes: number,
+  entries: Entry[] = [],
 ): AsistenciaMensual {
   const diasEnMes = new Date(anio, mes, 0).getDate();
   const prefijo = `${anio}-${pad2(mes)}-`;
@@ -78,8 +90,11 @@ export function asistenciaMensual(
   const presentesPorFecha = new Map<string, Set<string>>();
   // fecha -> set de fincas trabajadas ese día.
   const fincasPorFecha = new Map<string, Set<string>>();
+  // shiftId -> Shift (solo partes del mes, no borrados).
+  const shiftDelMes = new Map<string, Shift>();
   for (const s of shifts) {
     if (s.deleted !== 0 || !s.fecha.startsWith(prefijo)) continue;
+    shiftDelMes.set(s.id, s);
     let set = presentesPorFecha.get(s.fecha);
     if (!set) {
       set = new Set();
@@ -97,6 +112,34 @@ export function asistenciaMensual(
     }
   }
 
+  // fecha -> set de workerId con alguna anotación ese día (registro propio,
+  // reparto de un grupo suyo, o tarea/horas si es auxiliar).
+  const anotoPorFecha = new Map<string, Set<string>>();
+  const marcarAnoto = (fecha: string, wid: string): void => {
+    let set = anotoPorFecha.get(fecha);
+    if (!set) {
+      set = new Set();
+      anotoPorFecha.set(fecha, set);
+    }
+    set.add(wid);
+  };
+  for (const e of entries) {
+    if (e.deleted !== 0) continue;
+    const s = shiftDelMes.get(e.shiftId);
+    if (!s) continue;
+    if (e.workerId) {
+      marcarAnoto(s.fecha, e.workerId);
+    } else if (e.groupId) {
+      const g = s.groups?.find((x) => x.groupId === e.groupId);
+      for (const mid of g?.memberIds ?? []) marcarAnoto(s.fecha, mid);
+    }
+  }
+  for (const s of shiftDelMes.values()) {
+    for (const a of s.auxiliares ?? []) {
+      if (a.tarea?.trim() || a.horas != null) marcarAnoto(s.fecha, a.workerId);
+    }
+  }
+
   const filas: FilaAsistencia[] = [];
   for (const w of workers) {
     if (w.deleted !== 0) continue;
@@ -106,13 +149,23 @@ export function asistenciaMensual(
     const total = presente.reduce((n, p) => n + (p ? 1 : 0), 0);
     // Trabajador activo, o inactivo pero con actividad ese mes.
     if (w.activo !== 1 && total === 0) continue;
+    const conAnotacion = dias.map(
+      (d, i) =>
+        presente[i] && (anotoPorFecha.get(d.fecha)?.has(w.id) ?? false),
+    );
+    const sinAnotar = presente.reduce(
+      (n, p, i) => n + (p && !conAnotacion[i] ? 1 : 0),
+      0,
+    );
     filas.push({
       workerId: w.id,
       name: w.name,
       alias: w.alias,
       funcion: w.funcion === "auxiliar" ? "auxiliar" : "recolector",
       presente,
+      conAnotacion,
       total,
+      sinAnotar,
     });
   }
 
@@ -136,6 +189,7 @@ export function asistenciaMensual(
     auxiliar: porRol("auxiliar"),
   };
   const totalGeneral = totalPorDia.reduce((n, x) => n + x, 0);
+  const totalSinAnotar = filas.reduce((n, f) => n + f.sinAnotar, 0);
 
   const fincasPorDia = dias.map((d) =>
     [...(fincasPorFecha.get(d.fecha) ?? [])].sort((a, b) =>
@@ -154,6 +208,7 @@ export function asistenciaMensual(
     totalPorDia,
     totalPorDiaRol,
     totalGeneral,
+    totalSinAnotar,
     fincasPorDia,
     fincas,
   };

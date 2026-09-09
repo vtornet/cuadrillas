@@ -1,11 +1,12 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import type { Crew, Shift, Worker } from "@cuadrilla/shared";
+  import type { Crew, Entry, Shift, Worker } from "@cuadrilla/shared";
   import { asistenciaMensual } from "@cuadrilla/shared/domain";
   import { i18n } from "../lib/i18n/i18n.svelte";
   import { sesion } from "../lib/stores/sesion.svelte";
   import { crewsDelForeman } from "../lib/db/repositories/crews";
   import { shiftsDeCuadrillas } from "../lib/db/repositories/shifts";
+  import { entriesDeShifts } from "../lib/db/repositories/entries";
   import { workersDeCuadrillas } from "../lib/db/repositories/workers";
   import { asistenciaACsv, asistenciaAXlsx } from "../lib/export/asistencia";
   import { compartirArchivo, slug } from "../lib/export/compartir";
@@ -19,6 +20,7 @@
   let crews = $state<Crew[]>([]);
   let workers = $state<Worker[]>([]);
   let shifts = $state<Shift[]>([]);
+  let entries = $state<Entry[]>([]);
   let mensaje = $state("");
 
   let anio = $state(HOY.getFullYear());
@@ -38,6 +40,7 @@
       workersDeCuadrillas(ids),
       shiftsDeCuadrillas(ids),
     ]);
+    entries = await entriesDeShifts(shifts.map((s) => s.id));
     listo = true;
   });
 
@@ -48,9 +51,19 @@
   const shiftsFiltrados = $derived(
     crewSel ? shifts.filter((s) => s.crewId === crewSel) : shifts,
   );
+  const idsFiltrados = $derived(new Set(shiftsFiltrados.map((s) => s.id)));
+  const entriesFiltrados = $derived(
+    crewSel ? entries.filter((e) => idsFiltrados.has(e.shiftId)) : entries,
+  );
 
   const tabla = $derived(
-    asistenciaMensual(shiftsFiltrados, workersFiltrados, anio, mes),
+    asistenciaMensual(
+      shiftsFiltrados,
+      workersFiltrados,
+      anio,
+      mes,
+      entriesFiltrados,
+    ),
   );
   const hayRec = $derived(tabla.filas.some((f) => f.funcion === "recolector"));
   const hayAux = $derived(tabla.filas.some((f) => f.funcion === "auxiliar"));
@@ -100,6 +113,7 @@
             totalRecolectores: i18n.t("asistencia.total_recolectores"),
             totalAuxiliares: i18n.t("asistencia.total_auxiliares"),
             fincas: i18n.t("asistencia.fincas"),
+            leyenda: `X = ${i18n.t("asistencia.leyenda_anotado")}   ·  ·  = ${i18n.t("asistencia.leyenda_sin_anotar")}`,
           },
         });
       }
@@ -192,14 +206,22 @@
                 {#each f.presente as p, i (i)}
                   <td
                     class:presente={p}
+                    class:sin-anotar={p && !f.conAnotacion[i]}
                     class:finde={tabla.dias[i].finDeSemana}
                     class:hoy={tabla.dias[i].fecha === HOY_ISO}
                     title={p
-                      ? [f.name, tabla.dias[i].fecha, ...tabla.fincasPorDia[i]].join(
-                          " · ",
-                        )
+                      ? [
+                          f.name,
+                          tabla.dias[i].fecha,
+                          ...tabla.fincasPorDia[i],
+                          f.conAnotacion[i] ? "" : i18n.t("asistencia.sin_anotar"),
+                        ]
+                          .filter(Boolean)
+                          .join(" · ")
                       : ""}
-                  ></td>
+                  >
+                    {#if p && !f.conAnotacion[i]}·{/if}
+                  </td>
                 {/each}
                 <td class="asis-tot">{f.total}</td>
               </tr>
@@ -241,6 +263,15 @@
           </tfoot>
         </table>
       </div>
+      <p class="asis-leyenda">
+        <span class="lg lg-anotado"></span>
+        {i18n.t("asistencia.leyenda_anotado")}
+        <span class="lg lg-sin">·</span>
+        {i18n.t("asistencia.leyenda_sin_anotar")}
+        {#if tabla.totalSinAnotar > 0}
+          ({tabla.totalSinAnotar})
+        {/if}
+      </p>
     {/if}
 
     {#if mensaje}
@@ -355,6 +386,18 @@
   .asis-tabla td.presente.finde {
     background: var(--c-primario);
   }
+  /* Presente pero sin ninguna anotación: sin relleno, solo un aro y un punto. */
+  .asis-tabla td.presente.sin-anotar,
+  .asis-tabla td.presente.sin-anotar.finde {
+    background: transparent;
+    box-shadow: inset 0 0 0 3px var(--c-primario);
+    color: var(--c-primario);
+    font-weight: 700;
+    line-height: 1;
+  }
+  .asis-tabla td.presente.sin-anotar.finde {
+    background: #f0ece0;
+  }
   .asis-tabla .hoy {
     outline: 2px solid var(--c-aviso);
     outline-offset: -2px;
@@ -390,6 +433,31 @@
     margin: 0 0 8px;
     font-size: 13px;
     color: var(--c-texto-suave);
+  }
+  .asis-leyenda {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin: 8px 0 0;
+    font-size: 13px;
+    color: var(--c-texto-suave);
+  }
+  .asis-leyenda .lg {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 3px;
+    font-weight: 700;
+    color: var(--c-primario);
+  }
+  .asis-leyenda .lg-anotado {
+    background: var(--c-primario);
+  }
+  .asis-leyenda .lg-sin {
+    box-shadow: inset 0 0 0 3px var(--c-primario);
   }
   .asis-tabla tbody tr.asis-grupo th {
     text-align: start;

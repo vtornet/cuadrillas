@@ -47,13 +47,14 @@ function escapar(v: string): string {
 export interface MetaAsistencia {
   titulo: string;
   cuadrillas: string;
-  /** Etiquetas ya traducidas para las filas de rol / totales. */
+  /** Etiquetas ya traducidas para las filas de rol / totales / leyenda. */
   etiquetas: {
     trabajador: string;
     total: string;
     totalRecolectores: string;
     totalAuxiliares: string;
     fincas: string;
+    leyenda: string;
   };
 }
 
@@ -88,9 +89,15 @@ export async function asistenciaAXlsx(
     alignment: { horizontal: "center", vertical: "center" },
     border: BORDES,
   });
-  const celda = (presente: boolean, finde: boolean): Estilo => ({
+  const celda = (
+    presente: boolean,
+    anoto: boolean,
+    finde: boolean,
+  ): Estilo => ({
     fill: presente
-      ? { fgColor: { rgb: "C7E3C7" } }
+      ? anoto
+        ? { fgColor: { rgb: "C7E3C7" } } // verde: presente y anotó
+        : { fgColor: { rgb: "FCE8C8" } } // ámbar: presente sin anotar
       : finde
         ? { fgColor: { rgb: "F0ECE0" } }
         : {},
@@ -128,6 +135,9 @@ export async function asistenciaAXlsx(
     merges.push({ s: { r: R, c: 0 }, e: { r: R, c: ncols - 1 } });
     R++;
   }
+  set(R, 0, meta.etiquetas.leyenda, { font: { italic: true, sz: 9 } });
+  merges.push({ s: { r: R, c: 0 }, e: { r: R, c: ncols - 1 } });
+  R++;
   R++;
 
   // Cabecera.
@@ -140,7 +150,12 @@ export async function asistenciaAXlsx(
   for (const f of a.filas) {
     set(R, 0, f.name, nombreCel);
     f.presente.forEach((p, i) =>
-      set(R, i + 1, p ? "X" : "", celda(p, a.dias[i].finDeSemana)),
+      set(
+        R,
+        i + 1,
+        p ? (f.conAnotacion[i] ? "X" : "·") : "",
+        celda(p, f.conAnotacion[i], a.dias[i].finDeSemana),
+      ),
     );
     set(R, ncols - 1, f.total, {
       font: { bold: true },

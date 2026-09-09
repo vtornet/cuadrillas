@@ -392,9 +392,14 @@ Los detalles de cada punto están en **Backlog sin planificar** justo debajo.
   `shared/tests/attendance.test.ts`, `app/tests/asistencia-export.test.ts`.
   **Añadido 2026-09-09**: selector de cuadrilla (si hay >1), separación por rol
   (recolectores/auxiliares con subtotales), línea de fincas del mes
-  (`AsistenciaMensual.fincas` / `fincasPorDia`, también en el `title` de cada celda) y
-  **export a Excel con estilo** (`asistenciaAXlsx`, además del CSV plano).
-  Gap restante: no distingue "presente sin anotaciones".
+  (`AsistenciaMensual.fincas` / `fincasPorDia`, también en el `title` de cada celda),
+  **export a Excel con estilo** (`asistenciaAXlsx`, además del CSV plano), y
+  **distinción presente-y-anotó vs presente-sin-anotar**: `asistenciaMensual` recibe
+  ahora `entries` (5º arg, opcional); `FilaAsistencia.conAnotacion[]` /
+  `.sinAnotar` + `AsistenciaMensual.totalSinAnotar`. "Anotó" = registro propio,
+  reparto de un grupo suyo, o `Shift.auxiliares` con tarea/horas. En pantalla la celda
+  va rellena (anotó) o con aro + "·" (sin anotar), con leyenda; en el Excel verde vs
+  ámbar y "X"/"·". El CSV sigue con "X" plano para cualquier presencia.
 - **Compartir parte: texto + PDF + Excel — hecho (2026-09-07).** Botón "Compartir parte"
   en `Registro.svelte` (enlace bajo la cabecera, parte activo) y `ParteDetalle.svelte`
   (Historial, modo consulta). Abre `CompartirParteSheet.svelte` con **dos informes**:

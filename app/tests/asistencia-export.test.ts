@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import XLSX from "xlsx-js-style";
 import { asistenciaMensual } from "@cuadrilla/shared/domain";
-import type { Shift, Worker } from "@cuadrilla/shared";
+import type { Entry, Shift, Worker } from "@cuadrilla/shared";
 import { asistenciaACsv, asistenciaAXlsx } from "../src/lib/export/asistencia";
 
 function worker(id: string, name: string): Worker {
@@ -36,12 +36,27 @@ function shift(fecha: string, attendeeIds: string[], finca?: string): Shift {
   };
 }
 
+function entry(shiftId: string, workerId: string): Entry {
+  return {
+    id: crypto.randomUUID(),
+    organizationId: "o",
+    shiftId,
+    workerId,
+    cantidad: 5,
+    timestamp: 1,
+    registradoPor: "u1",
+    updatedAt: 1,
+    deleted: 0,
+  };
+}
+
 const ETIQUETAS = {
   trabajador: "Trabajador",
   total: "Total",
   totalRecolectores: "Total recolectores",
   totalAuxiliares: "Total auxiliares",
   fincas: "Fincas",
+  leyenda: "X = presente y anotó   ·  ·  = presente sin anotar",
 };
 
 describe("asistenciaACsv", () => {
@@ -69,11 +84,14 @@ describe("asistenciaACsv", () => {
 
 describe("asistenciaAXlsx", () => {
   it("genera un .xlsx con título, cabecera de días y fila de totales", async () => {
+    const s1 = shift("2026-09-01", ["w1", "w2"]);
+    const s2 = shift("2026-09-02", ["w1"]);
     const tabla = asistenciaMensual(
-      [shift("2026-09-01", ["w1", "w2"]), shift("2026-09-02", ["w1"])],
+      [s1, s2],
       [worker("w1", "Ana"), worker("w2", "Beto")],
       2026,
       9,
+      [entry(s1.id, "w1"), entry(s1.id, "w2"), entry(s2.id, "w1")],
     );
     const blob = await asistenciaAXlsx(tabla, {
       titulo: "Asistencia · septiembre 2026",
