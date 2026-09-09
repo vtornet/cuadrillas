@@ -174,9 +174,64 @@ reales en free.
 
 ## Estado
 
-MVP completo (8 pasos). Fuera del MVP, preparado pero no implementado: panel
-multi-cuadrilla, vista del trabajador, NFC, fotos de albaranes. (i18n completo ro/ar/fr
-+ selector de idioma + RTL — hecho 2026-09-08.)
+MVP completo (8 pasos). Fuera del MVP, preparado pero no implementado: vista del
+trabajador, NFC, fotos de albaranes. (i18n completo ro/ar/fr + selector de idioma + RTL
+— hecho 2026-09-08.) El "panel de empresa" pasó a plan propio (ver abajo).
+
+### Panel de empresa (propuesta acordada 2026-09-09, sin implementar)
+
+**Encuadre.** Una organización = una empresa. Dentro, dos roles con herramientas
+distintas:
+
+- **Jefe de cuadrilla** (`foreman`): la PWA actual, móvil, **offline**. Crea datos en
+  campo (partes, anotaciones, asistencia, alta "rápida" de trabajadores = nombre + alias
+  + cuadrilla). No maneja economía (ya es así).
+- **Gestor** (`gestor`, rol nuevo): **panel web nuevo**, escritorio, **online**. **No
+  crea partes.** Consulta y completa: fichas laborales (altas), tarifas, liquidaciones
+  (pagos), estadísticas, asistencia.
+- `owner`: dueño, todos los permisos incluida la facturación.
+
+El `plan` marca qué tiene la org: `foreman` = solo PWA (1 jefe, 2 cuadrillas, sin panel);
+`company` = panel + varios jefes + varias cuadrillas.
+
+**Arquitectura.**
+
+- **Nuevo paquete `panel/`** — Vite + Svelte, SPA **online** (sin service worker, sin
+  Dexie, sin motor de sync). Deploy aparte (`panel.cuadrillas.app`), misma API.
+- Reutiliza `shared/` entero — `settlement.ts`, `rates.ts`, `stats.ts`, `attendance.ts`,
+  `rgpd.ts` se guardaron para esto.
+- **API nueva `/admin/*`** con middleware de rol (`owner`/`gestor`). Lee de las mismas
+  colecciones Mongo que escribe `/sync`, con filtros, rangos de fecha y agregación. REST
+  normal, nada de LWW.
+- Auth: el mismo enlace mágico. El JWT ya lleva `role`; el panel solo admite
+  `owner`/`gestor`, la PWA solo `foreman`/`owner`.
+- Descartado: meter el panel como vistas gateadas por rol dentro de la PWA (el
+  offline-first es lastre para una herramienta de consulta de escritorio).
+
+**Decisiones de modelado (2026-09-09).**
+
+1. Rol `gestor` **nuevo** (ya añadido a `Rol` en shared y al enum de `api/models/auth.ts`).
+2. Datos laborales del trabajador: **set completo** — `Worker.laboral?: DatosLaborales`
+   (`dni`, `numAfiliacionSS`, `iban`, `fechaAlta`, `fechaBaja`, `tipoContrato`,
+   `categoria`), todo opcional, **solo se edita en el panel**, se borra al anonimizar
+   (RGPD ampliado). Ya está el tipo en `shared/src/types/worker.ts`.
+3. Liquidación **al vuelo** — el panel recalcula cada periodo al abrirlo (partes +
+   tarifas + transporte). Sin entidad `Liquidacion` congelada por ahora.
+4. **Invitaciones**: el gestor invita a un jefe por email → enlace mágico → `User` con
+   rol `foreman` en la misma org. No existe aún.
+5. `Organization.planLimits.foremen?` añadido (opcional); `LIMITES_POR_PLAN` en
+   `api/src/lib/stripe.ts` ahora lleva `foremen` (free/foreman 1, company 25, campaign 3).
+
+**Fases.**
+
+- **A — Modelado**: hecho (decisiones arriba + tipos `Rol` / `Worker.laboral` /
+  `planLimits.foremen` / enum de mongoose / `LIMITES_POR_PLAN.foremen` / RGPD).
+- **B — Panel de consulta + tarifas**: paquete `panel/`, API `/admin`, vistas resumen ·
+  cuadrillas · trabajadores · partes (consulta) · asistencia mensual · **tarifas (CRUD)**
+  · **liquidación por periodo** (`settlement.ts`) · exports. Deploy.
+- **C — Altas**: pantalla "Altas" con los campos `Worker.laboral` y estado
+  (pendiente/completa). Ajustes finos de RGPD.
+- **D — Autoservicio**: la empresa se registra, paga plan `company`, invita a sus jefes.
 
 ### Despliegue (en marcha, 2026-09-05)
 
@@ -369,7 +424,8 @@ Los detalles de cada punto están en **Backlog sin planificar** justo debajo.
 **Fuera de MVP (preparado, no implementado)**
 
 13. **i18n completo (ro/ar/fr) + selector de idioma + RTL. HECHO (2026-09-08).** Queda:
-    panel multi-cuadrilla · vista del trabajador · NFC · fotos de albaranes.
+    **panel de empresa** (propuesta acordada, ver "Panel de empresa" en `## Estado`) ·
+    vista del trabajador · NFC · fotos de albaranes.
     - `i18n.svelte.ts`: `Locale = Idioma` (es/en/ro/ar/fr), `DICCIONARIOS` con los 5,
       `cargar()` (lee `meta.locale` o `navigator.language`), `cambiar()` (persiste +
       `document.documentElement.dir/lang`), getter `rtl`. `NOMBRE_IDIOMA` para el selector.

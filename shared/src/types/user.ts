@@ -1,4 +1,11 @@
-export type Rol = "owner" | "foreman" | "worker";
+/**
+ * - `owner`: dueño de la organización (todo, incluida la facturación).
+ * - `gestor`: panel de empresa — consulta de partes/asistencia, tarifas,
+ *   liquidaciones y altas laborales. No crea partes.
+ * - `foreman`: jefe de cuadrilla — la PWA de campo.
+ * - `worker`: trabajador que consulta su propio conteo (fuera de MVP).
+ */
+export type Rol = "owner" | "gestor" | "foreman" | "worker";
 
 export interface User {
   id: string;

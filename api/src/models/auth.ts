@@ -13,7 +13,11 @@ const userSchema = new Schema<UserDoc>(
   {
     _id: { type: String, required: true },
     email: { type: String, required: true, unique: true, lowercase: true, trim: true },
-    role: { type: String, enum: ["owner", "foreman", "worker"], default: "owner" },
+    role: {
+      type: String,
+      enum: ["owner", "gestor", "foreman", "worker"],
+      default: "owner",
+    },
     organizationId: { type: String, required: true },
     createdAt: { type: Date, default: Date.now },
   },

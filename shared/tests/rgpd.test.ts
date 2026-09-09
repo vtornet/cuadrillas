@@ -130,7 +130,10 @@ describe("informeTrabajador", () => {
 
 describe("anonimizarWorker", () => {
   it("borra los datos personales pero conserva el registro", () => {
-    const w = worker({ id: "abc12345-def6-7890-abcd-ef1234567890" });
+    const w = worker({
+      id: "abc12345-def6-7890-abcd-ef1234567890",
+      laboral: { dni: "12345678Z", iban: "ES00", fechaAlta: "2026-01-01" },
+    });
     const a = anonimizarWorker(w, "Trabajador eliminado");
 
     expect(a.id).toBe(w.id);
@@ -139,6 +142,7 @@ describe("anonimizarWorker", () => {
     expect(a.alias).toBe("ELIMINADO-ABC12345");
     expect(a.qrCode).toBeUndefined();
     expect(a.transporteCentimos).toBe(0);
+    expect(a.laboral).toBeUndefined();
     expect(a.language).toBe("es");
     expect(a.activo).toBe(0);
     expect(a.deleted).toBe(0);

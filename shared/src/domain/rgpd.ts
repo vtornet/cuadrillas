@@ -130,6 +130,7 @@ export function anonimizarWorker(worker: Worker, nombreGenerico: string): Worker
     language: "es",
     qrCode: undefined,
     transporteCentimos: 0,
+    laboral: undefined,
     activo: 0,
     updatedAt: Date.now(),
     deleted: 0,

@@ -21,9 +21,11 @@ export interface Organization extends RegistroSincronizable {
   stripeSubscriptionId?: string;
   /** Estado de la suscripción en Stripe (`active`, `past_due`, `canceled`…). */
   subscriptionStatus?: string;
-  /** Límites efectivos del plan actual (nº de cuadrillas y de trabajadores). */
+  /** Límites efectivos del plan actual. */
   planLimits: {
     crews: number;
     workers: number;
+    /** Nº de jefes de cuadrilla. Ausente en orgs antiguas = sin límite explícito. */
+    foremen?: number;
   };
 }

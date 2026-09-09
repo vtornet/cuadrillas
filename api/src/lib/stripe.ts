@@ -21,16 +21,20 @@ export function modoCheckout(plan: PlanPago): "payment" | "subscription" {
   return plan === "campaign" ? "payment" : "subscription";
 }
 
-export const LIMITES_POR_PLAN: Record<Plan, { crews: number; workers: number }> =
-  {
-    free: {
-      crews: LIMITES_PLAN_GRATIS.crews,
-      workers: LIMITES_PLAN_GRATIS.workers,
-    },
-    foreman: { crews: 2, workers: 60 },
-    company: { crews: 25, workers: 750 },
-    campaign: { crews: 3, workers: 120 },
-  };
+export const LIMITES_POR_PLAN: Record<
+  Plan,
+  { crews: number; workers: number; foremen: number }
+> = {
+  free: {
+    crews: LIMITES_PLAN_GRATIS.crews,
+    workers: LIMITES_PLAN_GRATIS.workers,
+    foremen: 1,
+  },
+  // `foreman` = un solo jefe (él mismo). `company` = varios jefes + gestor.
+  foreman: { crews: 2, workers: 60, foremen: 1 },
+  company: { crews: 25, workers: 750, foremen: 25 },
+  campaign: { crews: 3, workers: 120, foremen: 3 },
+};
 
 export function planDePrecio(priceId: string): Plan | null {
   for (const [plan, id] of Object.entries(PRECIOS)) {
