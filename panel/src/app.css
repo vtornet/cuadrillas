@@ -1,0 +1,221 @@
+:root {
+  --verde: #1c6b3c;
+  --verde-osc: #124a29;
+  --tinta: #1a1a1a;
+  --suave: #667085;
+  --linea: #d0d5dd;
+  --fondo: #f7f7f5;
+  --superficie: #ffffff;
+  --aviso: #b42318;
+  --radio: 8px;
+  color-scheme: light;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color: var(--tinta);
+  background: var(--fondo);
+}
+
+a {
+  color: var(--verde);
+}
+
+h1 {
+  font-size: 1.35rem;
+  margin: 0 0 16px;
+}
+h2 {
+  font-size: 1.05rem;
+  margin: 24px 0 8px;
+}
+
+button,
+.btn {
+  font: inherit;
+  padding: 8px 14px;
+  border: 1px solid var(--linea);
+  border-radius: var(--radio);
+  background: var(--superficie);
+  color: var(--tinta);
+  cursor: pointer;
+}
+button.primario {
+  background: var(--verde);
+  border-color: var(--verde);
+  color: #fff;
+}
+button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+input,
+select {
+  font: inherit;
+  padding: 8px 10px;
+  border: 1px solid var(--linea);
+  border-radius: var(--radio);
+  background: var(--superficie);
+}
+
+/* Layout con barra lateral */
+.layout {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  min-height: 100vh;
+}
+.lateral {
+  background: var(--verde-osc);
+  color: #fff;
+  padding: 20px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.lateral .marca {
+  font-weight: 700;
+  font-size: 1.1rem;
+  padding: 4px 10px 16px;
+}
+.lateral a {
+  color: #dfeee5;
+  text-decoration: none;
+  padding: 9px 10px;
+  border-radius: var(--radio);
+}
+.lateral a.activo,
+.lateral a:hover {
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+}
+.lateral .pie {
+  margin-top: auto;
+  font-size: 13px;
+  color: #b9d3c4;
+  padding: 10px;
+}
+.lateral .pie button {
+  margin-top: 8px;
+  width: 100%;
+  background: transparent;
+  border-color: rgba(255, 255, 255, 0.3);
+  color: #fff;
+}
+
+.contenido {
+  padding: 28px 32px;
+  max-width: 1100px;
+}
+
+.tabla-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--linea);
+  border-radius: var(--radio);
+  background: var(--superficie);
+}
+table.datos {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 14px;
+}
+table.datos th,
+table.datos td {
+  text-align: left;
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--linea);
+  white-space: nowrap;
+}
+table.datos thead th {
+  background: #f2f4f7;
+  font-weight: 600;
+}
+table.datos tbody tr:hover {
+  background: #f9fafb;
+}
+table.datos tbody tr.clic {
+  cursor: pointer;
+}
+
+.tarjetas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 14px;
+}
+.tarjeta {
+  background: var(--superficie);
+  border: 1px solid var(--linea);
+  border-radius: var(--radio);
+  padding: 16px;
+}
+.tarjeta .n {
+  font-size: 1.9rem;
+  font-weight: 700;
+}
+.tarjeta .et {
+  color: var(--suave);
+  font-size: 13px;
+}
+
+.filtros {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+.aviso {
+  color: var(--aviso);
+}
+.vacio,
+.cargando {
+  color: var(--suave);
+  padding: 24px 0;
+}
+
+/* Login */
+.login {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+}
+.login .caja {
+  background: var(--superficie);
+  border: 1px solid var(--linea);
+  border-radius: var(--radio);
+  padding: 28px;
+  width: min(92vw, 380px);
+}
+.login .caja h1 {
+  margin-bottom: 6px;
+}
+.login .caja p {
+  color: var(--suave);
+  margin-top: 0;
+}
+.login form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.ok {
+  color: var(--verde);
+}
+
+.pares {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 4px 16px;
+  font-size: 14px;
+}
+.pares dt {
+  color: var(--suave);
+}
+.pares dd {
+  margin: 0;
+}

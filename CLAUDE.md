@@ -13,13 +13,14 @@ Requisitos: Node ≥ 20, pnpm 9.
 
 ```bash
 pnpm install            # la primera vez descarga un binario de MongoDB (mongodb-memory-server), tarda
-pnpm dev                # PWA en :5173. Modo demo salvo que app/.env tenga VITE_API_URL
+pnpm dev                # PWA del jefe en :5173. Modo demo salvo que app/.env tenga VITE_API_URL
 pnpm dev:api            # backend en :8080 (necesita un MongoDB: docker run -p 27017:27017 mongo:7)
-pnpm dev:all            # ambos
-pnpm build              # build de los 3 paquetes
+pnpm dev:panel          # panel de empresa en :5175 (necesita el API en :8080)
+pnpm dev:all            # PWA + API (no incluye el panel)
+pnpm build              # build de los 4 paquetes
 pnpm preview            # sirve la PWA compilada — ÚNICA forma de probar el service worker / offline (el SW está desactivado en dev)
-pnpm typecheck          # tsc --noEmit (shared, api) + svelte-check (app)
-pnpm test               # vitest en los 3 paquetes
+pnpm typecheck          # tsc --noEmit (shared, api) + svelte-check (app, panel)
+pnpm test               # vitest en los 4 paquetes
 ```
 
 Un solo paquete / un solo test:
@@ -39,7 +40,7 @@ código fuente `.ts` vía alias (`@cuadrilla/shared` → `shared/src/index.ts`,
 
 ## Arquitectura
 
-### Los 3 paquetes
+### Los 4 paquetes
 
 - **`shared/`** — tipos + **lógica de dominio pura** (`shared/src/domain/`). Sin IO, sin
   framework. Se usa **igual en cliente y servidor**. Aquí vive todo lo testeable de verdad:
@@ -47,8 +48,12 @@ código fuente `.ts` vía alias (`@cuadrilla/shared` → `shared/src/index.ts`,
   nota en "Dinero"), `stats.ts` (estadísticas), `rates.ts` (tarifa vigente),
   `entries.ts` (conteos), `attendance.ts` (tabla mensual de asistencia), `rgpd.ts`
   (informe + anonimización de un trabajador), `products.ts` (`etiquetaProducto`).
-- **`app/`** — PWA Vite + Svelte 5 (runes) + `vite-plugin-pwa`. IndexedDB con Dexie.
-- **`api/`** — Express 4 + Mongoose 8 + zod. Enlace mágico + `/sync` + Stripe.
+- **`app/`** — PWA Vite + Svelte 5 (runes) + `vite-plugin-pwa`. IndexedDB con Dexie. Para
+  el **jefe de cuadrilla** (campo, offline).
+- **`api/`** — Express 4 + Mongoose 8 + zod. Enlace mágico + `/sync` + `/admin` + Stripe.
+- **`panel/`** — SPA Vite + Svelte 5, **online** (sin service worker, sin Dexie, sin motor
+  de sync). Para el **gestor de empresa** (escritorio). Habla con `/admin/*`. Ver "Panel
+  de empresa" en `## Estado`. (Scaffold + Fase B, 2026-09-09.)
 
 ### Offline-first (la restricción central)
 
@@ -226,12 +231,25 @@ El `plan` marca qué tiene la org: `foreman` = solo PWA (1 jefe, 2 cuadrillas, s
 
 - **A — Modelado**: hecho (decisiones arriba + tipos `Rol` / `Worker.laboral` /
   `planLimits.foremen` / enum de mongoose / `LIMITES_POR_PLAN.foremen` / RGPD).
-- **B — Panel de consulta + tarifas**: paquete `panel/`, API `/admin`, vistas resumen ·
-  cuadrillas · trabajadores · partes (consulta) · asistencia mensual · **tarifas (CRUD)**
-  · **liquidación por periodo** (`settlement.ts`) · exports. Deploy.
+- **B — Panel de consulta**: **scaffold hecho (2026-09-09)**.
+  - API: `requiereRol(...roles)` en `middleware/auth.ts`; `services/adminService.ts`
+    (consultas de solo lectura, `aWire`, filtradas por `organizationId`); `routes/admin.ts`
+    (`GET /admin/resumen|cuadrillas|trabajadores|trabajadores/:id|partes|partes/:id`,
+    todo gated a `owner`/`gestor`). Tests: `api/tests/admin.test.ts`.
+  - `panel/`: `main.ts` + `App.svelte` (layout con barra lateral) + `lib/`
+    (`config.ts` `API_URL`, `sesion.svelte.ts` login por enlace mágico con
+    `localStorage`, `api.ts` fetch con bearer, `router.svelte.ts` hash router) +
+    `routes/` (Login, Resumen, Cuadrillas, Trabajadores + ficha, Partes, ParteDetalle).
+    Sin i18n (solo español por ahora). CSS propio en `src/app.css` (no reusa
+    `tokens.css` — UX de escritorio distinta).
+  - Falta en la Fase B: **tarifas (CRUD)** (endpoints `POST/PUT/DELETE /admin/rates` +
+    vista) · **asistencia mensual** (`asistenciaMensual` server-side) · **liquidación por
+    periodo** (`calcularLiquidacion`) · exports · deploy (`panel.cuadrillas.app`, ver
+    `DEPLOY.md` Fase 5).
 - **C — Altas**: pantalla "Altas" con los campos `Worker.laboral` y estado
-  (pendiente/completa). Ajustes finos de RGPD.
-- **D — Autoservicio**: la empresa se registra, paga plan `company`, invita a sus jefes.
+  (pendiente/completa). Ajustes finos de RGPD. Endpoint `PUT /admin/trabajadores/:id/laboral`.
+- **D — Autoservicio**: la empresa se registra, paga plan `company`, invita a sus jefes
+  (`POST /admin/invitaciones` → `User` con rol `foreman` en la org + enlace mágico).
 
 ### Despliegue (en marcha, 2026-09-05)
 

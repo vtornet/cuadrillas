@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import { authRouter } from "./routes/auth";
 import { syncRouter } from "./routes/sync";
+import { adminRouter } from "./routes/admin";
 import { billingRouter, webhookStripe } from "./routes/billing";
 import { errorHandler } from "./middleware/errorHandler";
 
@@ -24,6 +25,7 @@ export function crearApp(): express.Express {
   });
   app.use("/auth", authRouter);
   app.use("/sync", syncRouter);
+  app.use("/admin", adminRouter);
   app.use("/billing", billingRouter);
 
   app.use(errorHandler);

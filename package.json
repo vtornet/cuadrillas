@@ -10,6 +10,7 @@
   "scripts": {
     "dev": "pnpm --filter @cuadrilla/app dev",
     "dev:api": "pnpm --filter @cuadrilla/api dev",
+    "dev:panel": "pnpm --filter @cuadrilla/panel dev",
     "dev:all": "pnpm --parallel --filter @cuadrilla/app --filter @cuadrilla/api dev",
     "build": "pnpm -r build",
     "preview": "pnpm --filter @cuadrilla/app preview",

@@ -3,3 +3,4 @@ packages:
   - shared
   - app
   - api
+  - panel
