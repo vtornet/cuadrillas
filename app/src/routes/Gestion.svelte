@@ -40,6 +40,12 @@
   ];
 
   function nuevo(): void {
+    if (tab === "crews" && !gestion.puedeCrearCuadrilla) {
+      mensaje = i18n.t("gestion.limite_cuadrillas", {
+        n: gestion.limiteCuadrillas,
+      });
+      return;
+    }
     editando = { tab, registro: null };
   }
   function editar(registro: Registro): void {

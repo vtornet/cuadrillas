@@ -130,6 +130,15 @@ sincronizada. El webhook de Stripe (`api/src/services/billingService.ts` →
 lo reciba en el siguiente `/sync`. `syncService.dentroDelLimite` lee `org.planLimits`.
 Sin `STRIPE_SECRET_KEY` los endpoints de pago responden 503 y la UI de plan no aparece.
 
+Límites de cuadrillas: `LIMITES_PLAN_GRATIS.crews = 2` (2026-09-09, antes 1),
+`LIMITES_POR_PLAN.foreman.crews = 2` (`api/src/lib/stripe.ts`); company 25, campaign 3.
+Además del rechazo en `/sync`, el cliente avisa **antes** de abrir el formulario:
+`gestion.puedeCrearCuadrilla` / `limiteCuadrillas` (lee `Organization.planLimits.crews`);
+`Gestion.svelte` `nuevo()` muestra `gestion.limite_cuadrillas` en la pestaña Cuadrillas
+al llegar al tope (también en demo, donde no hay `/sync`). Orgs creadas antes del cambio
+conservan el `planLimits.crews` guardado (1) — migración pendiente si aparecen usuarios
+reales en free.
+
 ## Convenciones
 
 - **Idioma**: tipos en inglés (`Worker`, `Shift`, `Entry`, `Rate`); funciones, variables y

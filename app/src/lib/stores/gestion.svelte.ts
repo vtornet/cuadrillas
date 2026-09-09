@@ -2,11 +2,13 @@ import type {
   Crew,
   Finca,
   Group,
+  Organization,
   Product,
   RegistroSincronizable,
   UnitType,
   Worker,
 } from "@cuadrilla/shared";
+import { LIMITES_PLAN_GRATIS } from "@cuadrilla/shared";
 import {
   anonimizarWorker as anonimizarWorkerPuro,
   etiquetaProducto,
@@ -17,6 +19,7 @@ import { crewsDeOrg } from "../db/repositories/crews";
 import { todosLosWorkers } from "../db/repositories/workers";
 import { todosLosGrupos } from "../db/repositories/groups";
 import { todasLasFincas } from "../db/repositories/fincas";
+import { obtenerOrganizacion } from "../db/repositories/organizations";
 import {
   todasLasUnidades,
   todosLosProductos,
@@ -46,6 +49,7 @@ class GestionStore {
   fincas = $state<Finca[]>([]);
   products = $state<Product[]>([]);
   units = $state<UnitType[]>([]);
+  org = $state<Organization | null>(null);
 
   async cargar(): Promise<void> {
     const org = sesion.organizationId;
@@ -55,6 +59,17 @@ class GestionStore {
     this.fincas = await todasLasFincas(org);
     this.products = await todosLosProductos(org);
     this.units = await todasLasUnidades(org);
+    this.org = (await obtenerOrganizacion(org)) ?? null;
+  }
+
+  /** Nº máximo de cuadrillas del plan actual. */
+  get limiteCuadrillas(): number {
+    return this.org?.planLimits?.crews ?? LIMITES_PLAN_GRATIS.crews;
+  }
+
+  /** Puede crear otra cuadrilla sin superar el límite del plan. */
+  get puedeCrearCuadrilla(): boolean {
+    return this.crews.length < this.limiteCuadrillas;
   }
 
   async guardar(

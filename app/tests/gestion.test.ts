@@ -113,6 +113,14 @@ describe("gestion store CRUD", () => {
     expect(gestion.nombreCrew("c1")).toBe("Cuadrilla Norte");
   });
 
+  it("puedeCrearCuadrilla es false al llegar al límite del plan", async () => {
+    expect(gestion.limiteCuadrillas).toBe(2);
+    await gestion.guardar("crew", cuadrilla({ id: "c1" }));
+    expect(gestion.puedeCrearCuadrilla).toBe(true);
+    await gestion.guardar("crew", cuadrilla({ id: "c2", name: "Sur" }));
+    expect(gestion.puedeCrearCuadrilla).toBe(false);
+  });
+
   it("trabajadoresDe devuelve los trabajadores de esa cuadrilla", async () => {
     await gestion.guardar("crew", cuadrilla({ id: "c1" }));
     await gestion.guardar("worker", trabajador({ id: "w1", crewId: "c1" }));

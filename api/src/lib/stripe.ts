@@ -27,7 +27,7 @@ export const LIMITES_POR_PLAN: Record<Plan, { crews: number; workers: number }> 
       crews: LIMITES_PLAN_GRATIS.crews,
       workers: LIMITES_PLAN_GRATIS.workers,
     },
-    foreman: { crews: 1, workers: 60 },
+    foreman: { crews: 2, workers: 60 },
     company: { crews: 25, workers: 750 },
     campaign: { crews: 3, workers: 120 },
   };

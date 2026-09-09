@@ -23,6 +23,6 @@ export const IDIOMAS_MVP = ["es", "en"] as const;
 
 /** Límites del plan gratuito. Se validan en el servidor dentro de `/sync`. */
 export const LIMITES_PLAN_GRATIS = {
-  crews: 1,
+  crews: 2,
   workers: 10,
 } as const;
