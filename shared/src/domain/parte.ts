@@ -6,7 +6,11 @@ import { sumarConteos, totalJornada } from "./entries";
 /**
  * Informes de un parte para exportar (PDF / Excel). Puros, sin IO. Dos formas:
  * `InformeAsistencia` (solo la lista de trabajadores por rol) e `InformeParte`
- * (parte completo: unidades por recolector/grupo + tarea/horas de auxiliares).
+ * (parte completo: unidades por recolector + tarea/horas de auxiliares).
+ *
+ * Los grupos no se listan aparte en los informes: sus miembros aparecen en la
+ * lista de recolectores y sus unidades se reparten entre ellos (igual que la
+ * liquidación y las estadísticas).
  */
 
 export interface CabeceraInforme {
@@ -23,27 +27,15 @@ export interface CabeceraInforme {
   firmaPng?: string;
 }
 
-export interface GrupoAsistencia {
-  nombre: string;
-  miembros: string[];
-}
-
 export interface InformeAsistencia {
   cabecera: CabeceraInforme;
   recolectores: string[];
   auxiliares: string[];
-  /** Si el parte se trabaja por grupos: composición de hoy. */
-  grupos: GrupoAsistencia[];
 }
 
 export interface FilaRecolector {
   nombre: string;
   unidades: number;
-}
-export interface FilaGrupo {
-  nombre: string;
-  unidades: number;
-  miembros: string[];
 }
 export interface FilaAuxiliar {
   nombre: string;
@@ -53,9 +45,8 @@ export interface FilaAuxiliar {
 
 export interface InformeParte {
   cabecera: CabeceraInforme;
-  /** Vacío si el parte se trabaja por grupos. */
+  /** Incluye a los miembros de grupos, con su parte repartida de las unidades. */
   recolectores: FilaRecolector[];
-  grupos: FilaGrupo[];
   auxiliares: FilaAuxiliar[];
   totalUnidades: number;
 }
@@ -72,7 +63,6 @@ export function informeAsistencia(
   shift: ShiftInforme,
   workers: Worker[],
 ): InformeAsistencia {
-  const nombre = new Map(workers.map((w) => [w.id, w.name]));
   const presentes = workers.filter((w) => shift.attendeeIds.includes(w.id));
   return {
     cabecera,
@@ -84,12 +74,6 @@ export function informeAsistencia(
       .filter((w) => w.funcion === "auxiliar")
       .map((w) => w.name)
       .sort((a, b) => a.localeCompare(b, "es")),
-    grupos: (shift.groups ?? []).map((g) => ({
-      nombre: g.name,
-      miembros: g.memberIds
-        .map((id) => nombre.get(id) ?? "?")
-        .sort((a, b) => a.localeCompare(b, "es")),
-    })),
   };
 }
 
@@ -104,18 +88,28 @@ export function informeParte(
   const nombre = new Map(workers.map((w) => [w.id, w.name]));
   const presentes = workers.filter((w) => shift.attendeeIds.includes(w.id));
 
-  const recolectores: FilaRecolector[] = presentes
-    .filter((w) => w.funcion !== "auxiliar")
-    .map((w) => ({ nombre: w.name, unidades: conteos[w.id] ?? 0 }))
-    .sort((a, b) => b.unidades - a.unidades || porNombre(a, b));
+  // Unidades por recolector: su registro individual más el reparto a partes
+  // iguales de las unidades de cada grupo entre sus miembros presentes.
+  const porRecolector = new Map<string, number>();
+  for (const w of presentes) {
+    if (w.funcion !== "auxiliar") porRecolector.set(w.id, conteos[w.id] ?? 0);
+  }
+  for (const g of shift.groups ?? []) {
+    const uds = conteos[g.groupId] ?? 0;
+    if (!uds || g.memberIds.length === 0) continue;
+    const cuota = uds / g.memberIds.length;
+    for (const id of g.memberIds) {
+      if (!porRecolector.has(id)) continue;
+      porRecolector.set(id, (porRecolector.get(id) ?? 0) + cuota);
+    }
+  }
 
-  const grupos: FilaGrupo[] = (shift.groups ?? []).map((g) => ({
-    nombre: g.name,
-    unidades: conteos[g.groupId] ?? 0,
-    miembros: g.memberIds
-      .map((id) => nombre.get(id) ?? "?")
-      .sort((a, b) => a.localeCompare(b, "es")),
-  }));
+  const recolectores: FilaRecolector[] = [...porRecolector]
+    .map(([id, u]) => ({
+      nombre: nombre.get(id) ?? "?",
+      unidades: Math.round(u * 10) / 10,
+    }))
+    .sort((a, b) => b.unidades - a.unidades || porNombre(a, b));
 
   const auxiliares: FilaAuxiliar[] = presentes
     .filter((w) => w.funcion === "auxiliar")
@@ -128,7 +122,6 @@ export function informeParte(
   return {
     cabecera,
     recolectores,
-    grupos,
     auxiliares,
     totalUnidades: totalJornada(conteos),
   };

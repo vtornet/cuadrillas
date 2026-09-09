@@ -24,13 +24,5 @@ export function textoAsistenciaParte(inf: InformeAsistencia): string {
     inf.auxiliares.forEach((n, i) => L.push(`${i + 1}. ${n}`));
   }
 
-  if (inf.grupos.length > 0) {
-    L.push("");
-    L.push("Grupos:");
-    for (const g of inf.grupos) {
-      L.push(`· ${g.nombre} (${g.miembros.length}): ${g.miembros.join(", ")}`);
-    }
-  }
-
   return L.join("\n");
 }

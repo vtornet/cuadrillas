@@ -20,12 +20,11 @@ beforeAll(async () => {
 });
 
 describe("docAsistencia", () => {
-  it("cabecera + una tabla por rol/grupo con columna Nº", () => {
+  it("cabecera + una tabla por rol con columna Nº", () => {
     const inf: InformeAsistencia = {
       cabecera: cab,
       recolectores: ["Ana", "Beto"],
       auxiliares: ["Zoe"],
-      grupos: [{ nombre: "Grupo A", miembros: ["Ana", "Beto"] }],
     };
     const d = docAsistencia(inf);
 
@@ -41,7 +40,6 @@ describe("docAsistencia", () => {
     expect(d.tablas.map((t) => t.titulo)).toEqual([
       "Recolectores (2)",
       "Auxiliares (1)",
-      "Grupo A (2)",
     ]);
     expect(d.tablas[0].columnas.map((c) => c.align)).toEqual(["center", "left"]);
     expect(d.tablas[0].filas).toEqual([
@@ -59,7 +57,6 @@ describe("docParte", () => {
         { nombre: "Ana", unidades: 40 },
         { nombre: "Beto", unidades: 25 },
       ],
-      grupos: [],
       auxiliares: [{ nombre: "Zoe", tarea: "Carga", horas: 6 }],
       totalUnidades: 65,
     };
@@ -78,17 +75,23 @@ describe("docParte", () => {
     expect(d.firmante).toBe("Paco Jefe");
   });
 
-  it("por grupos: tabla de grupos con total, sin lista individual", () => {
+  it("nunca añade una tabla de grupos", () => {
     const inf: InformeParte = {
       cabecera: cab,
-      recolectores: [{ nombre: "Ana", unidades: 0 }],
-      grupos: [{ nombre: "Grupo A", unidades: 80, miembros: ["Ana", "Beto"] }],
+      recolectores: [
+        { nombre: "Ana", unidades: 40 },
+        { nombre: "Beto", unidades: 40 },
+      ],
       auxiliares: [],
       totalUnidades: 80,
     };
     const d = docParte(inf);
     expect(d.tablas).toHaveLength(1);
-    expect(d.tablas[0].filas).toEqual([["Grupo A", 80, "Ana, Beto"]]);
-    expect(d.tablas[0].total).toEqual(["TOTAL", 80, ""]);
+    expect(d.tablas[0].titulo).toBe("Recolectores (2)");
+    expect(d.tablas[0].filas).toEqual([
+      [1, "Ana", 40],
+      [2, "Beto", 40],
+    ]);
+    expect(d.tablas[0].total).toEqual(["", "TOTAL", 80]);
   });
 });

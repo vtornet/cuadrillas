@@ -84,9 +84,6 @@ export function docAsistencia(inf: InformeAsistencia): Documento {
   if (inf.auxiliares.length > 0) {
     tablas.push(lista(i18n.t("auxiliar.seccion"), inf.auxiliares));
   }
-  for (const g of inf.grupos) {
-    tablas.push(lista(g.nombre, g.miembros));
-  }
 
   return {
     titulo: i18n.t("compartir.pdf_titulo_asistencia"),
@@ -104,25 +101,12 @@ export function docParte(inf: InformeParte): Documento {
   };
   const tablas: Tabla[] = [];
 
-  if (inf.grupos.length > 0) {
-    tablas.push({
-      titulo: i18n.t("gestion.grupos"),
-      columnas: [
-        { titulo: i18n.t("compartir.grupo"), peso: 22, align: "left" },
-        colUnidades,
-        { titulo: i18n.t("compartir.miembros"), peso: 44, align: "left" },
-      ],
-      filas: inf.grupos.map((g) => [g.nombre, g.unidades, g.miembros.join(", ")]),
-      total: [colTotalEtiqueta(), inf.totalUnidades, ""],
-    });
-  } else {
-    tablas.push({
-      titulo: `${i18n.t("compartir.recolectores")} (${inf.recolectores.length})`,
-      columnas: [colNum(), colNombre(), colUnidades],
-      filas: inf.recolectores.map((r, i) => [i + 1, r.nombre, r.unidades]),
-      total: ["", colTotalEtiqueta(), inf.totalUnidades],
-    });
-  }
+  tablas.push({
+    titulo: `${i18n.t("compartir.recolectores")} (${inf.recolectores.length})`,
+    columnas: [colNum(), colNombre(), colUnidades],
+    filas: inf.recolectores.map((r, i) => [i + 1, r.nombre, r.unidades]),
+    total: ["", colTotalEtiqueta(), inf.totalUnidades],
+  });
 
   if (inf.auxiliares.length > 0) {
     tablas.push({

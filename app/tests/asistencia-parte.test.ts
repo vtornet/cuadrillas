@@ -12,7 +12,6 @@ function inf(p: Partial<InformeAsistencia> = {}): InformeAsistencia {
     },
     recolectores: [],
     auxiliares: [],
-    grupos: [],
     ...p,
   };
 }
@@ -53,17 +52,15 @@ describe("textoAsistenciaParte", () => {
     expect(lineas[2]).toBe("Finca: Finca La Loma");
   });
 
-  it("sección de auxiliares y de grupos", () => {
+  it("sección de auxiliares, sin sección de grupos", () => {
     const t = textoAsistenciaParte(
       inf({
         recolectores: ["Ana", "Beto"],
         auxiliares: ["Marco", "Zoe"],
-        grupos: [{ nombre: "Grupo A", miembros: ["Ana", "Beto"] }],
       }),
     );
     expect(t).toContain("Auxiliares (2):");
     expect(t).toContain("1. Marco");
-    expect(t).toContain("Grupos:");
-    expect(t).toContain("· Grupo A (2): Ana, Beto");
+    expect(t).not.toContain("Grupos:");
   });
 });

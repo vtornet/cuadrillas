@@ -389,13 +389,17 @@ Los detalles de cada punto están en **Backlog sin planificar** justo debajo.
 - **Compartir parte: texto + PDF + Excel — hecho (2026-09-07).** Botón "Compartir parte"
   en `Registro.svelte` (enlace bajo la cabecera, parte activo) y `ParteDetalle.svelte`
   (Historial, modo consulta). Abre `CompartirParteSheet.svelte` con **dos informes**:
-  1. **Asistencia** (lista de trabajadores por rol + grupos): previsualización de texto +
+  1. **Asistencia** (lista de trabajadores por rol): previsualización de texto +
      **Copiar** / **WhatsApp** (`wa.me/?text=`) / **Email** (`mailto:`) / **Compartir
      texto** (Web Share) + **PDF** + **Excel**.
-  2. **Parte de trabajo** (cabecera + recolectores/grupos con unidades + auxiliares con
+  2. **Parte de trabajo** (cabecera + recolectores con unidades + auxiliares con
      tarea/horas + total + firma): **PDF** + **Excel**.
   - Dominio puro `shared/domain/parte.ts`: `informeAsistencia(cabecera, shift, workers)`,
     `informeParte(cabecera, shift, workers, entries)` (usa `sumarConteos`), `fechaES`.
+  - **Los grupos NO se listan aparte en los informes (2026-09-08).** Ni tabla de grupos ni
+    sección "Grupos:" en el texto. Los miembros aparecen en la lista de recolectores y
+    `informeParte` reparte las unidades de cada grupo a partes iguales entre sus miembros
+    presentes (mismo criterio que `settlement.ts` / `stats.ts`), redondeado a 1 decimal.
   - **Formato profesional (2026-09-08).** `app/src/lib/export/documento.ts` construye un
     modelo intermedio `Documento` (título · cabecera del parte como pares etiqueta/valor ·
     tablas con `columnas`/`filas`/`total`) desde el informe, y **tanto el PDF como el

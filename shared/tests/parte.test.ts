@@ -65,10 +65,9 @@ describe("informeAsistencia", () => {
     const r = informeAsistencia(cab, shiftBase, workers);
     expect(r.recolectores).toEqual(["Ana", "Beto"]);
     expect(r.auxiliares).toEqual(["Zoe"]);
-    expect(r.grupos).toEqual([]);
   });
 
-  it("incluye el desglose de grupos", () => {
+  it("los miembros de un grupo salen en la lista de recolectores, sin sección aparte", () => {
     const r = informeAsistencia(
       cab,
       {
@@ -78,7 +77,8 @@ describe("informeAsistencia", () => {
       },
       workers,
     );
-    expect(r.grupos).toEqual([{ nombre: "Grupo A", miembros: ["Ana", "Beto"] }]);
+    expect(r.recolectores).toEqual(["Ana", "Beto"]);
+    expect("grupos" in r).toBe(false);
   });
 });
 
@@ -96,23 +96,26 @@ describe("informeParte", () => {
       { nombre: "Ana", unidades: 40 },
     ]);
     expect(r.auxiliares).toEqual([{ nombre: "Zoe", tarea: "Carga", horas: 6 }]);
-    expect(r.grupos).toEqual([]);
+    expect("grupos" in r).toBe(false);
     expect(r.totalUnidades).toBe(90);
   });
 
-  it("con grupos: unidades por grupo, recolectores a 0", () => {
+  it("con grupos: reparte las unidades del grupo entre sus miembros", () => {
     const shift = {
       attendeeIds: ["w1", "w2"],
       groups: [{ groupId: "g1", name: "Grupo A", memberIds: ["w1", "w2"] }],
       auxiliares: undefined,
     };
-    const entries = [entry({ workerId: undefined, groupId: "g1", cantidad: 80 })];
+    const entries = [
+      entry({ workerId: undefined, groupId: "g1", cantidad: 80 }),
+      entry({ workerId: "w1", cantidad: 10 }),
+    ];
     const r = informeParte(cab, shift, workers, entries);
-    expect(r.grupos).toEqual([
-      { nombre: "Grupo A", unidades: 80, miembros: ["Ana", "Beto"] },
+    expect(r.recolectores).toEqual([
+      { nombre: "Ana", unidades: 50 },
+      { nombre: "Beto", unidades: 40 },
     ]);
-    expect(r.recolectores.every((x) => x.unidades === 0)).toBe(true);
-    expect(r.totalUnidades).toBe(80);
+    expect(r.totalUnidades).toBe(90);
   });
 });
 
