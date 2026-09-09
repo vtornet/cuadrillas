@@ -1,6 +1,13 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import type { Crew, Group, Product, UnitType, Worker } from "@cuadrilla/shared";
+  import type {
+    Crew,
+    Finca,
+    Group,
+    Product,
+    UnitType,
+    Worker,
+  } from "@cuadrilla/shared";
   import { etiquetaProducto } from "@cuadrilla/shared/domain";
   import { i18n } from "../lib/i18n/i18n.svelte";
   import { gestion } from "../lib/stores/gestion.svelte";
@@ -8,12 +15,13 @@
   import CrewForm from "../lib/components/gestion/CrewForm.svelte";
   import WorkerForm from "../lib/components/gestion/WorkerForm.svelte";
   import GroupForm from "../lib/components/gestion/GroupForm.svelte";
+  import FincaForm from "../lib/components/gestion/FincaForm.svelte";
   import ProductForm from "../lib/components/gestion/ProductForm.svelte";
   import UnitForm from "../lib/components/gestion/UnitForm.svelte";
   import ImportWorkersSheet from "../lib/components/gestion/ImportWorkersSheet.svelte";
 
-  type Tab = "crews" | "workers" | "groups" | "products" | "units";
-  type Registro = Crew | Worker | Group | Product | UnitType;
+  type Tab = "crews" | "workers" | "groups" | "fincas" | "products" | "units";
+  type Registro = Crew | Worker | Group | Finca | Product | UnitType;
 
   let tab = $state<Tab>("workers");
   let editando = $state<{ tab: Tab; registro: Registro | null } | null>(null);
@@ -26,6 +34,7 @@
     { id: "crews", label: i18n.t("gestion.cuadrillas") },
     { id: "workers", label: i18n.t("gestion.trabajadores") },
     { id: "groups", label: i18n.t("gestion.grupos") },
+    { id: "fincas", label: i18n.t("gestion.fincas") },
     { id: "products", label: i18n.t("gestion.productos") },
     { id: "units", label: i18n.t("gestion.unidades") },
   ];
@@ -96,6 +105,17 @@
             {i18n.t("grupo.miembros_contador", { n: g.memberIds.length })}
             {#if g.activo === 0} &middot; {i18n.t("gestion.inactivo")}{/if}
           </span>
+        </button>
+      {:else}
+        <p class="vacio-lista">{i18n.t("gestion.lista_vacia")}</p>
+      {/each}
+    {:else if tab === "fincas"}
+      {#each gestion.fincas as f (f.id)}
+        <button type="button" class="fila-gestion" onclick={() => editar(f)}>
+          <span class="fg-main">{f.name}</span>
+          {#if f.activo === 0}
+            <span class="fg-sub">{i18n.t("gestion.inactivo")}</span>
+          {/if}
         </button>
       {:else}
         <p class="vacio-lista">{i18n.t("gestion.lista_vacia")}</p>
@@ -171,6 +191,8 @@
       <WorkerForm registro={e.registro as Worker | null} onclose={cerrar} />
     {:else if e.tab === "groups"}
       <GroupForm registro={e.registro as Group | null} onclose={cerrar} />
+    {:else if e.tab === "fincas"}
+      <FincaForm registro={e.registro as Finca | null} onclose={cerrar} />
     {:else if e.tab === "products"}
       <ProductForm registro={e.registro as Product | null} onclose={cerrar} />
     {:else}

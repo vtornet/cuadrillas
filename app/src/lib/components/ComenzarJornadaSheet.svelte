@@ -2,6 +2,7 @@
   import { onMount } from "svelte";
   import type {
     Crew,
+    Finca,
     Group,
     GrupoDeJornada,
     Product,
@@ -16,7 +17,8 @@
   import { productosActivos, todasLasUnidades } from "../db/repositories/products";
   import { trabajadoresDeCuadrilla } from "../db/repositories/workers";
   import { gruposActivosDeCuadrilla } from "../db/repositories/groups";
-  import { crearShift, fincasUsadas } from "../db/repositories/shifts";
+  import { fincasActivas, fincaPorNombreOAlta } from "../db/repositories/fincas";
+  import { crearShift } from "../db/repositories/shifts";
 
   let { onclose, oncomenzado }: { onclose: () => void; oncomenzado: () => void } =
     $props();
@@ -39,8 +41,10 @@
   let crewId = $state("");
   let productId = $state("");
   let unitTypeId = $state("");
-  let finca = $state("");
-  let fincasPrevias = $state<string[]>([]);
+  let fincas = $state<Finca[]>([]);
+  /** "" = sin finca · "__nueva__" = escribir una nueva · id de finca. */
+  let fincaSel = $state("");
+  let fincaNueva = $state("");
   let fecha = $state(hoyISO());
   let horaInicio = $state(horaActual());
   let asistentes = $state<Set<string>>(new Set());
@@ -50,6 +54,12 @@
 
   const units = $derived(
     allUnits.filter((u) => u.productId === productId || u.productId === null),
+  );
+  /** Nombre de la finca elegida (o escrita), "" si ninguna. */
+  const fincaNombre = $derived(
+    fincaSel === "__nueva__"
+      ? fincaNueva.trim()
+      : (fincas.find((f) => f.id === fincaSel)?.name ?? ""),
   );
   const workersActuales = $derived(workersPorCrew[crewId] ?? []);
   const gruposActuales = $derived(groupsPorCrew[crewId] ?? []);
@@ -66,7 +76,7 @@
     crews = await crewsDelForeman(sesion.userId);
     products = await productosActivos(sesion.organizationId);
     allUnits = await todasLasUnidades(sesion.organizationId);
-    fincasPrevias = await fincasUsadas(crews.map((c) => c.id));
+    fincas = await fincasActivas(sesion.organizationId);
 
     const wpc: Record<string, Worker[]> = {};
     const gpc: Record<string, Group[]> = {};
@@ -128,6 +138,15 @@
     if (!puedeComenzar) return;
     comenzando = true;
     try {
+      // Si el jefe ha escrito una finca nueva, se da de alta para que aparezca
+      // en el desplegable la próxima vez. El Shift guarda el nombre (texto).
+      let finca = fincaNombre;
+      if (fincaSel === "__nueva__" && finca) {
+        finca = (
+          await fincaPorNombreOAlta(sesion.organizationId, finca)
+        ).name;
+      }
+
       const groups: GrupoDeJornada[] | undefined = porGrupos
         ? gruposActuales
             .filter((g) => gruposSel.has(g.id))
@@ -212,19 +231,26 @@
 
         <label class="campo">
           <span>{i18n.t("jornada.finca")}</span>
-          <input
-            type="text"
-            bind:value={finca}
-            autocomplete="off"
-            list="fincas-previas"
-            placeholder={i18n.t("jornada.finca_ph")}
-          />
-          <datalist id="fincas-previas">
-            {#each fincasPrevias as f (f)}
-              <option value={f}></option>
+          <select bind:value={fincaSel}>
+            <option value="">{i18n.t("jornada.finca_sin")}</option>
+            {#each fincas as f (f.id)}
+              <option value={f.id}>{f.name}</option>
             {/each}
-          </datalist>
+            <option value="__nueva__">{i18n.t("jornada.finca_nueva")}</option>
+          </select>
         </label>
+
+        {#if fincaSel === "__nueva__"}
+          <label class="campo">
+            <span>{i18n.t("jornada.finca_nueva_nombre")}</span>
+            <input
+              type="text"
+              bind:value={fincaNueva}
+              autocomplete="off"
+              placeholder={i18n.t("jornada.finca_ph")}
+            />
+          </label>
+        {/if}
 
         <div class="campo-fila">
           <label class="campo">

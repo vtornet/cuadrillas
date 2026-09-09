@@ -7,7 +7,7 @@
   import { crewsDelForeman } from "../lib/db/repositories/crews";
   import { shiftsDeCuadrillas } from "../lib/db/repositories/shifts";
   import { workersDeCuadrillas } from "../lib/db/repositories/workers";
-  import { asistenciaACsv } from "../lib/export/asistencia";
+  import { asistenciaACsv, asistenciaAXlsx } from "../lib/export/asistencia";
   import { compartirArchivo, slug } from "../lib/export/compartir";
   import AppBar from "../lib/components/AppBar.svelte";
 
@@ -59,20 +59,35 @@
     anio === HOY.getFullYear() && mes === HOY.getMonth() + 1,
   );
 
-  async function exportar(): Promise<void> {
+  let exportando = $state<"" | "xlsx" | "csv">("");
+
+  const nombreBase = $derived(
+    `asistencia_${anio}-${String(mes).padStart(2, "0")}_${slug(crews.map((c) => c.name).join("-"))}`,
+  );
+
+  async function exportar(formato: "xlsx" | "csv"): Promise<void> {
+    if (exportando) return;
+    exportando = formato;
     mensaje = "";
     try {
-      const blob = new Blob([asistenciaACsv(tabla)], {
-        type: "text/csv;charset=utf-8",
-      });
-      const r = await compartirArchivo(
-        blob,
-        `asistencia_${anio}-${String(mes).padStart(2, "0")}_${slug(crews.map((c) => c.name).join("-"))}.csv`,
-      );
+      let blob: Blob;
+      if (formato === "csv") {
+        blob = new Blob([asistenciaACsv(tabla)], {
+          type: "text/csv;charset=utf-8",
+        });
+      } else {
+        blob = await asistenciaAXlsx(tabla, {
+          titulo: `${i18n.t("asistencia.titulo")} · ${etiquetaMes}`,
+          cuadrillas: crews.map((c) => c.name).join(", "),
+        });
+      }
+      const r = await compartirArchivo(blob, `${nombreBase}.${formato}`);
       mensaje = i18n.t(r === "compartido" ? "export.compartido" : "export.descargado");
     } catch (e) {
       console.error("[asistencia] export", e);
       mensaje = i18n.t("export.error");
+    } finally {
+      exportando = "";
     }
   }
 </script>
@@ -166,9 +181,26 @@
   </div>
 
   {#if listo && !sinCuadrillas && tabla.totalGeneral > 0}
-    <div class="acciones">
-      <button type="button" class="btn-primario btn-anadir" onclick={exportar}>
-        {i18n.t("asistencia.exportar")}
+    <div class="acciones asis-export">
+      <button
+        type="button"
+        class="btn-primario"
+        disabled={!!exportando}
+        onclick={() => exportar("xlsx")}
+      >
+        {exportando === "xlsx"
+          ? i18n.t("compartir.generando")
+          : i18n.t("asistencia.exportar_excel")}
+      </button>
+      <button
+        type="button"
+        class="btn-secundario"
+        disabled={!!exportando}
+        onclick={() => exportar("csv")}
+      >
+        {exportando === "csv"
+          ? i18n.t("compartir.generando")
+          : i18n.t("asistencia.exportar_csv")}
       </button>
     </div>
   {/if}
@@ -276,5 +308,12 @@
     margin-top: 12px;
     color: var(--c-ok);
     font-weight: 600;
+  }
+  .asis-export {
+    display: flex;
+    gap: 8px;
+  }
+  .asis-export button {
+    flex: 1;
   }
 </style>

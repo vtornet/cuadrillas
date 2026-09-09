@@ -1,5 +1,6 @@
 import type {
   Crew,
+  Finca,
   Idioma,
   Organization,
   Product,
@@ -23,6 +24,8 @@ const ORG_ID = "demo-org";
 const CREW_ID = "demo-crew";
 const PRODUCT_ID = "demo-product";
 const UNIT_ID = "demo-unit";
+const FINCA_ID = "demo-finca";
+const FINCA_NOMBRE = "Finca El Naranjal";
 const USER_ID = "demo-user";
 
 const NOMBRES: Array<[string, string]> = [
@@ -71,6 +74,15 @@ export async function seedDemo(): Promise<void> {
     deleted: 0,
   };
 
+  const finca: Finca = {
+    id: FINCA_ID,
+    organizationId: ORG_ID,
+    name: FINCA_NOMBRE,
+    activo: 1,
+    updatedAt: ahora,
+    deleted: 0,
+  };
+
   const unit: UnitType = {
     id: UNIT_ID,
     organizationId: ORG_ID,
@@ -101,7 +113,7 @@ export async function seedDemo(): Promise<void> {
     organizationId: ORG_ID,
     crewId: CREW_ID,
     fecha: HOY,
-    finca: "Finca El Naranjal",
+    finca: FINCA_NOMBRE,
     horaInicio: "08:00",
     horaFin: null,
     productId: PRODUCT_ID,
@@ -118,6 +130,7 @@ export async function seedDemo(): Promise<void> {
       db.organizations,
       db.crews,
       db.products,
+      db.fincas,
       db.unitTypes,
       db.workers,
       db.shifts,
@@ -127,6 +140,7 @@ export async function seedDemo(): Promise<void> {
       await db.organizations.put(org);
       await db.crews.put(crew);
       await db.products.put(product);
+      await db.fincas.put(finca);
       await db.unitTypes.put(unit);
       await db.workers.bulkPut(workers);
       await db.shifts.put(shift);

@@ -146,6 +146,23 @@ describe("gestion store CRUD", () => {
     expect(gestion.gruposDe("c1").map((x) => x.id)).toEqual(["g1"]);
   });
 
+  it("crea, lista y elimina una finca", async () => {
+    await gestion.guardar("finca", {
+      id: "f1",
+      organizationId: ORG,
+      name: "El Naranjal",
+      activo: 1,
+      updatedAt: 1,
+      deleted: 0,
+    });
+    expect(gestion.fincas.map((x) => x.id)).toEqual(["f1"]);
+    expect(await db.pendingOps.count()).toBe(1);
+
+    await gestion.eliminar("finca", { ...(await db.fincas.get("f1"))! });
+    expect(gestion.fincas.find((x) => x.id === "f1")).toBeUndefined();
+    expect((await db.fincas.get("f1"))?.deleted).toBe(1);
+  });
+
   it("eliminar un grupo lo saca de la lista sin tocar sus miembros", async () => {
     await gestion.guardar("crew", cuadrilla({ id: "c1" }));
     await gestion.guardar("worker", trabajador({ id: "w1", crewId: "c1" }));

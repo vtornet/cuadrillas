@@ -2,6 +2,7 @@ import Dexie, { type Table } from "dexie";
 import type {
   Crew,
   Entry,
+  Finca,
   Group,
   Organization,
   PendingOp,
@@ -34,6 +35,7 @@ export class CuadrillaDB extends Dexie {
   crews!: Table<Crew, string>;
   workers!: Table<Worker, string>;
   groups!: Table<Group, string>;
+  fincas!: Table<Finca, string>;
   products!: Table<Product, string>;
   unitTypes!: Table<UnitType, string>;
   rates!: Table<Rate, string>;
@@ -64,6 +66,11 @@ export class CuadrillaDB extends Dexie {
       groups: "id, organizationId, crewId",
       entries:
         "id, organizationId, shiftId, workerId, groupId, [shiftId+workerId], [shiftId+groupId], timestamp",
+    });
+
+    // v3: fincas como entidad (antes eran solo texto libre en Shift.finca).
+    this.version(3).stores({
+      fincas: "id, organizationId",
     });
   }
 }

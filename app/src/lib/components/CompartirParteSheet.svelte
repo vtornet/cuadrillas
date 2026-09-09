@@ -147,7 +147,9 @@
     </div>
 
     <div class="hoja-cuerpo">
+      <section class="cmp-bloque">
       <h3 class="cmp-seccion">{i18n.t("compartir.asistencia")}</h3>
+      <p class="cmp-ayuda">{i18n.t("compartir.asistencia_ayuda")}</p>
       <pre class="cmp-texto">{texto}</pre>
 
       <div class="cmp-acciones">
@@ -184,7 +186,9 @@
           {generando === "a-xls" ? i18n.t("compartir.generando") : i18n.t("compartir.excel")}
         </button>
       </div>
+      </section>
 
+      <section class="cmp-bloque">
       <h3 class="cmp-seccion">{i18n.t("compartir.parte")}</h3>
       <p class="cmp-ayuda">{i18n.t("compartir.parte_ayuda")}</p>
       <div class="cmp-acciones">
@@ -205,6 +209,7 @@
           {generando === "p-xls" ? i18n.t("compartir.generando") : i18n.t("compartir.excel")}
         </button>
       </div>
+      </section>
     </div>
 
     <div class="hoja-pie">
@@ -216,11 +221,19 @@
 </div>
 
 <style>
+  .cmp-bloque {
+    border: 2px solid var(--c-borde);
+    border-radius: var(--radio);
+    padding: 12px;
+    margin-bottom: 14px;
+  }
+  .cmp-bloque:last-child {
+    margin-bottom: 4px;
+  }
   .cmp-seccion {
-    margin: 4px 0 8px;
+    margin: 0 0 4px;
     font-size: 15px;
   }
-  .cmp-seccion + .cmp-texto,
   .cmp-seccion + .cmp-ayuda {
     margin-top: 0;
   }
@@ -245,7 +258,9 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 8px;
-    margin-bottom: 18px;
+  }
+  .cmp-bloque .cmp-texto:last-of-type {
+    margin-bottom: 12px;
   }
   .cmp-acciones button {
     width: 100%;

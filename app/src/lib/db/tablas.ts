@@ -15,6 +15,8 @@ export function tablaPorEntidad(
       return db.workers as never;
     case "group":
       return db.groups as never;
+    case "finca":
+      return db.fincas as never;
     case "product":
       return db.products as never;
     case "unitType":

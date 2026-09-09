@@ -3,6 +3,7 @@ export type EntityName =
   | "crew"
   | "worker"
   | "group"
+  | "finca"
   | "product"
   | "unitType"
   | "rate"

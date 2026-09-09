@@ -77,8 +77,8 @@ con arrays anidados como `attendeeIds`).
 
 ### Entidades sincronizables
 
-`organization, crew, worker, product, unitType, rate, shift, entry` (union `EntityName` +
-array `ENTIDADES` en shared). Todas comparten:
+`organization, crew, worker, group, finca, product, unitType, rate, shift, entry` (union
+`EntityName` + array `ENTIDADES` en shared). Todas comparten:
 `{ id, organizationId, updatedAt, deleted }` donde `id` es un **UUID de cliente** que es
 también el `_id` de Mongo, y `deleted` es `0|1` en el cliente / `boolean` en el servidor
 (se convierte en la capa de sync).
@@ -282,7 +282,8 @@ Los detalles de cada punto están en **Backlog sin planificar** justo debajo.
 **Antes de dar de alta usuarios reales**
 
 1. **Pantalla RGPD** (privacidad + export/borrado de datos de un trabajador). **HECHO
-   (2026-09-07).** Datos del responsable rellenados en la política (2026-09-09).
+   (2026-09-07).** Datos del responsable rellenados en la política (2026-09-09). Enlace a
+   la política también en Cuenta › Perfil (2026-09-09).
 2. **Perfil del jefe de cuadrilla** (nombre, empresa, NIF, teléfono). **HECHO
    (2026-09-07).** Sección "Perfil" en Cuenta.
    - 2b. **Nombre del jefe junto a la firma** (`Shift.firmante?`). **HECHO (2026-09-07).**
@@ -302,7 +303,8 @@ Los detalles de cada punto están en **Backlog sin planificar** justo debajo.
 7. **Auxiliares** (trabajadores que no cobran a destajo). **HECHO (2026-09-07).**
    `Worker.funcion` + sección aparte en el parte + tarea/horas por día.
 8. **Cabecera del parte** (fecha, finca, producto·variedad, nº recolectores/auxiliares).
-   **HECHO (2026-09-07).** `Shift.finca` (texto libre) + `CabeceraParte.svelte`.
+   **HECHO (2026-09-07).** `Shift.finca` + `CabeceraParte.svelte`. Fincas pasaron a
+   entidad propia el 2026-09-09 (ver backlog).
 
 **Mejoras rápidas e independientes**
 
@@ -434,10 +436,36 @@ Los detalles de cada punto están en **Backlog sin planificar** justo debajo.
   - Tests: `app/tests/perfil.test.ts`, casos nuevos en `app/tests/jornada.test.ts`.
   - **Pendiente**: usar `contactName`/`name`/`taxId` en las cabeceras de exports (va con
     "Cabecera del parte") y en el informe RGPD si se quiere.
-- **Cabecera del parte — hecho (2026-09-07).** `Shift.finca?: string` (**texto libre**,
-  no entidad; decidido con el usuario). Se escribe al comenzar el parte en
-  `ComenzarJornadaSheet` (campo "Finca (opcional)" con `<datalist>` de fincas ya usadas —
-  `fincasUsadas(crewIds)` en `db/repositories/shifts`). Componente `CabeceraParte.svelte`
+- **Fincas como entidad — hecho (2026-09-09).** Antes `Shift.finca` era solo texto libre;
+  ahora hay entidad **`Finca`** (`{ name, activo }`, sincronizada — en `ENTIDADES`,
+  `tablaPorEntidad`, `Modelos`, Dexie **v3** `fincas: "id, organizationId"`). Pestaña
+  "Fincas" en `Datos` (`FincaForm.svelte`, igual que Productos). Al comenzar un parte,
+  `ComenzarJornadaSheet` muestra un **`<select>`** de fincas activas + opción "— Otra
+  finca —" que revela un campo de texto; si se escribe una nueva se da de alta
+  (`fincaPorNombreOAlta` en `db/repositories/fincas`, dedup por nombre) y el `Shift` sigue
+  guardando el **nombre como texto** (snapshot, histórico estable). `fincasUsadas` se
+  conserva (lo usa su test y el filtro del Historial deriva las fincas de los shifts).
+  Seed demo: `Finca` "Finca El Naranjal". `auth.#limpiarDatosLocales` ahora también limpia
+  `db.groups` y `db.fincas` (groups faltaba). Tests: caso de finca en
+  `app/tests/gestion.test.ts`.
+- **Historial: orden y filtros — hecho (2026-09-09).** `Historial.svelte`: botón de orden
+  por fecha (recientes/antiguos primero) + `<select>` de cuadrilla, finca y producto
+  (opciones derivadas de los partes cerrados que hay; el de cuadrilla/producto solo
+  aparece si hay más de uno). "Quitar filtros" cuando hay alguno activo.
+- **Compartir parte: claridad — hecho (2026-09-09).** Los dos informes van en tarjetas
+  con borde (`.cmp-bloque`), cada una con título + texto de ayuda: **"Lista de
+  asistencia"** (`compartir.asistencia` / `_ayuda`) y **"Parte de recolección"**
+  (`compartir.parte` / `_ayuda`).
+- **Tabla mensual de asistencia: Excel — hecho (2026-09-09).** `asistenciaAXlsx(tabla,
+  {titulo, cuadrillas})` en `app/src/lib/export/asistencia.ts` (usa `xlsx-js-style` bajo
+  demanda): título, fila de cuadrillas, cabecera de días en negrita/gris (fin de semana
+  sombreado), "X" verde en asistencia, fila de totales con borde grueso. `Asistencia.svelte`
+  ofrece **Excel** (primario) y **CSV** (secundario, sin cambios). i18n
+  `asistencia.exportar_excel` / `exportar_csv`.
+- **Cabecera del parte — hecho (2026-09-07).** `Shift.finca?: string`. Se elige al comenzar
+  el parte en `ComenzarJornadaSheet` (ver "Fincas como entidad" arriba — antes era un
+  `<datalist>` de texto libre, ahora un `<select>` de la entidad `Finca`). Componente
+  `CabeceraParte.svelte`
   (título `producto · unidad`; línea meta `finca · fecha · N recolector(es) · M
   auxiliar(es)`) reemplaza la antigua línea `jornada-info` en `Registro.svelte` y
   `ParteDetalle.svelte` — eliminadas la clave i18n `registro.jornada_info` y la clase CSS

@@ -6,6 +6,7 @@ export const ENTIDADES = [
   "crew",
   "worker",
   "group",
+  "finca",
   "product",
   "unitType",
   "rate",

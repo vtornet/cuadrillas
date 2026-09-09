@@ -1,5 +1,6 @@
 import type {
   Crew,
+  Finca,
   Group,
   Product,
   RegistroSincronizable,
@@ -15,6 +16,7 @@ import { tablaPorEntidad } from "../db/tablas";
 import { crewsDeOrg } from "../db/repositories/crews";
 import { todosLosWorkers } from "../db/repositories/workers";
 import { todosLosGrupos } from "../db/repositories/groups";
+import { todasLasFincas } from "../db/repositories/fincas";
 import {
   todasLasUnidades,
   todosLosProductos,
@@ -30,7 +32,8 @@ export type TipoGestion =
   | "product"
   | "unitType"
   | "crew"
-  | "group";
+  | "group"
+  | "finca";
 
 /**
  * Estado y CRUD de la pantalla de Gestion. Toda escritura pasa por la cola
@@ -40,6 +43,7 @@ class GestionStore {
   crews = $state<Crew[]>([]);
   workers = $state<Worker[]>([]);
   groups = $state<Group[]>([]);
+  fincas = $state<Finca[]>([]);
   products = $state<Product[]>([]);
   units = $state<UnitType[]>([]);
 
@@ -48,6 +52,7 @@ class GestionStore {
     this.crews = await crewsDeOrg(org);
     this.workers = await todosLosWorkers(org);
     this.groups = await todosLosGrupos(org);
+    this.fincas = await todasLasFincas(org);
     this.products = await todosLosProductos(org);
     this.units = await todasLasUnidades(org);
   }

@@ -191,6 +191,13 @@
       <section class="bloque">
         <h2>{i18n.t("perfil.titulo")}</h2>
         <PerfilForm />
+        <button
+          type="button"
+          class="link-privacidad"
+          onclick={() => router.ir("privacidad")}
+        >
+          {i18n.t("privacidad.enlace")}
+        </button>
       </section>
 
       {#if HAY_BACKEND && auth.estado === "autenticado"}
