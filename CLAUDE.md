@@ -190,8 +190,9 @@ repetir con claves **live** cuando se quiera cobrar de verdad (clave secreta liv
 price ids live que ya existen en Stripe, webhook nuevo apuntando a producción). Con
 esto, **las 4 fases de `DEPLOY.md` están completas en modo test/demo** — el pendiente
 real antes de usuarios de pago es pasar Stripe a modo live. La pantalla RGPD ya está
-implementada (2026-09-07, ver más abajo); falta solo rellenar en la política los datos
-concretos de Appstracta (dirección, CIF, correo de contacto).
+implementada (2026-09-07, ver más abajo); la política tiene ya los datos del
+responsable (Víctor José Tornet García, titular del proyecto Appstracta,
+contact@appstracta.app).
 
 ### Transporte (hecho)
 
@@ -281,7 +282,7 @@ Los detalles de cada punto están en **Backlog sin planificar** justo debajo.
 **Antes de dar de alta usuarios reales**
 
 1. **Pantalla RGPD** (privacidad + export/borrado de datos de un trabajador). **HECHO
-   (2026-09-07)** salvo rellenar los datos de Appstracta en la política.
+   (2026-09-07).** Datos del responsable rellenados en la política (2026-09-09).
 2. **Perfil del jefe de cuadrilla** (nombre, empresa, NIF, teléfono). **HECHO
    (2026-09-07).** Sección "Perfil" en Cuenta.
    - 2b. **Nombre del jefe junto a la firma** (`Shift.firmante?`). **HECHO (2026-09-07).**
@@ -485,10 +486,11 @@ Los detalles de cada punto están en **Backlog sin planificar** justo debajo.
     (b) pantalla **"Privacidad"** (`app/src/routes/Privacidad.svelte`, `router` vista
     `"privacidad"` — renderizada también en estado anónimo en `App.svelte`, entrada en
     `MenuSheet` y enlace en el login de `Cuenta.svelte`).
-  - **Política de privacidad**: responsable = **Appstracta**. Texto en `Privacidad.svelte`
-    (no i18n, es un documento). **Pendiente rellenar** los marcadores `[dirección postal]`,
-    `[CIF/NIF]`, `[correo de contacto]` (aparece 2 veces). Encargados citados: MongoDB
-    Atlas, Railway, Cloudflare, Resend, Stripe.
+  - **Política de privacidad**: responsable = **Víctor José Tornet García**, titular del
+    proyecto **Appstracta**, contacto `contact@appstracta.app` (rellenado 2026-09-09; sin
+    dirección postal ni NIF por ser persona física y documento público). Texto en
+    `Privacidad.svelte` (no i18n, es un documento). Encargados citados: MongoDB Atlas,
+    Railway, Cloudflare, Resend, Stripe.
   - Tests: `shared/tests/rgpd.test.ts`, `app/tests/rgpd.test.ts`.
 - **Estadísticas: anotaciones de grupo — hecho (2026-09-08).** `calcularEstadisticas`
   (`stats.ts`) reparte cada `Entry.groupId` a partes iguales (`cantidad / n`) entre los

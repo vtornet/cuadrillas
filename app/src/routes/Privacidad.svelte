@@ -20,12 +20,13 @@
 
   <div class="pantalla-cuerpo">
     <article class="legal">
-      <p class="legal-fecha">Última actualización: 7 de septiembre de 2026</p>
+      <p class="legal-fecha">Última actualización: 9 de septiembre de 2026</p>
 
       <h2>1. Responsable del tratamiento</h2>
       <p>
-        <strong>Appstracta</strong> — [dirección postal] — [CIF/NIF]. Correo de
-        contacto para asuntos de privacidad: <strong>[correo de contacto]</strong>.
+        <strong>Víctor José Tornet García</strong>, titular del proyecto
+        <strong>Appstracta</strong>. Correo de contacto para asuntos de
+        privacidad: <strong>contact@appstracta.app</strong>.
       </p>
       <p>
         Cuando un jefe de cuadrilla da de alta a sus trabajadores en la
@@ -73,8 +74,8 @@
 
       <h2>6. Destinatarios</h2>
       <p>
-        Proveedores que tratan datos por cuenta de Appstracta como encargados del
-        tratamiento:
+        Proveedores que tratan datos por cuenta del responsable como encargados
+        del tratamiento:
       </p>
       <ul>
         <li>MongoDB Atlas — base de datos.</li>
@@ -103,7 +104,7 @@
       <p>
         Puedes ejercer los derechos de acceso, rectificación, supresión,
         oposición, limitación y portabilidad escribiendo a
-        <strong>[correo de contacto]</strong>. Si consideras que el tratamiento no
+        <strong>contact@appstracta.app</strong>. Si consideras que el tratamiento no
         se ajusta a la normativa, puedes reclamar ante la Agencia Española de
         Protección de Datos (<span class="legal-url">www.aepd.es</span>).
       </p>
