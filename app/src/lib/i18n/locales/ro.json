@@ -51,6 +51,7 @@
   "cabecera": {
     "empresa": "Firmă",
     "nif": "Cod fiscal",
+    "horario": "Program",
     "recolectores": "{n} culegător(i)",
     "auxiliares": "{n} auxiliar(i)",
     "firma_pdf": "Semnat de"
@@ -310,6 +311,8 @@
   "firma": {
     "titulo": "Semnătura șefului de echipă",
     "ayuda": "Semnează în chenar pentru a confirma închiderea fișei (opțional).",
+    "hora_fin": "Ora de încheiere",
+    "hora_inicio_info": "(început {hora})",
     "borrar": "Șterge semnătura",
     "finalizar_sin_firma": "Încheie fără semnătură",
     "finalizar_con_firma": "Semnează și încheie",

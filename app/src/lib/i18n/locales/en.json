@@ -51,6 +51,7 @@
   "cabecera": {
     "empresa": "Company",
     "nif": "Tax ID",
+    "horario": "Hours",
     "recolectores": "{n} picker(s)",
     "auxiliares": "{n} support worker(s)",
     "firma_pdf": "Signed by"
@@ -310,6 +311,8 @@
   "firma": {
     "titulo": "Foreman's signature",
     "ayuda": "Sign in the box to confirm closing the shift (optional).",
+    "hora_fin": "End time",
+    "hora_inicio_info": "(started {hora})",
     "borrar": "Clear signature",
     "finalizar_sin_firma": "Finish without signing",
     "finalizar_con_firma": "Sign and finish",

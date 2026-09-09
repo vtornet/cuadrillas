@@ -159,6 +159,16 @@ describe("jornada store", () => {
     expect(guardado?.firmante).toBeUndefined();
   });
 
+  it("cerrarActual respeta la hora de finalización indicada", async () => {
+    await jornada.cerrarActual(undefined, undefined, "15:45");
+    expect((await db.shifts.get("s1"))?.horaFin).toBe("15:45");
+  });
+
+  it("cerrarActual sin hora válida usa la hora actual (HH:MM)", async () => {
+    await jornada.cerrarActual(undefined, undefined, "nope");
+    expect((await db.shifts.get("s1"))?.horaFin).toMatch(/^\d{2}:\d{2}$/);
+  });
+
   it("actualizarObservaciones guarda el texto recortado y lo quita si queda vacío", async () => {
     await jornada.actualizarObservaciones("  Llovió a media mañana  ");
     expect((await db.shifts.get("s1"))?.observaciones).toBe(

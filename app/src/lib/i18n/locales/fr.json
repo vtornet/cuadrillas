@@ -51,6 +51,7 @@
   "cabecera": {
     "empresa": "Entreprise",
     "nif": "N° fiscal",
+    "horario": "Horaire",
     "recolectores": "{n} cueilleur(s)",
     "auxiliares": "{n} auxiliaire(s)",
     "firma_pdf": "Signé par"
@@ -310,6 +311,8 @@
   "firma": {
     "titulo": "Signature du chef d'équipe",
     "ayuda": "Signe dans le cadre pour confirmer la clôture de la fiche (facultatif).",
+    "hora_fin": "Heure de fin",
+    "hora_inicio_info": "(début {hora})",
     "borrar": "Effacer la signature",
     "finalizar_sin_firma": "Terminer sans signer",
     "finalizar_con_firma": "Signer et terminer",

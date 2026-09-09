@@ -48,6 +48,27 @@ describe("docAsistencia", () => {
     ]);
   });
 
+  it("incluye el horario en la cabecera cuando hay hora de inicio", () => {
+    const d = docAsistencia({
+      cabecera: { ...cab, horaInicio: "08:00", horaFin: "14:30" },
+      recolectores: ["Ana"],
+      auxiliares: [],
+    });
+    const horario = d.cabecera.find((c) => c.etiqueta === "Horario");
+    expect(horario?.valor).toBe("08:00 – 14:30");
+  });
+
+  it("horario con parte abierto muestra puntos suspensivos", () => {
+    const d = docAsistencia({
+      cabecera: { ...cab, horaInicio: "08:00", horaFin: null },
+      recolectores: ["Ana"],
+      auxiliares: [],
+    });
+    expect(d.cabecera.find((c) => c.etiqueta === "Horario")?.valor).toBe(
+      "08:00 – …",
+    );
+  });
+
   it("pasa las observaciones al documento", () => {
     const d = docAsistencia({
       cabecera: { ...cab, observaciones: "  Nota del día  " },

@@ -260,6 +260,18 @@ Perfil de usuario bajo → simplificar. Plan en 4 fases:
   (Historial). No se pidió ni se implementó en Liquidación (vista agregada por
   trabajador/periodo, sin hueco natural para una firma por parte individual). Firmar es
   opcional a propósito — un parte se puede cerrar sin firma sin fricción extra.
+- **Hora de finalización del parte — hecho (2026-09-09).** Antes `jornada.cerrarActual`
+  ponía `Shift.horaFin` a la hora del sistema en silencio (y `stats.ts` calculaba
+  `horasDeJornada` = `horaFin - horaInicio` con ese dato inventado). Ahora `FirmaSheet`
+  muestra un `<input type="time">` de **hora de finalización** (por defecto la hora
+  actual, editable) + la hora de inicio como contexto; `cerrarActual(firma?, firmante?,
+  horaFin?)` la guarda (si no es `HH:MM` válida, cae a la hora actual). El horario
+  (`horaInicio – horaFin`, con `…` si el parte sigue abierto) se muestra ahora en
+  `CabeceraParte.svelte` (Registro y Historial), en las filas del Historial, en el
+  selector "Por jornada" de Estadísticas, y en los exports (`CabeceraInforme.horaInicio/
+  horaFin` → `documento.ts` fila "Horario" + `textoAsistenciaParte` línea "Horario:").
+  i18n `firma.hora_fin` / `firma.hora_inicio_info` / `cabecera.horario`. `Shift.horaFin`
+  ya existía (sin cambio de modelo). Tests: `jornada.test.ts`, `documento.test.ts`.
 - **Observaciones del parte — hecho (2026-09-09).** `Shift.observaciones?: string` (texto
   libre del jefe). Componente `ObservacionesParte.svelte` (textarea que guarda al perder
   el foco; modo `soloLectura` para consulta): en `Registro.svelte` (antes de "Finalizar
@@ -471,7 +483,7 @@ Los detalles de cada punto están en **Backlog sin planificar** justo debajo.
   - **UI**: `perfil.svelte.ts` (store: `cargar`, `guardar`, getters `empresa` /
     `nombreJefe`); `PerfilForm.svelte` en una sección "Perfil" de `Cuenta.svelte` (visible
     en demo y autenticado).
-  - **Firma**: `Shift.firmante?: string`. `jornada.cerrarActual(firma?, firmante?)`.
+  - **Firma**: `Shift.firmante?: string`. `jornada.cerrarActual(firma?, firmante?, horaFin?)`.
     `FirmaSheet.svelte` muestra "Firma: {nombre}" si el perfil lo tiene; si no, un campo
     de texto para escribirlo esa vez (con aviso de guardarlo en Cuenta › Perfil).
     `ParteDetalle.svelte` lo pinta bajo la firma. Editar un parte cerrado no lo cambia.

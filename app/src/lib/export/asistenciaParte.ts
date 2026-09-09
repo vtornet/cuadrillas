@@ -11,6 +11,7 @@ export function textoAsistenciaParte(inf: InformeAsistencia): string {
 
   L.push(`ASISTENCIA — ${c.cuadrilla}`);
   L.push(`Fecha: ${fechaES(c.fecha)}`);
+  if (c.horaInicio) L.push(`Horario: ${c.horaInicio} – ${c.horaFin || "…"}`);
   if (c.finca?.trim()) L.push(`Finca: ${c.finca.trim()}`);
   if (c.producto) L.push(`Producto: ${c.producto}`);
   if (c.unidad) L.push(`Unidad: ${c.unidad}`);

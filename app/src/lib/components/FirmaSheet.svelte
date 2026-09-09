@@ -5,17 +5,31 @@
 
   /**
    * Hoja final al cerrar un parte: aviso de que no se podra seguir
-   * registrando + firma opcional (canvas). `onfinalizar` recibe la firma en
-   * PNG (data URL) si se ha dibujado algo y se elige firmar, o `undefined`
-   * si se finaliza sin firmar, y el nombre de quien cierra (`firmante`).
+   * registrando + hora de finalizacion (editable) + firma opcional (canvas).
+   * `onfinalizar` recibe la firma en PNG (data URL) si se ha dibujado algo y
+   * se elige firmar (o `undefined`), el nombre de quien cierra (`firmante`) y
+   * la hora de finalizacion (`horaFin`, HH:MM).
    */
   let {
+    horaInicio,
     onfinalizar,
     onclose,
   }: {
-    onfinalizar: (firma?: string, firmante?: string) => Promise<void>;
+    horaInicio?: string | null;
+    onfinalizar: (
+      firma?: string,
+      firmante?: string,
+      horaFin?: string,
+    ) => Promise<void>;
     onclose: () => void;
   } = $props();
+
+  function horaActual(): string {
+    const d = new Date();
+    return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+  }
+
+  let horaFin = $state(horaActual());
 
   let nombreEscrito = $state("");
   const nombrePerfil = $derived(perfil.nombreJefe);
@@ -83,7 +97,7 @@
     finalizando = true;
     try {
       const firma = conFirma && !vacio ? canvas.toDataURL("image/png") : undefined;
-      await onfinalizar(firma, firmante || undefined);
+      await onfinalizar(firma, firmante || undefined, horaFin);
     } finally {
       finalizando = false;
     }
@@ -111,6 +125,19 @@
 
     <div class="hoja-cuerpo">
       <p class="aviso">{i18n.t("jornada.cerrar_confirmar")}</p>
+
+      <label class="campo">
+        <span>
+          {i18n.t("firma.hora_fin")}
+          {#if horaInicio}
+            <em class="firma-inicio">
+              {i18n.t("firma.hora_inicio_info", { hora: horaInicio })}
+            </em>
+          {/if}
+        </span>
+        <input type="time" bind:value={horaFin} />
+      </label>
+
       <p>{i18n.t("firma.ayuda")}</p>
 
       {#if nombrePerfil}
@@ -169,3 +196,12 @@
     </div>
   </div>
 </div>
+
+<style>
+  .firma-inicio {
+    font-weight: 400;
+    font-style: normal;
+    color: var(--c-texto-suave);
+    margin-inline-start: 6px;
+  }
+</style>

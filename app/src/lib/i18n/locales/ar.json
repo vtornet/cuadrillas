@@ -51,6 +51,7 @@
   "cabecera": {
     "empresa": "الشركة",
     "nif": "الرقم الضريبي",
+    "horario": "التوقيت",
     "recolectores": "{n} قاطف",
     "auxiliares": "{n} مساعد",
     "firma_pdf": "وقّع من قِبل"
@@ -310,6 +311,8 @@
   "firma": {
     "titulo": "توقيع رئيس الفرقة",
     "ayuda": "وقّع داخل الإطار لتأكيد إغلاق ورقة العمل (اختياري).",
+    "hora_fin": "وقت الانتهاء",
+    "hora_inicio_info": "(البداية {hora})",
     "borrar": "مسح التوقيع",
     "finalizar_sin_firma": "الإنهاء دون توقيع",
     "finalizar_con_firma": "التوقيع والإنهاء",

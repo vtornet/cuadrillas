@@ -26,6 +26,10 @@ export interface CabeceraInforme {
   producto: string;
   /** Nombre de la unidad ("Caja"). */
   unidad: string;
+  /** Hora de inicio (HH:MM). */
+  horaInicio?: string | null;
+  /** Hora de finalización (HH:MM), si el parte está cerrado. */
+  horaFin?: string | null;
   firmante?: string;
   /** Firma del jefe en PNG (data URL), si el parte está firmado. */
   firmaPng?: string;

@@ -7,6 +7,8 @@
     finca,
     producto,
     unidad,
+    horaInicio,
+    horaFin,
     nRecolectores,
     nAuxiliares,
   }: {
@@ -14,16 +16,24 @@
     finca?: string;
     producto: string;
     unidad: string;
+    horaInicio?: string | null;
+    horaFin?: string | null;
     nRecolectores: number;
     nAuxiliares: number;
   } = $props();
 
   const titulo = $derived(unidad ? `${producto} · ${unidad}` : producto);
 
+  /** "08:00 – 14:30" · "08:00 – …" (parte abierto) · null si no hay inicio. */
+  const horario = $derived(
+    horaInicio ? `${horaInicio} – ${horaFin || "…"}` : null,
+  );
+
   const meta = $derived(
     [
       finca?.trim() || null,
       fechaES(fecha),
+      horario,
       i18n.t("cabecera.recolectores", { n: nRecolectores }),
       nAuxiliares > 0
         ? i18n.t("cabecera.auxiliares", { n: nAuxiliares })

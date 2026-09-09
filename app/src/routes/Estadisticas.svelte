@@ -113,7 +113,10 @@
   }
 
   function etiquetaShift(s: Shift): string {
-    return `${fechaES(s.fecha)}${s.estado === "open" ? " · " + i18n.t("stats.abierta") : ""}`;
+    const horario =
+      s.horaInicio && s.horaFin ? ` · ${s.horaInicio}–${s.horaFin}` : "";
+    const abierta = s.estado === "open" ? " · " + i18n.t("stats.abierta") : "";
+    return `${fechaES(s.fecha)}${horario}${abierta}`;
   }
 
   const num = (n: number | null): string =>

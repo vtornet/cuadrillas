@@ -88,8 +88,12 @@
     if (grupo) await jornada.sumar(grupo.groupId, 1);
   }
 
-  async function finalizar(firma?: string, firmante?: string): Promise<void> {
-    await jornada.cerrarActual(firma, firmante);
+  async function finalizar(
+    firma?: string,
+    firmante?: string,
+    horaFin?: string,
+  ): Promise<void> {
+    await jornada.cerrarActual(firma, firmante, horaFin);
     firmaAbierta = false;
   }
 
@@ -126,6 +130,8 @@
           finca={jornada.shift.finca}
           producto={etiquetaProducto(jornada.producto)}
           unidad={jornada.unidad.name}
+          horaInicio={jornada.shift.horaInicio}
+          horaFin={jornada.shift.horaFin}
           nRecolectores={jornada.recolectores.length}
           nAuxiliares={jornada.auxiliares.length}
         />
@@ -293,7 +299,9 @@
 
     {#if firmaAbierta}
       <FirmaSheet
-        onfinalizar={(firma, firmante) => finalizar(firma, firmante)}
+        horaInicio={jornada.shift?.horaInicio}
+        onfinalizar={(firma, firmante, horaFin) =>
+          finalizar(firma, firmante, horaFin)}
         onclose={() => (firmaAbierta = false)}
       />
     {/if}

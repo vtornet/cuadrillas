@@ -244,6 +244,8 @@
         finca={shift.finca}
         producto={etiquetaProducto(producto)}
         unidad={unidad.name}
+        horaInicio={shift.horaInicio}
+        horaFin={shift.horaFin}
         nRecolectores={recolectores.length}
         nAuxiliares={auxiliares.length}
       />

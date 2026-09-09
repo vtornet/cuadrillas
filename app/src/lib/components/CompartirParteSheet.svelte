@@ -52,6 +52,8 @@
     finca: shift.finca,
     observaciones: shift.observaciones,
     fecha: shift.fecha,
+    horaInicio: shift.horaInicio,
+    horaFin: shift.horaFin,
     producto,
     unidad,
     firmante: shift.firmante,

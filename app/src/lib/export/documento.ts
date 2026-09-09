@@ -53,6 +53,12 @@ function camposCabecera(
   campos.push({ etiqueta: i18n.t("jornada.cuadrilla"), valor: c.cuadrilla });
   if (c.finca) campos.push({ etiqueta: finca, valor: c.finca });
   campos.push({ etiqueta: i18n.t("jornada.fecha"), valor: fechaES(c.fecha) });
+  if (c.horaInicio) {
+    campos.push({
+      etiqueta: i18n.t("cabecera.horario"),
+      valor: `${c.horaInicio} – ${c.horaFin || "…"}`,
+    });
+  }
   campos.push({ etiqueta: i18n.t("jornada.producto"), valor: c.producto });
   if (c.unidad) campos.push({ etiqueta: i18n.t("jornada.unidad"), valor: c.unidad });
   if (c.firmante) {

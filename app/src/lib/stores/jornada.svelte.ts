@@ -100,16 +100,23 @@ class JornadaStore {
   }
 
   /**
-   * Cierra la jornada activa (estado `closed` + hora fin). `firma` (PNG) y
-   * `firmante` (nombre de quien cierra) son opcionales.
+   * Cierra la jornada activa (estado `closed` + hora fin). `firma` (PNG),
+   * `firmante` (nombre de quien cierra) y `horaFin` (HH:MM, editable en la
+   * hoja de cierre) son opcionales; sin `horaFin` se usa la hora actual.
    */
-  async cerrarActual(firma?: string, firmante?: string): Promise<void> {
+  async cerrarActual(
+    firma?: string,
+    firmante?: string,
+    horaFin?: string,
+  ): Promise<void> {
     if (!this.shift) return;
     const base = $state.snapshot(this.shift) as Shift;
     const cerrada: Shift = {
       ...base,
       estado: "closed",
-      horaFin: this.#horaActual(),
+      horaFin: /^\d{2}:\d{2}$/.test(horaFin ?? "")
+        ? (horaFin as string)
+        : this.#horaActual(),
       firma,
       firmante: firmante?.trim() || undefined,
       updatedAt: Date.now(),

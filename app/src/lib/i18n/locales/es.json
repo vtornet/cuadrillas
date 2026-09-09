@@ -51,6 +51,7 @@
   "cabecera": {
     "empresa": "Empresa",
     "nif": "NIF",
+    "horario": "Horario",
     "recolectores": "{n} recolector(es)",
     "auxiliares": "{n} auxiliar(es)",
     "firma_pdf": "Firmado por"
@@ -310,6 +311,8 @@
   "firma": {
     "titulo": "Firma del jefe de cuadrilla",
     "ayuda": "Firma en el recuadro para confirmar el cierre del parte (opcional).",
+    "hora_fin": "Hora de finalización",
+    "hora_inicio_info": "(inicio {hora})",
     "borrar": "Borrar firma",
     "finalizar_sin_firma": "Finalizar sin firmar",
     "finalizar_con_firma": "Firmar y finalizar",

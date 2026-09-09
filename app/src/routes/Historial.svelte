@@ -165,7 +165,14 @@
               {nombreProducto(s.productId)} · {nombreUnidad(s.unitTypeId)}
             </span>
             <span class="fg-sub">
-              {[crewNombre[s.crewId] ?? "?", fechaES(s.fecha), s.finca]
+              {[
+                crewNombre[s.crewId] ?? "?",
+                fechaES(s.fecha),
+                s.horaInicio && s.horaFin
+                  ? `${s.horaInicio}–${s.horaFin}`
+                  : null,
+                s.finca,
+              ]
                 .filter(Boolean)
                 .join(" · ")}
             </span>
