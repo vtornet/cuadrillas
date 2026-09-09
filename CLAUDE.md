@@ -242,10 +242,15 @@ El `plan` marca qué tiene la org: `foreman` = solo PWA (1 jefe, 2 cuadrillas, s
     `routes/` (Login, Resumen, Cuadrillas, Trabajadores + ficha, Partes, ParteDetalle).
     Sin i18n (solo español por ahora). CSS propio en `src/app.css` (no reusa
     `tokens.css` — UX de escritorio distinta).
-  - Falta en la Fase B: **tarifas (CRUD)** (endpoints `POST/PUT/DELETE /admin/rates` +
-    vista) · **asistencia mensual** (`asistenciaMensual` server-side) · **liquidación por
-    periodo** (`calcularLiquidacion`) · exports · deploy (`panel.cuadrillas.app`, ver
-    `DEPLOY.md` Fase 5).
+  - **Tarifas / asistencia / liquidación hechos (2026-09-09):** API `GET /admin/{productos,
+    unidades}`, `GET/POST/PUT/DELETE /admin/tarifas` (zod; el POST/PUT hace upsert con
+    `serverUpdatedAt` → el `/sync` del jefe recibe el cambio; DELETE = borrado lógico),
+    `GET /admin/asistencia?anio&mes&crewId` (→ `asistenciaMensual`), `GET /admin/liquidacion
+    ?desde&hasta&crewId` (→ `calcularLiquidacion`). Panel: vistas Tarifas (tabla + form),
+    Asistencia (rejilla mes×trabajador), Liquidación (periodo + tabla). `panel/lib/api.ts`
+    generalizado (método/body/params) + `panel/lib/money.ts`.
+  - Falta en la Fase B: **exports** (PDF/Excel del panel) · **deploy** (`panel.cuadrillas.app`,
+    ver `DEPLOY.md` Fase 5).
 - **C — Altas**: pantalla "Altas" con los campos `Worker.laboral` y estado
   (pendiente/completa). Ajustes finos de RGPD. Endpoint `PUT /admin/trabajadores/:id/laboral`.
 - **D — Autoservicio**: la empresa se registra, paga plan `company`, invita a sus jefes
