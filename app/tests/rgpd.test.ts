@@ -107,7 +107,7 @@ describe("RGPD end-to-end", () => {
 
     const txt = informeATexto(inf);
     expect(txt).toContain("Juan Pérez");
-    expect(txt).toContain("2026-09-01");
+    expect(txt).toContain("01/09/2026");
     expect(txt).toContain("Naranja");
     expect(txt).not.toMatch(/EUR|€\s*\d|importe/i);
   });

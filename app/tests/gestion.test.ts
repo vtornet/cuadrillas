@@ -1,6 +1,6 @@
 import "fake-indexeddb/auto";
 import { beforeEach, describe, expect, it } from "vitest";
-import type { Crew, Group, Product, Worker } from "@cuadrilla/shared";
+import type { Crew, Finca, Group, Product, Worker } from "@cuadrilla/shared";
 import { db } from "../src/lib/db/dexie";
 import { gestion } from "../src/lib/stores/gestion.svelte";
 import { sesion } from "../src/lib/stores/sesion.svelte";
@@ -147,18 +147,19 @@ describe("gestion store CRUD", () => {
   });
 
   it("crea, lista y elimina una finca", async () => {
-    await gestion.guardar("finca", {
+    const f: Finca = {
       id: "f1",
       organizationId: ORG,
       name: "El Naranjal",
       activo: 1,
       updatedAt: 1,
       deleted: 0,
-    });
+    };
+    await gestion.guardar("finca", f);
     expect(gestion.fincas.map((x) => x.id)).toEqual(["f1"]);
     expect(await db.pendingOps.count()).toBe(1);
 
-    await gestion.eliminar("finca", { ...(await db.fincas.get("f1"))! });
+    await gestion.eliminar("finca", f);
     expect(gestion.fincas.find((x) => x.id === "f1")).toBeUndefined();
     expect((await db.fincas.get("f1"))?.deleted).toBe(1);
   });

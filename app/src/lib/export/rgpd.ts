@@ -1,4 +1,5 @@
 import type { InformeTrabajador } from "@cuadrilla/shared/domain";
+import { fechaES } from "@cuadrilla/shared/domain";
 import { centimosAEuros } from "../money";
 
 const MIME = "text/plain;charset=utf-8";
@@ -37,7 +38,7 @@ export function informeATexto(inf: InformeTrabajador): string {
         ? "trabajo en grupo (sin desglose individual)"
         : `${d.numAnotaciones} anotación(es), ${d.totalUnidades} ${d.unidad.toLowerCase()}(s)`;
       const asistencia = d.presente ? "" : " (sin marcar en asistencia)";
-      L.push(`  ${d.fecha}  ${d.cuadrilla} · ${d.producto}${asistencia}`);
+      L.push(`  ${fechaES(d.fecha)}  ${d.cuadrilla} · ${d.producto}${asistencia}`);
       L.push(`             ${detalle}`);
     }
   }

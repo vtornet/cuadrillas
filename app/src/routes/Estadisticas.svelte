@@ -3,6 +3,7 @@
   import type { Crew, Entry, Shift, Worker } from "@cuadrilla/shared";
   import {
     calcularEstadisticas,
+    fechaES,
     type Estadisticas,
   } from "@cuadrilla/shared/domain";
   import { i18n } from "../lib/i18n/i18n.svelte";
@@ -112,7 +113,7 @@
   }
 
   function etiquetaShift(s: Shift): string {
-    return `${s.fecha}${s.estado === "open" ? " · " + i18n.t("stats.abierta") : ""}`;
+    return `${fechaES(s.fecha)}${s.estado === "open" ? " · " + i18n.t("stats.abierta") : ""}`;
   }
 
   const num = (n: number | null): string =>

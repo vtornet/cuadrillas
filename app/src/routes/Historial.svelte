@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import type { Product, Shift, UnitType } from "@cuadrilla/shared";
-  import { etiquetaProducto } from "@cuadrilla/shared/domain";
+  import { etiquetaProducto, fechaES } from "@cuadrilla/shared/domain";
   import { i18n } from "../lib/i18n/i18n.svelte";
   import { sesion } from "../lib/stores/sesion.svelte";
   import { crewsDelForeman } from "../lib/db/repositories/crews";
@@ -165,7 +165,7 @@
               {nombreProducto(s.productId)} · {nombreUnidad(s.unitTypeId)}
             </span>
             <span class="fg-sub">
-              {[crewNombre[s.crewId] ?? "?", s.fecha, s.finca]
+              {[crewNombre[s.crewId] ?? "?", fechaES(s.fecha), s.finca]
                 .filter(Boolean)
                 .join(" · ")}
             </span>

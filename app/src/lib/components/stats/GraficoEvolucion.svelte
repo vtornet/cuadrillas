@@ -28,7 +28,10 @@
       : "",
   );
 
-  const dia = (f: string): string => f.slice(5).replace("-", "/");
+  const dia = (f: string): string => {
+    const [, m, d] = f.split("-");
+    return d && m ? `${d}/${m}` : f;
+  };
 </script>
 
 <div class="evol">

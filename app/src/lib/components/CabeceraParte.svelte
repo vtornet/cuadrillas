@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { fechaES } from "@cuadrilla/shared/domain";
   import { i18n } from "../i18n/i18n.svelte";
 
   let {
@@ -16,11 +17,6 @@
     nRecolectores: number;
     nAuxiliares: number;
   } = $props();
-
-  function fechaES(iso: string): string {
-    const [a, m, d] = iso.split("-");
-    return d && m && a ? `${d}/${m}/${a}` : iso;
-  }
 
   const titulo = $derived(unidad ? `${producto} · ${unidad}` : producto);
 
