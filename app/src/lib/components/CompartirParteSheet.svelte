@@ -48,6 +48,7 @@
     nif: perfil.org?.taxId,
     cuadrilla,
     finca: shift.finca,
+    observaciones: shift.observaciones,
     fecha: shift.fecha,
     producto,
     unidad,

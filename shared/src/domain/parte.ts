@@ -29,6 +29,8 @@ export interface CabeceraInforme {
   firmante?: string;
   /** Firma del jefe en PNG (data URL), si el parte está firmado. */
   firmaPng?: string;
+  /** Observaciones libres del jefe de cuadrilla. */
+  observaciones?: string;
 }
 
 export interface InformeAsistencia {

@@ -326,6 +326,24 @@ class JornadaStore {
     }
   }
 
+  /** Observaciones libres del jefe sobre el parte. Vacío = se quita el campo. */
+  async actualizarObservaciones(texto: string): Promise<void> {
+    if (!this.shift) return;
+    const base = $state.snapshot(this.shift) as Shift;
+    const observaciones = texto.trim() || undefined;
+    if (observaciones === base.observaciones) return;
+    const anterior = base.observaciones;
+    const actualizado: Shift = { ...base, observaciones, updatedAt: Date.now() };
+    this.shift = actualizado;
+    try {
+      await guardarShift(actualizado);
+    } catch (e) {
+      this.shift = { ...actualizado, observaciones: anterior };
+      console.error("[jornada] no se pudieron guardar las observaciones", e);
+      throw e;
+    }
+  }
+
   /**
    * Ajusta la composicion de un grupo SOLO para esta jornada (p. ej. alguien
    * falta hoy). No toca el grupo fijo de Gestion.

@@ -21,6 +21,7 @@
   import CompartirParteSheet from "./CompartirParteSheet.svelte";
   import AuxiliarSheet from "./AuxiliarSheet.svelte";
   import CabeceraParte from "./CabeceraParte.svelte";
+  import ObservacionesParte from "./ObservacionesParte.svelte";
 
   let { shiftId, onclose }: { shiftId: string; onclose: () => void } = $props();
 
@@ -163,6 +164,21 @@
     } catch (e) {
       shift = anterior;
       console.error("[historial] no se pudo guardar el auxiliar", e);
+    }
+  }
+
+  async function actualizarObservaciones(texto: string): Promise<void> {
+    if (!shift) return;
+    const observaciones = texto.trim() || undefined;
+    if (observaciones === shift.observaciones) return;
+    const anterior = shift;
+    const actualizado: Shift = { ...shift, observaciones, updatedAt: Date.now() };
+    shift = actualizado;
+    try {
+      await guardarShift(actualizado);
+    } catch (e) {
+      shift = anterior;
+      console.error("[historial] no se pudieron guardar las observaciones", e);
     }
   }
 
@@ -348,6 +364,14 @@
           </li>
         {/each}
       </ul>
+    {/if}
+
+    {#if !cargando && shift}
+      <ObservacionesParte
+        valor={shift.observaciones ?? ""}
+        soloLectura={modo === "consulta"}
+        onguardar={actualizarObservaciones}
+      />
     {/if}
 
     {#if shift && (shift.firma || shift.firmante)}

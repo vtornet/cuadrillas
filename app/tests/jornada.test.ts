@@ -158,6 +158,16 @@ describe("jornada store", () => {
     expect(guardado?.estado).toBe("closed");
     expect(guardado?.firmante).toBeUndefined();
   });
+
+  it("actualizarObservaciones guarda el texto recortado y lo quita si queda vacío", async () => {
+    await jornada.actualizarObservaciones("  Llovió a media mañana  ");
+    expect((await db.shifts.get("s1"))?.observaciones).toBe(
+      "Llovió a media mañana",
+    );
+
+    await jornada.actualizarObservaciones("   ");
+    expect((await db.shifts.get("s1"))?.observaciones).toBeUndefined();
+  });
 });
 
 const WORKER2: Worker = { ...WORKER, id: "w2", alias: "ANA2" };

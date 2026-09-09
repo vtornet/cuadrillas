@@ -260,6 +260,15 @@ Perfil de usuario bajo → simplificar. Plan en 4 fases:
   (Historial). No se pidió ni se implementó en Liquidación (vista agregada por
   trabajador/periodo, sin hueco natural para una firma por parte individual). Firmar es
   opcional a propósito — un parte se puede cerrar sin firma sin fricción extra.
+- **Observaciones del parte — hecho (2026-09-09).** `Shift.observaciones?: string` (texto
+  libre del jefe). Componente `ObservacionesParte.svelte` (textarea que guarda al perder
+  el foco; modo `soloLectura` para consulta): en `Registro.svelte` (antes de "Finalizar
+  jornada", `jornada.actualizarObservaciones`) y en `ParteDetalle.svelte` (solo lectura en
+  consulta, editable en modo edición). Se propaga a **todos los derivados del parte**:
+  `CabeceraInforme.observaciones` → `textoAsistenciaParte` (sección "Observaciones:" al
+  final), `Documento.observaciones` → bloque de texto tras las tablas en el PDF (`pdf.ts`)
+  y el Excel (`xlsx.ts`), en los dos informes (asistencia y parte). i18n
+  `compartir.observaciones` / `registro.observaciones_ph`. Seed demo con una observación.
 - **Renombrado de menús + import de trabajadores — hecho (2026-09-07).** En el menú,
   "Registrar" pasa a **"Iniciar parte"** y "Gestión" a **"Datos"** (claves i18n
   `menu.registrar` / `menu.gestion` y `gestion.titulo`; solo cambian los textos, no las

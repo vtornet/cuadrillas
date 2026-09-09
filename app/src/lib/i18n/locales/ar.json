@@ -12,7 +12,8 @@
     "sin_jornada": "لا توجد ورقة عمل مفتوحة",
     "sin_jornada_ayuda": "ابدأ يوم عمل لبدء التسجيل.",
     "comenzar_jornada": "ابدأ اليوم",
-    "finalizar_jornada": "إنهاء اليوم"
+    "finalizar_jornada": "إنهاء اليوم",
+    "observaciones_ph": "حوادث، تنبيهات، ملاحظات اليوم..."
   },
   "menu": {
     "titulo": "القائمة",
@@ -93,7 +94,8 @@
     "hoja_asistencia": "الحضور",
     "hoja_parte": "ورقة العمل",
     "pdf_titulo_asistencia": "الحضور",
-    "pdf_titulo_parte": "ورقة العمل"
+    "pdf_titulo_parte": "ورقة العمل",
+    "observaciones": "ملاحظات"
   },
   "plan": {
     "titulo": "الاشتراك",

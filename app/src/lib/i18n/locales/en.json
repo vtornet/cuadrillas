@@ -12,7 +12,8 @@
     "sin_jornada": "No open shift",
     "sin_jornada_ayuda": "Start a shift to begin recording.",
     "comenzar_jornada": "Start shift",
-    "finalizar_jornada": "Finish shift"
+    "finalizar_jornada": "Finish shift",
+    "observaciones_ph": "Issues, notices, notes for the day..."
   },
   "menu": {
     "titulo": "Menu",
@@ -93,7 +94,8 @@
     "hoja_asistencia": "Attendance",
     "hoja_parte": "Report",
     "pdf_titulo_asistencia": "Attendance",
-    "pdf_titulo_parte": "Work report"
+    "pdf_titulo_parte": "Work report",
+    "observaciones": "Notes"
   },
   "plan": {
     "titulo": "Plan",

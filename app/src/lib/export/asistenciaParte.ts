@@ -24,5 +24,11 @@ export function textoAsistenciaParte(inf: InformeAsistencia): string {
     inf.auxiliares.forEach((n, i) => L.push(`${i + 1}. ${n}`));
   }
 
+  if (c.observaciones?.trim()) {
+    L.push("");
+    L.push("Observaciones:");
+    L.push(c.observaciones.trim());
+  }
+
   return L.join("\n");
 }

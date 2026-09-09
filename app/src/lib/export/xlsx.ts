@@ -106,6 +106,19 @@ async function libro(documento: Documento, hoja: string): Promise<Blob> {
     R++;
   }
 
+  // Observaciones (bloque de texto tras las tablas).
+  if (documento.observaciones) {
+    set(R, 0, i18n.t("compartir.observaciones"), { font: { bold: true, sz: 11 } });
+    R++;
+    set(R, 0, documento.observaciones, {
+      alignment: { horizontal: "left", vertical: "top", wrapText: true },
+      border: BORDES,
+    });
+    for (let c = 1; c < ncols; c++) set(R, c, "", { border: BORDES });
+    merges.push({ s: { r: R, c: 0 }, e: { r: R, c: ncols - 1 } });
+    R += 2;
+  }
+
   ws["!ref"] = XLSX.utils.encode_range({
     s: { r: 0, c: 0 },
     e: { r: Math.max(R, 1), c: ncols - 1 },

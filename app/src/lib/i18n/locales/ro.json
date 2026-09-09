@@ -12,7 +12,8 @@
     "sin_jornada": "Nicio fișă deschisă",
     "sin_jornada_ayuda": "Începe o zi de lucru ca să înregistrezi.",
     "comenzar_jornada": "Începe ziua",
-    "finalizar_jornada": "Încheie ziua"
+    "finalizar_jornada": "Încheie ziua",
+    "observaciones_ph": "Incidente, anunțuri, note ale zilei..."
   },
   "menu": {
     "titulo": "Meniu",
@@ -93,7 +94,8 @@
     "hoja_asistencia": "Prezență",
     "hoja_parte": "Fișă",
     "pdf_titulo_asistencia": "Prezență",
-    "pdf_titulo_parte": "Fișă de lucru"
+    "pdf_titulo_parte": "Fișă de lucru",
+    "observaciones": "Observații"
   },
   "plan": {
     "titulo": "Abonament",

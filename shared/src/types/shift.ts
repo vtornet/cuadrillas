@@ -34,6 +34,8 @@ export interface Shift extends RegistroSincronizable {
   fecha: FechaISO;
   /** Finca donde se trabaja ese día. Texto libre (opcional). */
   finca?: string;
+  /** Observaciones del jefe de cuadrilla sobre el parte. Texto libre (opcional). */
+  observaciones?: string;
   horaInicio: HoraISO | null;
   horaFin: HoraISO | null;
   productId: string;

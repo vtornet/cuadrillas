@@ -187,6 +187,12 @@ button:disabled {
   color: var(--c-texto-suave);
 }
 
+.obs-item {
+  margin-top: 10px;
+  padding-top: 6px;
+  border-top: 2px solid var(--c-borde);
+}
+
 .finalizar-item {
   margin-top: 8px;
   padding-top: 8px;

@@ -48,6 +48,15 @@ describe("docAsistencia", () => {
     ]);
   });
 
+  it("pasa las observaciones al documento", () => {
+    const d = docAsistencia({
+      cabecera: { ...cab, observaciones: "  Nota del día  " },
+      recolectores: ["Ana"],
+      auxiliares: [],
+    });
+    expect(d.observaciones).toBe("Nota del día");
+  });
+
   it("añade Empresa y NIF a la cabecera cuando el perfil los tiene", () => {
     const d = docAsistencia({
       cabecera: { ...cab, empresa: "Cítricos SL", nif: "B12345678" },

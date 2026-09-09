@@ -12,7 +12,8 @@
     "sin_jornada": "No hay ningun parte abierto",
     "sin_jornada_ayuda": "Comienza una jornada para empezar a registrar.",
     "comenzar_jornada": "Comenzar jornada",
-    "finalizar_jornada": "Finalizar jornada"
+    "finalizar_jornada": "Finalizar jornada",
+    "observaciones_ph": "Incidencias, avisos, notas del dia..."
   },
   "menu": {
     "titulo": "Menu",
@@ -93,7 +94,8 @@
     "hoja_asistencia": "Asistencia",
     "hoja_parte": "Parte",
     "pdf_titulo_asistencia": "Asistencia",
-    "pdf_titulo_parte": "Parte de trabajo"
+    "pdf_titulo_parte": "Parte de trabajo",
+    "observaciones": "Observaciones"
   },
   "plan": {
     "titulo": "Plan",

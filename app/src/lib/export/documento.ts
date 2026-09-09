@@ -35,6 +35,8 @@ export interface Documento {
   /** Pares etiqueta/valor de la cabecera del parte. */
   cabecera: { etiqueta: string; valor: string }[];
   tablas: Tabla[];
+  /** Observaciones libres del jefe (bloque de texto tras las tablas). */
+  observaciones?: string;
   firmaPng?: string;
   firmante?: string;
 }
@@ -92,6 +94,7 @@ export function docAsistencia(inf: InformeAsistencia): Documento {
     titulo: i18n.t("compartir.pdf_titulo_asistencia"),
     cabecera: camposCabecera(inf.cabecera),
     tablas,
+    observaciones: inf.cabecera.observaciones?.trim() || undefined,
   };
 }
 
@@ -127,6 +130,7 @@ export function docParte(inf: InformeParte): Documento {
     titulo: i18n.t("compartir.pdf_titulo_parte"),
     cabecera: camposCabecera(inf.cabecera),
     tablas,
+    observaciones: inf.cabecera.observaciones?.trim() || undefined,
     firmaPng: inf.cabecera.firmaPng,
     firmante: inf.cabecera.firmante,
   };

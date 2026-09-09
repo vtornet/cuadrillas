@@ -63,4 +63,22 @@ describe("textoAsistenciaParte", () => {
     expect(t).toContain("1. Marco");
     expect(t).not.toContain("Grupos:");
   });
+
+  it("incluye las observaciones al final si las hay", () => {
+    const t = textoAsistenciaParte(
+      inf({
+        cabecera: {
+          cuadrilla: "C1",
+          fecha: "2026-09-07",
+          producto: "Naranja",
+          unidad: "Caja",
+          observaciones: "Llovió por la tarde.",
+        },
+        recolectores: ["Ana"],
+      }),
+    );
+    const lineas = t.split("\n");
+    expect(lineas.at(-2)).toBe("Observaciones:");
+    expect(lineas.at(-1)).toBe("Llovió por la tarde.");
+  });
 });

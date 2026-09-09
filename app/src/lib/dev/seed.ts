@@ -114,6 +114,7 @@ export async function seedDemo(): Promise<void> {
     crewId: CREW_ID,
     fecha: HOY,
     finca: FINCA_NOMBRE,
+    observaciones: "A media mañana llovió unos 20 minutos.",
     horaInicio: "08:00",
     horaFin: null,
     productId: PRODUCT_ID,

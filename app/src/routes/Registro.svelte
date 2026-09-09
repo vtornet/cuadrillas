@@ -13,6 +13,7 @@
   import AuxiliarSheet from "../lib/components/AuxiliarSheet.svelte";
   import AvisoSinAnotarSheet from "../lib/components/AvisoSinAnotarSheet.svelte";
   import CabeceraParte from "../lib/components/CabeceraParte.svelte";
+  import ObservacionesParte from "../lib/components/ObservacionesParte.svelte";
 
   let q = $state("");
   let scannerAbierto = $state(false);
@@ -199,6 +200,13 @@
           </li>
         {/each}
       {/if}
+
+      <li class="obs-item">
+        <ObservacionesParte
+          valor={jornada.shift?.observaciones ?? ""}
+          onguardar={(t) => jornada.actualizarObservaciones(t)}
+        />
+      </li>
 
       <li class="finalizar-item">
         <button

@@ -12,7 +12,8 @@
     "sin_jornada": "Aucune fiche ouverte",
     "sin_jornada_ayuda": "Commence une journée pour enregistrer.",
     "comenzar_jornada": "Commencer la journée",
-    "finalizar_jornada": "Terminer la journée"
+    "finalizar_jornada": "Terminer la journée",
+    "observaciones_ph": "Incidents, avis, notes du jour..."
   },
   "menu": {
     "titulo": "Menu",
@@ -93,7 +94,8 @@
     "hoja_asistencia": "Présence",
     "hoja_parte": "Fiche",
     "pdf_titulo_asistencia": "Présence",
-    "pdf_titulo_parte": "Fiche de travail"
+    "pdf_titulo_parte": "Fiche de travail",
+    "observaciones": "Observations"
   },
   "plan": {
     "titulo": "Forfait",

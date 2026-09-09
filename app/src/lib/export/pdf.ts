@@ -165,6 +165,22 @@ function tabla(doc: Doc, cur: Cur, t: Tabla): void {
   cur.y += 7;
 }
 
+function observaciones(doc: Doc, cur: Cur, texto: string): void {
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(11);
+  const lineas = doc.splitTextToSize(texto, ANCHO_UTIL - 6);
+  const alto = 8 + lineas.length * 5 + 6;
+  saltoSiHaceFalta(doc, cur, alto);
+  doc.text(i18n.t("compartir.observaciones"), M, cur.y);
+  cur.y += 4;
+  lineaGris(doc);
+  doc.rect(M, cur.y, ANCHO_UTIL, lineas.length * 5 + 6, "S");
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(10);
+  doc.text(lineas, M + 3, cur.y + 5);
+  cur.y += lineas.length * 5 + 6 + 7;
+}
+
 function firma(doc: Doc, cur: Cur, pngDataUrl: string, nombre?: string): void {
   saltoSiHaceFalta(doc, cur, 46);
   doc.setFont("helvetica", "bold");
@@ -194,6 +210,7 @@ async function render(documento: Documento): Promise<Blob> {
   titulo(doc, cur, documento.titulo);
   cajaCabecera(doc, cur, documento.cabecera);
   for (const t of documento.tablas) tabla(doc, cur, t);
+  if (documento.observaciones) observaciones(doc, cur, documento.observaciones);
   if (documento.firmaPng) firma(doc, cur, documento.firmaPng, documento.firmante);
 
   return doc.output("blob");
