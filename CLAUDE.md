@@ -326,6 +326,21 @@ Los detalles de cada punto están en **Backlog sin planificar** justo debajo.
 
 11. **Estructura de navegación** (más renombrados de menús / cambios de estructura).
 
+**Pendientes nuevos (2026-09-09) — sin planificar**
+
+14. **Trabajo por horas.** Añadir un modo alternativo al destajo: registrar el trabajo
+    de un recolector por **horas** (no por unidades). Pendiente de conversación de
+    modelado: ¿a nivel de parte (`Shift` "por unidades" | "por horas")?, ¿a nivel de
+    trabajador?, ¿cómo se registra (una entrada de horas/día, similar a los
+    auxiliares)?, ¿qué pasa con `stats.ts` (unidades/hora deja de tener sentido) y con
+    la futura liquidación (jornal × horas)? Ver también "Auxiliares" (ya guardan
+    tarea/horas por día) — puede que la infraestructura sirva.
+15. **Apartado de instrucciones / ayuda.** Nueva pantalla (o sección en Cuenta) con
+    instrucciones de uso de la app y un **botón de contacto** para dudas que abra un
+    `mailto:contact@appstracta.app`. Definir: ¿pantalla propia en el menú?, ¿en varios
+    idiomas o solo español al principio?, ¿texto largo tipo la política de privacidad o
+    lista de pasos?
+
 **Cuando toque cobrar de verdad**
 
 12. **Pasar Stripe a modo live** (ver `DEPLOY.md`).
