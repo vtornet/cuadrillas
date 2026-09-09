@@ -95,7 +95,9 @@
     "hoja_parte": "ورقة العمل",
     "pdf_titulo_asistencia": "الحضور",
     "pdf_titulo_parte": "ورقة العمل",
-    "observaciones": "ملاحظات"
+    "observaciones": "ملاحظات",
+    "ver_exportar": "عرض وتصدير",
+    "previa_nota": "معاينة المحتوى. يخرج ملفّا PDF وExcel بتنسيق كامل."
   },
   "plan": {
     "titulo": "الاشتراك",

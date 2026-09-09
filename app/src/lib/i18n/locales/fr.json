@@ -95,7 +95,9 @@
     "hoja_parte": "Fiche",
     "pdf_titulo_asistencia": "Présence",
     "pdf_titulo_parte": "Fiche de travail",
-    "observaciones": "Observations"
+    "observaciones": "Observations",
+    "ver_exportar": "Voir et exporter",
+    "previa_nota": "Aperçu du contenu. Le PDF et l'Excel sortent mis en forme."
   },
   "plan": {
     "titulo": "Forfait",

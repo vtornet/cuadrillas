@@ -95,7 +95,9 @@
     "hoja_parte": "Fișă",
     "pdf_titulo_asistencia": "Prezență",
     "pdf_titulo_parte": "Fișă de lucru",
-    "observaciones": "Observații"
+    "observaciones": "Observații",
+    "ver_exportar": "Vezi și exportă",
+    "previa_nota": "Previzualizarea conținutului. PDF-ul și Excelul ies formatate."
   },
   "plan": {
     "titulo": "Abonament",

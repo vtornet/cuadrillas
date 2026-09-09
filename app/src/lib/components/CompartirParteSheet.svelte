@@ -12,7 +12,9 @@
   import { textoAsistenciaParte } from "../export/asistenciaParte";
   import { asistenciaAPdf, parteAPdf } from "../export/pdf";
   import { asistenciaAXlsx, parteAXlsx } from "../export/xlsx";
+  import { docAsistencia, docParte } from "../export/documento";
   import { compartirArchivo, slug } from "../export/compartir";
+  import PreviaDocumento from "./PreviaDocumento.svelte";
 
   let {
     shift,
@@ -59,6 +61,16 @@
   const infAsistencia = $derived(informeAsistencia(cabecera, shift, workers));
   const infParte = $derived(informeParte(cabecera, shift, workers, entries));
   const texto = $derived(textoAsistenciaParte(infAsistencia));
+
+  /** Informe cuya previa está abierta (null = sin previa). */
+  let previa = $state<"asistencia" | "parte" | null>(null);
+  const docPrevia = $derived(
+    previa === "asistencia"
+      ? docAsistencia(infAsistencia)
+      : previa === "parte"
+        ? docParte(infParte)
+        : null,
+  );
 
   function whatsapp(): void {
     window.open(
@@ -122,6 +134,21 @@
     }
   }
 
+  /** Genera y comparte/descarga el informe cuya previa está abierta. */
+  async function exportarPrevia(ext: "pdf" | "xlsx"): Promise<void> {
+    if (!previa || generando) return;
+    const tipo = previa;
+    const gen: () => Promise<Blob> =
+      ext === "pdf"
+        ? tipo === "asistencia"
+          ? () => asistenciaAPdf(infAsistencia)
+          : () => parteAPdf(infParte)
+        : tipo === "asistencia"
+          ? () => asistenciaAXlsx(infAsistencia)
+          : () => parteAXlsx(infParte);
+    await archivo(ext === "pdf" ? "pdf" : "xls", tipo, ext, gen);
+  }
+
   const puedeCompartir =
     typeof navigator !== "undefined" && typeof navigator.share === "function";
 
@@ -174,21 +201,10 @@
         {/if}
         <button
           type="button"
-          class="btn-secundario"
-          disabled={!!generando}
-          onclick={() =>
-            archivo("a-pdf", "asistencia", "pdf", () => asistenciaAPdf(infAsistencia))}
+          class="btn-secundario cmp-ancho"
+          onclick={() => (previa = "asistencia")}
         >
-          {generando === "a-pdf" ? i18n.t("compartir.generando") : i18n.t("compartir.pdf")}
-        </button>
-        <button
-          type="button"
-          class="btn-secundario"
-          disabled={!!generando}
-          onclick={() =>
-            archivo("a-xls", "asistencia", "xlsx", () => asistenciaAXlsx(infAsistencia))}
-        >
-          {generando === "a-xls" ? i18n.t("compartir.generando") : i18n.t("compartir.excel")}
+          {i18n.t("compartir.ver_exportar")}
         </button>
       </div>
       </section>
@@ -196,24 +212,13 @@
       <section class="cmp-bloque">
       <h3 class="cmp-seccion">{i18n.t("compartir.parte")}</h3>
       <p class="cmp-ayuda">{i18n.t("compartir.parte_ayuda")}</p>
-      <div class="cmp-acciones">
-        <button
-          type="button"
-          class="btn-secundario"
-          disabled={!!generando}
-          onclick={() => archivo("p-pdf", "parte", "pdf", () => parteAPdf(infParte))}
-        >
-          {generando === "p-pdf" ? i18n.t("compartir.generando") : i18n.t("compartir.pdf")}
-        </button>
-        <button
-          type="button"
-          class="btn-secundario"
-          disabled={!!generando}
-          onclick={() => archivo("p-xls", "parte", "xlsx", () => parteAXlsx(infParte))}
-        >
-          {generando === "p-xls" ? i18n.t("compartir.generando") : i18n.t("compartir.excel")}
-        </button>
-      </div>
+      <button
+        type="button"
+        class="btn-secundario btn-ancho"
+        onclick={() => (previa = "parte")}
+      >
+        {i18n.t("compartir.ver_exportar")}
+      </button>
       </section>
     </div>
 
@@ -224,6 +229,16 @@
     </div>
   </div>
 </div>
+
+{#if docPrevia}
+  <PreviaDocumento
+    documento={docPrevia}
+    {generando}
+    onpdf={() => exportarPrevia("pdf")}
+    onexcel={() => exportarPrevia("xlsx")}
+    onclose={() => (previa = null)}
+  />
+{/if}
 
 <style>
   .cmp-bloque {
@@ -269,5 +284,8 @@
   }
   .cmp-acciones button {
     width: 100%;
+  }
+  .cmp-acciones .cmp-ancho {
+    grid-column: 1 / -1;
   }
 </style>

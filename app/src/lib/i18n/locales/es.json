@@ -95,7 +95,9 @@
     "hoja_parte": "Parte",
     "pdf_titulo_asistencia": "Asistencia",
     "pdf_titulo_parte": "Parte de trabajo",
-    "observaciones": "Observaciones"
+    "observaciones": "Observaciones",
+    "ver_exportar": "Ver y exportar",
+    "previa_nota": "Vista previa del contenido. El PDF y el Excel salen con formato."
   },
   "plan": {
     "titulo": "Plan",

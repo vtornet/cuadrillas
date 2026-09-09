@@ -436,6 +436,13 @@ Los detalles de cada punto están en **Backlog sin planificar** justo debajo.
     trabajador/grupo/miembros/tarea/horas/total`.
   - Los archivos se comparten/descargan con `compartirArchivo` (Web Share con `files`, o
     descarga). Nombre `asistencia_<cuadrilla>_<fecha>.pdf|xlsx` / `parte_...`.
+  - **Previsualización (2026-09-09).** En cada sección de `CompartirParteSheet` un único
+    botón **"Ver y exportar"** (`compartir.ver_exportar`) abre `PreviaDocumento.svelte`:
+    renderiza el mismo modelo `Documento` como **HTML** (cabecera en tabla, tablas con fila
+    de TOTAL, observaciones, firma) y desde ahí "PDF" / "Excel" generan el archivo real
+    (`compartirArchivo`). Así se ve el contenido antes de enviar/descargar sin depender de
+    un visor de PDF embebido. La previa no es pixel-idéntica al archivo (el PDF/Excel
+    llevan el formato con bordes y sombreados); nota en `compartir.previa_nota`.
   - Tests: `shared/tests/parte.test.ts`, `app/tests/asistencia-parte.test.ts`,
     `app/tests/documento.test.ts`.
 - **Perfil del jefe de cuadrilla + nombre en la firma — hecho (2026-09-07).**

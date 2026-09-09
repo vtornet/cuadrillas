@@ -95,7 +95,9 @@
     "hoja_parte": "Report",
     "pdf_titulo_asistencia": "Attendance",
     "pdf_titulo_parte": "Work report",
-    "observaciones": "Notes"
+    "observaciones": "Notes",
+    "ver_exportar": "View and export",
+    "previa_nota": "Content preview. The PDF and Excel come out formatted."
   },
   "plan": {
     "titulo": "Plan",
