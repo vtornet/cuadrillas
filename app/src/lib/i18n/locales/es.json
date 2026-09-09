@@ -37,11 +37,16 @@
     "mes_anterior": "Mes anterior",
     "mes_siguiente": "Mes siguiente",
     "sin_datos": "No hay asistencia registrada este mes.",
+    "fincas": "Fincas",
+    "total_recolectores": "Total recolectores",
+    "total_auxiliares": "Total auxiliares",
     "exportar": "Exportar",
     "exportar_excel": "Exportar Excel",
     "exportar_csv": "Exportar CSV"
   },
   "cabecera": {
+    "empresa": "Empresa",
+    "nif": "NIF",
     "recolectores": "{n} recolector(es)",
     "auxiliares": "{n} auxiliar(es)",
     "firma_pdf": "Firmado por"

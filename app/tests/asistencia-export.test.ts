@@ -18,12 +18,13 @@ function worker(id: string, name: string): Worker {
   };
 }
 
-function shift(fecha: string, attendeeIds: string[]): Shift {
+function shift(fecha: string, attendeeIds: string[], finca?: string): Shift {
   return {
     id: crypto.randomUUID(),
     organizationId: "o",
     crewId: "c1",
     fecha,
+    finca,
     horaInicio: "08:00",
     horaFin: "14:00",
     productId: "p1",
@@ -34,6 +35,14 @@ function shift(fecha: string, attendeeIds: string[]): Shift {
     deleted: 0,
   };
 }
+
+const ETIQUETAS = {
+  trabajador: "Trabajador",
+  total: "Total",
+  totalRecolectores: "Total recolectores",
+  totalAuxiliares: "Total auxiliares",
+  fincas: "Fincas",
+};
 
 describe("asistenciaACsv", () => {
   it("cabecera de días, una X por asistencia y fila de totales", () => {
@@ -69,6 +78,7 @@ describe("asistenciaAXlsx", () => {
     const blob = await asistenciaAXlsx(tabla, {
       titulo: "Asistencia · septiembre 2026",
       cuadrillas: "Cuadrilla 1",
+      etiquetas: ETIQUETAS,
     });
     const buf = await blob.arrayBuffer();
     const wb = XLSX.read(buf, { type: "array" });
@@ -84,5 +94,34 @@ describe("asistenciaAXlsx", () => {
     expect(ana?.[ana.length - 1]).toBe(2);
     const total = filas.filter((f) => f[0] === "Total").pop();
     expect(total?.[total.length - 1]).toBe(3);
+  });
+
+  it("añade filas de total por rol y línea de fincas", async () => {
+    const tabla = asistenciaMensual(
+      [
+        shift("2026-09-01", ["w1", "w2"], "La Loma"),
+        shift("2026-09-02", ["w1"], "El Cerro"),
+      ],
+      [
+        worker("w1", "Ana"),
+        { ...worker("w2", "Beto"), funcion: "auxiliar" as const },
+      ],
+      2026,
+      9,
+    );
+    const blob = await asistenciaAXlsx(tabla, {
+      titulo: "Asistencia",
+      cuadrillas: "Cuadrilla 1",
+      etiquetas: ETIQUETAS,
+    });
+    const wb = XLSX.read(await blob.arrayBuffer(), { type: "array" });
+    const filas = XLSX.utils.sheet_to_json<string[]>(
+      wb.Sheets[wb.SheetNames[0]],
+      { header: 1 },
+    );
+    const txt = filas.map((f) => f.join("|")).join("\n");
+    expect(txt).toContain("Fincas: El Cerro, La Loma");
+    expect(filas.some((f) => f[0] === "Total recolectores")).toBe(true);
+    expect(filas.some((f) => f[0] === "Total auxiliares")).toBe(true);
   });
 });

@@ -117,7 +117,7 @@
   }
 
   const num = (n: number | null): string =>
-    n === null ? "—" : n.toLocaleString("es-ES", { maximumFractionDigits: 2 });
+    n === null ? "—" : n.toLocaleString(i18n.locale, { maximumFractionDigits: 2 });
 </script>
 
 <div class="pantalla">

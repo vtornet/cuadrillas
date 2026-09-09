@@ -37,11 +37,16 @@
     "mes_anterior": "Mois précédent",
     "mes_siguiente": "Mois suivant",
     "sin_datos": "Aucune présence enregistrée ce mois-ci.",
+    "fincas": "Exploitations",
+    "total_recolectores": "Total cueilleurs",
+    "total_auxiliares": "Total auxiliaires",
     "exportar": "Exporter",
     "exportar_excel": "Exporter en Excel",
     "exportar_csv": "Exporter en CSV"
   },
   "cabecera": {
+    "empresa": "Entreprise",
+    "nif": "N° fiscal",
     "recolectores": "{n} cueilleur(s)",
     "auxiliares": "{n} auxiliaire(s)",
     "firma_pdf": "Signé par"

@@ -47,6 +47,19 @@ describe("docAsistencia", () => {
       [2, "Beto"],
     ]);
   });
+
+  it("añade Empresa y NIF a la cabecera cuando el perfil los tiene", () => {
+    const d = docAsistencia({
+      cabecera: { ...cab, empresa: "Cítricos SL", nif: "B12345678" },
+      recolectores: ["Ana"],
+      auxiliares: [],
+    });
+    expect(d.cabecera.slice(0, 3).map((c) => `${c.etiqueta}: ${c.valor}`)).toEqual([
+      "Empresa: Cítricos SL",
+      "NIF: B12345678",
+      "Cuadrilla: Cuadrilla 1",
+    ]);
+  });
 });
 
 describe("docParte", () => {

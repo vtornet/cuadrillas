@@ -43,9 +43,12 @@ function camposCabecera(
   c: InformeAsistencia["cabecera"],
 ): Documento["cabecera"] {
   const finca = i18n.t("jornada.finca").replace(/ \(.*\)$/, "");
-  const campos: Documento["cabecera"] = [
-    { etiqueta: i18n.t("jornada.cuadrilla"), valor: c.cuadrilla },
-  ];
+  const campos: Documento["cabecera"] = [];
+  if (c.empresa) {
+    campos.push({ etiqueta: i18n.t("cabecera.empresa"), valor: c.empresa });
+  }
+  if (c.nif) campos.push({ etiqueta: i18n.t("cabecera.nif"), valor: c.nif });
+  campos.push({ etiqueta: i18n.t("jornada.cuadrilla"), valor: c.cuadrilla });
   if (c.finca) campos.push({ etiqueta: finca, valor: c.finca });
   campos.push({ etiqueta: i18n.t("jornada.fecha"), valor: fechaES(c.fecha) });
   campos.push({ etiqueta: i18n.t("jornada.producto"), valor: c.producto });

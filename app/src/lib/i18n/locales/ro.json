@@ -37,11 +37,16 @@
     "mes_anterior": "Luna anterioară",
     "mes_siguiente": "Luna următoare",
     "sin_datos": "Nicio prezență înregistrată luna aceasta.",
+    "fincas": "Ferme",
+    "total_recolectores": "Total culegători",
+    "total_auxiliares": "Total auxiliari",
     "exportar": "Exportă",
     "exportar_excel": "Exportă Excel",
     "exportar_csv": "Exportă CSV"
   },
   "cabecera": {
+    "empresa": "Firmă",
+    "nif": "Cod fiscal",
     "recolectores": "{n} culegător(i)",
     "auxiliares": "{n} auxiliar(i)",
     "firma_pdf": "Semnat de"

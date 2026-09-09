@@ -87,4 +87,38 @@ describe("asistenciaMensual", () => {
     const a = asistenciaMensual([], [], 2028, 2);
     expect(a.dias).toHaveLength(29);
   });
+
+  it("ordena recolectores antes que auxiliares y desglosa totales por rol", () => {
+    const workers = [
+      worker({ id: "w1", name: "Zoe" }),
+      worker({ id: "w2", name: "Ana", funcion: "auxiliar" }),
+      worker({ id: "w3", name: "Marta" }),
+    ];
+    const shifts = [
+      shift({ fecha: "2026-09-01", attendeeIds: ["w1", "w2", "w3"] }),
+    ];
+    const a = asistenciaMensual(shifts, workers, 2026, 9);
+
+    expect(a.filas.map((f) => f.name)).toEqual(["Marta", "Zoe", "Ana"]);
+    expect(a.filas.map((f) => f.funcion)).toEqual([
+      "recolector",
+      "recolector",
+      "auxiliar",
+    ]);
+    expect(a.totalPorDiaRol.recolector[0]).toBe(2);
+    expect(a.totalPorDiaRol.auxiliar[0]).toBe(1);
+    expect(a.totalPorDia[0]).toBe(3);
+  });
+
+  it("recoge las fincas trabajadas por día y del mes", () => {
+    const shifts = [
+      shift({ fecha: "2026-09-01", attendeeIds: ["w1"], finca: "El Cerro" }),
+      shift({ fecha: "2026-09-01", attendeeIds: ["w1"], finca: "La Loma" }),
+      shift({ fecha: "2026-09-02", attendeeIds: ["w1"], finca: "El Cerro" }),
+    ];
+    const a = asistenciaMensual(shifts, [worker({ id: "w1" })], 2026, 9);
+    expect(a.fincasPorDia[0]).toEqual(["El Cerro", "La Loma"]);
+    expect(a.fincasPorDia[1]).toEqual(["El Cerro"]);
+    expect(a.fincas).toEqual(["El Cerro", "La Loma"]);
+  });
 });

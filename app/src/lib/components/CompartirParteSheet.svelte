@@ -7,6 +7,7 @@
     type CabeceraInforme,
   } from "@cuadrilla/shared/domain";
   import { i18n } from "../i18n/i18n.svelte";
+  import { perfil } from "../stores/perfil.svelte";
   import { obtenerCrew } from "../db/repositories/crews";
   import { textoAsistenciaParte } from "../export/asistenciaParte";
   import { asistenciaAPdf, parteAPdf } from "../export/pdf";
@@ -39,9 +40,12 @@
 
   onMount(async () => {
     cuadrilla = (await obtenerCrew(shift.crewId))?.name ?? "";
+    await perfil.cargar();
   });
 
   const cabecera = $derived<CabeceraInforme>({
+    empresa: perfil.empresa || undefined,
+    nif: perfil.org?.taxId,
     cuadrilla,
     finca: shift.finca,
     fecha: shift.fecha,

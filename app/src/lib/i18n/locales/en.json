@@ -37,11 +37,16 @@
     "mes_anterior": "Previous month",
     "mes_siguiente": "Next month",
     "sin_datos": "No attendance recorded this month.",
+    "fincas": "Farms",
+    "total_recolectores": "Pickers total",
+    "total_auxiliares": "Helpers total",
     "exportar": "Export",
     "exportar_excel": "Export Excel",
     "exportar_csv": "Export CSV"
   },
   "cabecera": {
+    "empresa": "Company",
+    "nif": "Tax ID",
     "recolectores": "{n} picker(s)",
     "auxiliares": "{n} support worker(s)",
     "firma_pdf": "Signed by"

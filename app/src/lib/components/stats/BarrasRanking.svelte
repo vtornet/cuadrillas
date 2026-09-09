@@ -1,12 +1,13 @@
 <script lang="ts">
   import type { FilaTrabajador } from "@cuadrilla/shared/domain";
+  import { i18n } from "../../i18n/i18n.svelte";
 
   let { filas }: { filas: FilaTrabajador[] } = $props();
 
   const max = $derived(Math.max(1, ...filas.map((f) => f.unidades)));
 
   const fmt = (n: number): string =>
-    n.toLocaleString("es-ES", { maximumFractionDigits: 1 });
+    n.toLocaleString(i18n.locale, { maximumFractionDigits: 1 });
 </script>
 
 <ul class="ranking">

@@ -102,7 +102,7 @@
 
   function fecha(ts: number | null): string {
     return ts
-      ? new Date(ts).toLocaleString("es", {
+      ? new Date(ts).toLocaleString(i18n.locale, {
           day: "2-digit",
           month: "2-digit",
           hour: "2-digit",

@@ -47,6 +47,14 @@ function escapar(v: string): string {
 export interface MetaAsistencia {
   titulo: string;
   cuadrillas: string;
+  /** Etiquetas ya traducidas para las filas de rol / totales. */
+  etiquetas: {
+    trabajador: string;
+    total: string;
+    totalRecolectores: string;
+    totalAuxiliares: string;
+    fincas: string;
+  };
 }
 
 const MIME =
@@ -113,12 +121,19 @@ export async function asistenciaAXlsx(
     merges.push({ s: { r: R, c: 0 }, e: { r: R, c: ncols - 1 } });
     R++;
   }
+  if (a.fincas.length > 0) {
+    set(R, 0, `${meta.etiquetas.fincas}: ${a.fincas.join(", ")}`, {
+      font: { italic: true },
+    });
+    merges.push({ s: { r: R, c: 0 }, e: { r: R, c: ncols - 1 } });
+    R++;
+  }
   R++;
 
   // Cabecera.
-  set(R, 0, "Trabajador", cabColumna(false));
+  set(R, 0, meta.etiquetas.trabajador, cabColumna(false));
   a.dias.forEach((d, i) => set(R, i + 1, d.dia, cabColumna(d.finDeSemana)));
-  set(R, ncols - 1, "Total", cabColumna(false));
+  set(R, ncols - 1, meta.etiquetas.total, cabColumna(false));
   R++;
 
   // Filas de trabajadores.
@@ -135,11 +150,25 @@ export async function asistenciaAXlsx(
     R++;
   }
 
-  // Totales por día.
-  set(R, 0, "Total", totalNombre);
-  a.totalPorDia.forEach((n, i) => set(R, i + 1, n || "", totalCel));
-  set(R, ncols - 1, a.totalGeneral, totalCel);
-  R++;
+  // Totales por día (por rol si hay de ambos, y general).
+  const filaTotal = (etiqueta: string, valores: number[]): void => {
+    set(R, 0, etiqueta, totalNombre);
+    valores.forEach((n, i) => set(R, i + 1, n || "", totalCel));
+    set(
+      R,
+      ncols - 1,
+      valores.reduce((s, x) => s + x, 0),
+      totalCel,
+    );
+    R++;
+  };
+  const hayRec = a.filas.some((f) => f.funcion === "recolector");
+  const hayAux = a.filas.some((f) => f.funcion === "auxiliar");
+  if (hayRec && hayAux) {
+    filaTotal(meta.etiquetas.totalRecolectores, a.totalPorDiaRol.recolector);
+    filaTotal(meta.etiquetas.totalAuxiliares, a.totalPorDiaRol.auxiliar);
+  }
+  filaTotal(meta.etiquetas.total, a.totalPorDia);
 
   ws["!ref"] = XLSX.utils.encode_range({
     s: { r: 0, c: 0 },

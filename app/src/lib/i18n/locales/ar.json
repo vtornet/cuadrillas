@@ -37,11 +37,16 @@
     "mes_anterior": "الشهر السابق",
     "mes_siguiente": "الشهر التالي",
     "sin_datos": "لا يوجد حضور مسجّل هذا الشهر.",
+    "fincas": "المزارع",
+    "total_recolectores": "إجمالي القاطفين",
+    "total_auxiliares": "إجمالي المساعدين",
     "exportar": "تصدير",
     "exportar_excel": "تصدير Excel",
     "exportar_csv": "تصدير CSV"
   },
   "cabecera": {
+    "empresa": "الشركة",
+    "nif": "الرقم الضريبي",
     "recolectores": "{n} قاطف",
     "auxiliares": "{n} مساعد",
     "firma_pdf": "وقّع من قِبل"

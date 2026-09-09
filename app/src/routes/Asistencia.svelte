@@ -23,6 +23,8 @@
 
   let anio = $state(HOY.getFullYear());
   let mes = $state(HOY.getMonth() + 1); // 1..12
+  /** "" = todas las cuadrillas. */
+  let crewSel = $state("");
 
   onMount(async () => {
     crews = await crewsDelForeman(sesion.userId);
@@ -39,10 +41,23 @@
     listo = true;
   });
 
-  const tabla = $derived(asistenciaMensual(shifts, workers, anio, mes));
+  const crewsUsadas = $derived(crewSel ? crews.filter((c) => c.id === crewSel) : crews);
+  const workersFiltrados = $derived(
+    crewSel ? workers.filter((w) => w.crewId === crewSel) : workers,
+  );
+  const shiftsFiltrados = $derived(
+    crewSel ? shifts.filter((s) => s.crewId === crewSel) : shifts,
+  );
+
+  const tabla = $derived(
+    asistenciaMensual(shiftsFiltrados, workersFiltrados, anio, mes),
+  );
+  const hayRec = $derived(tabla.filas.some((f) => f.funcion === "recolector"));
+  const hayAux = $derived(tabla.filas.some((f) => f.funcion === "auxiliar"));
+  const primerAux = $derived(tabla.filas.findIndex((f) => f.funcion === "auxiliar"));
 
   const etiquetaMes = $derived(
-    new Date(anio, mes - 1, 1).toLocaleDateString("es-ES", {
+    new Date(anio, mes - 1, 1).toLocaleDateString(i18n.locale, {
       month: "long",
       year: "numeric",
     }),
@@ -62,7 +77,7 @@
   let exportando = $state<"" | "xlsx" | "csv">("");
 
   const nombreBase = $derived(
-    `asistencia_${anio}-${String(mes).padStart(2, "0")}_${slug(crews.map((c) => c.name).join("-"))}`,
+    `asistencia_${anio}-${String(mes).padStart(2, "0")}_${slug(crewsUsadas.map((c) => c.name).join("-"))}`,
   );
 
   async function exportar(formato: "xlsx" | "csv"): Promise<void> {
@@ -78,7 +93,14 @@
       } else {
         blob = await asistenciaAXlsx(tabla, {
           titulo: `${i18n.t("asistencia.titulo")} · ${etiquetaMes}`,
-          cuadrillas: crews.map((c) => c.name).join(", "),
+          cuadrillas: crewsUsadas.map((c) => c.name).join(", "),
+          etiquetas: {
+            trabajador: i18n.t("asistencia.trabajador"),
+            total: i18n.t("asistencia.total"),
+            totalRecolectores: i18n.t("asistencia.total_recolectores"),
+            totalAuxiliares: i18n.t("asistencia.total_auxiliares"),
+            fincas: i18n.t("asistencia.fincas"),
+          },
         });
       }
       const r = await compartirArchivo(blob, `${nombreBase}.${formato}`);
@@ -115,6 +137,16 @@
         &rsaquo;
       </button>
     </div>
+    {#if crews.length > 1}
+      <div class="asis-crew">
+        <select bind:value={crewSel} aria-label={i18n.t("jornada.cuadrilla")}>
+          <option value="">{i18n.t("historial.todas_cuadrillas")}</option>
+          {#each crews as c (c.id)}
+            <option value={c.id}>{c.name}</option>
+          {/each}
+        </select>
+      </div>
+    {/if}
   </header>
 
   <div class="pantalla-cuerpo">
@@ -125,6 +157,11 @@
     {:else if tabla.totalGeneral === 0}
       <p class="vacio-lista">{i18n.t("asistencia.sin_datos")}</p>
     {:else}
+      {#if tabla.fincas.length > 0}
+        <p class="asis-fincas">
+          {i18n.t("asistencia.fincas")}: {tabla.fincas.join(" · ")}
+        </p>
+      {/if}
       <div class="asis-scroll">
         <table class="asis-tabla">
           <thead>
@@ -142,7 +179,14 @@
             </tr>
           </thead>
           <tbody>
-            {#each tabla.filas as f (f.workerId)}
+            {#each tabla.filas as f, fi (f.workerId)}
+              {#if hayRec && hayAux && fi === primerAux}
+                <tr class="asis-grupo">
+                  <th class="asis-nombre" colspan={tabla.dias.length + 2}>
+                    {i18n.t("auxiliar.seccion")}
+                  </th>
+                </tr>
+              {/if}
               <tr>
                 <th class="asis-nombre">{f.name}</th>
                 {#each f.presente as p, i (i)}
@@ -150,7 +194,11 @@
                     class:presente={p}
                     class:finde={tabla.dias[i].finDeSemana}
                     class:hoy={tabla.dias[i].fecha === HOY_ISO}
-                    title={p ? `${f.name} · ${tabla.dias[i].fecha}` : ""}
+                    title={p
+                      ? [f.name, tabla.dias[i].fecha, ...tabla.fincasPorDia[i]].join(
+                          " · ",
+                        )
+                      : ""}
                   ></td>
                 {/each}
                 <td class="asis-tot">{f.total}</td>
@@ -158,6 +206,26 @@
             {/each}
           </tbody>
           <tfoot>
+            {#if hayRec && hayAux}
+              <tr class="asis-subtotal">
+                <th class="asis-nombre">{i18n.t("asistencia.total_recolectores")}</th>
+                {#each tabla.totalPorDiaRol.recolector as n, i (i)}
+                  <td class:finde={tabla.dias[i].finDeSemana}>{n || ""}</td>
+                {/each}
+                <td class="asis-tot">
+                  {tabla.totalPorDiaRol.recolector.reduce((s, x) => s + x, 0)}
+                </td>
+              </tr>
+              <tr class="asis-subtotal">
+                <th class="asis-nombre">{i18n.t("asistencia.total_auxiliares")}</th>
+                {#each tabla.totalPorDiaRol.auxiliar as n, i (i)}
+                  <td class:finde={tabla.dias[i].finDeSemana}>{n || ""}</td>
+                {/each}
+                <td class="asis-tot">
+                  {tabla.totalPorDiaRol.auxiliar.reduce((s, x) => s + x, 0)}
+                </td>
+              </tr>
+            {/if}
             <tr>
               <th class="asis-nombre">{i18n.t("asistencia.total")}</th>
               {#each tabla.totalPorDia as n, i (i)}
@@ -308,6 +376,34 @@
     margin-top: 12px;
     color: var(--c-ok);
     font-weight: 600;
+  }
+  .asis-crew {
+    display: flex;
+    justify-content: center;
+    padding: 0 0 6px;
+  }
+  .asis-crew select {
+    min-height: var(--tap);
+    max-width: 100%;
+  }
+  .asis-fincas {
+    margin: 0 0 8px;
+    font-size: 13px;
+    color: var(--c-texto-suave);
+  }
+  .asis-tabla tbody tr.asis-grupo th {
+    text-align: start;
+    background: var(--c-fondo);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--c-texto-suave);
+  }
+  .asis-tabla tfoot tr.asis-subtotal th,
+  .asis-tabla tfoot tr.asis-subtotal td {
+    font-weight: 600;
+    border-top: 1px solid var(--c-borde);
+    background: var(--c-superficie);
   }
   .asis-export {
     display: flex;

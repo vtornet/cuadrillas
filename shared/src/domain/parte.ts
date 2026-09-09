@@ -14,6 +14,10 @@ import { sumarConteos, totalJornada } from "./entries";
  */
 
 export interface CabeceraInforme {
+  /** Empresa / explotación (perfil del jefe). */
+  empresa?: string;
+  /** NIF / CIF del responsable (perfil del jefe). */
+  nif?: string;
   cuadrilla: string;
   finca?: string;
   /** Fecha ISO `YYYY-MM-DD`. */

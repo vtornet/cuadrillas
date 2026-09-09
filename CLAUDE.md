@@ -335,8 +335,10 @@ Los detalles de cada punto están en **Backlog sin planificar** justo debajo.
       `text-align: start/end`, `inset-inline-start`, `border-inline-end`); `[dir="rtl"]`
       voltea chevrones/flechas; `dir="ltr"` en los botones `+1/+5`.
     - Tests: `app/tests/i18n.test.ts` (incluye chequeo de paridad de claves).
-    - Pendiente (pulido): números/fechas siguen formateándose con `"es-ES"` y algunos
-      `localeCompare(..., "es")` — cosmético.
+    - Pulido (2026-09-09): números y fechas de calendario (nombre del mes en
+      Asistencia, `num` en Estadísticas, `fmt` en `BarrasRanking`, último sync en
+      Cuenta) ya usan `i18n.locale` en vez de `"es-ES"` fijo. Quedan los
+      `localeCompare(..., "es")` de ordenación (cosmético, no se toca).
 
 ### Backlog sin planificar
 
@@ -356,8 +358,9 @@ Los detalles de cada punto están en **Backlog sin planificar** justo debajo.
     lectura) y editables en edición; QR de un auxiliar se ignora. `CompartirParteSheet`
     / `textoAsistenciaParte` separan "Trabajadores" y "Auxiliares".
   - `stats.ts`: los auxiliares quedan **fuera** del ranking, medias y unidades/hora
-    (`funcion === "auxiliar"`). `attendance.ts` (tabla mensual) los sigue incluyendo
-    (gap: no separa totales por rol — va con "Cabecera del parte").
+    (`funcion === "auxiliar"`). `attendance.ts` (tabla mensual) los incluye y desde
+    2026-09-09 **separa por rol**: `FilaAsistencia.funcion`, filas ordenadas
+    recolectores→auxiliares, `AsistenciaMensual.totalPorDiaRol`.
   - Seed demo: el último trabajador es auxiliar. Tests: `shared/tests/stats.test.ts`,
     `app/tests/jornada.test.ts`, `app/tests/asistencia-parte.test.ts`.
 - **Estructura de navegación.** Primer lote de renombrados de menús ya aplicado (ver
@@ -387,8 +390,11 @@ Los detalles de cada punto están en **Backlog sin planificar** justo debajo.
   Export CSV (`app/src/lib/export/asistencia.ts` → `asistenciaACsv`, "X" por asistencia +
   fila de totales) vía `compartirArchivo`. Sin datos económicos. Tests:
   `shared/tests/attendance.test.ts`, `app/tests/asistencia-export.test.ts`.
-  Gap conocido: agrega todas las cuadrillas del jefe sin selector (para el plan
-  multi-cuadrilla habría que añadirlo); no distingue "presente sin anotaciones".
+  **Añadido 2026-09-09**: selector de cuadrilla (si hay >1), separación por rol
+  (recolectores/auxiliares con subtotales), línea de fincas del mes
+  (`AsistenciaMensual.fincas` / `fincasPorDia`, también en el `title` de cada celda) y
+  **export a Excel con estilo** (`asistenciaAXlsx`, además del CSV plano).
+  Gap restante: no distingue "presente sin anotaciones".
 - **Compartir parte: texto + PDF + Excel — hecho (2026-09-07).** Botón "Compartir parte"
   en `Registro.svelte` (enlace bajo la cabecera, parte activo) y `ParteDetalle.svelte`
   (Historial, modo consulta). Abre `CompartirParteSheet.svelte` con **dos informes**:
@@ -434,8 +440,11 @@ Los detalles de cada punto están en **Backlog sin planificar** justo debajo.
     de texto para escribirlo esa vez (con aviso de guardarlo en Cuenta › Perfil).
     `ParteDetalle.svelte` lo pinta bajo la firma. Editar un parte cerrado no lo cambia.
   - Tests: `app/tests/perfil.test.ts`, casos nuevos en `app/tests/jornada.test.ts`.
-  - **Pendiente**: usar `contactName`/`name`/`taxId` en las cabeceras de exports (va con
-    "Cabecera del parte") y en el informe RGPD si se quiere.
+  - **Exports (2026-09-09)**: `CabeceraInforme` lleva `empresa?` / `nif?`;
+    `CompartirParteSheet` los rellena desde `perfil` (`Organization.name` / `taxId`) y
+    `documento.ts` los pinta como primeras filas de la cabecera del PDF/Excel del parte.
+    El informe RGPD (`informeATexto`) sigue sin datos del responsable — opcional, sin
+    pedir.
 - **Fincas como entidad — hecho (2026-09-09).** Antes `Shift.finca` era solo texto libre;
   ahora hay entidad **`Finca`** (`{ name, activo }`, sincronizada — en `ENTIDADES`,
   `tablaPorEntidad`, `Modelos`, Dexie **v3** `fincas: "id, organizationId"`). Pestaña
