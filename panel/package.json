@@ -11,7 +11,9 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@cuadrilla/shared": "workspace:*"
+    "@cuadrilla/shared": "workspace:*",
+    "jspdf": "^4.2.1",
+    "xlsx-js-style": "^1.2.0"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^5.0.3",

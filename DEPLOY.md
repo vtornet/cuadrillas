@@ -123,18 +123,35 @@ mismo, no para usuarios reales.
 ## Fase 5 — Panel de empresa (`panel/`, en marcha 2026-09-09)
 
 Paquete `panel/` — SPA **online** (sin service worker, sin IndexedDB), habla con
-la misma API. Roles `owner` / `gestor` (JWT). Endpoints `/admin/*`.
+la misma API. Roles `owner` / `gestor` (JWT). Endpoints `/admin/*`. La API ya
+sirve `/admin` y el CORS ya es `*` → **no hace falta tocar Railway**.
 
-1. **Cloudflare Pages/Workers**: nuevo proyecto apuntando a `panel/` (build
-   `pnpm --filter @cuadrilla/panel build`, salida `panel/dist`).
-2. Dominio `panel.cuadrillas.app` (CNAME en Cloudflare).
-3. Variable de build `VITE_API_URL=https://api.cuadrillas.app`.
-4. La API ya sirve `/admin` — no hace falta tocar Railway (CORS ya es `*`).
-5. Dev local: `pnpm dev:api` + `pnpm dev:panel` (panel en :5175, API en :8080).
+**Dev local**: `pnpm dev:api` (necesita un Mongo) + `pnpm dev:panel` → panel en
+`localhost:5175`, apunta al API en `:8080` por defecto.
 
-Estado: Fase B (panel de consulta: resumen, cuadrillas, trabajadores, partes).
-Faltan tarifas (CRUD), liquidación por periodo, altas (Fase C) e invitaciones
-(Fase D). Ver `CLAUDE.md` > "Panel de empresa".
+**Despliegue (Cloudflare, mismo sistema "Workers Builds" que la PWA):**
+
+1. Es un **proyecto de Cloudflare distinto** del de la PWA. Cloudflare →
+   *Workers & Pages* → *Create* → *Connect to Git* → repo `vtornet/cuadrillas`.
+2. Build settings:
+   - **Root directory**: `/` (raíz del monorepo, para que pnpm resuelva
+     `@cuadrilla/shared`).
+   - **Build command**: `pnpm --filter @cuadrilla/panel build`
+   - **Wrangler configuration file**: `panel/wrangler.toml` (en él,
+     `[assets] directory = "dist"` se resuelve como `panel/dist`; nombre del
+     Worker `cuadrillas-panel`).
+   - Si el panel de Cloudflare no ofrece el campo de "wrangler config file",
+     usa **Build output directory** `panel/dist` y borra/renombra
+     `panel/wrangler.toml` para que no colisione con el de la raíz.
+3. **Variable de build**: `VITE_API_URL=https://api.cuadrillas.app`.
+4. **Dominio** `panel.cuadrillas.app`: en el proyecto → *Domains* → *Add Domain*
+   → subdominio `panel`. Cloudflare crea el DNS y el SSL solo.
+
+**Estado**: Fase B casi completa — resumen · cuadrillas · trabajadores (+ficha
+con datos laborales) · partes (consulta) · **asistencia mensual** · **tarifas
+(CRUD)** · **liquidación por periodo** + exports (Excel/CSV/PDF). Falta desplegar.
+Luego: Fase C (edición de `Worker.laboral` = altas) y Fase D (invitaciones).
+Ver `CLAUDE.md` > "Panel de empresa".
 
 ## Pendiente antes de usuarios reales
 

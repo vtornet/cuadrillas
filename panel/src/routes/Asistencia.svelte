@@ -2,6 +2,8 @@
   import type { Crew } from "@cuadrilla/shared";
   import type { AsistenciaMensual } from "@cuadrilla/shared/domain";
   import { get } from "../lib/api";
+  import { descargar, slug } from "../lib/export/descargar";
+  import { tablaACsv, tablaAXlsx, type Tabla } from "../lib/export/tabla";
 
   const HOY = new Date();
   const HOY_ISO = HOY.toISOString().slice(0, 10);
@@ -65,6 +67,42 @@
   const primerAux = $derived(
     tabla?.filas.findIndex((f) => f.funcion === "auxiliar") ?? -1,
   );
+
+  function tablaExport(): Tabla {
+    const a = tabla!;
+    const cuad = crews.find((c) => c.id === crewId)?.name ?? "Todas las cuadrillas";
+    return {
+      titulo: "Asistencia",
+      meta: [
+        `Mes: ${etiquetaMes}`,
+        `Cuadrilla: ${cuad}`,
+        a.fincas.length ? `Fincas: ${a.fincas.join(" · ")}` : "",
+        "X = presente y anotó · · = presente sin anotar",
+      ].filter(Boolean),
+      cabeceras: ["Trabajador", ...a.dias.map((d) => String(d.dia)), "Total"],
+      filas: a.filas.map((f) => [
+        f.name,
+        ...f.presente.map((p, i) => (p ? (f.conAnotacion[i] ? "X" : "·") : "")),
+        f.total,
+      ]),
+      total: ["Total", ...a.totalPorDia.map((n) => n || ""), a.totalGeneral],
+    };
+  }
+
+  let generando = $state<string | null>(null);
+  async function exportar(fmt: "csv" | "xlsx"): Promise<void> {
+    if (!tabla || generando) return;
+    generando = fmt;
+    try {
+      const t = tablaExport();
+      const blob = fmt === "csv" ? tablaACsv(t) : await tablaAXlsx(t);
+      descargar(blob, `asistencia_${anio}-${String(mes).padStart(2, "0")}.${fmt}`);
+    } catch (e) {
+      error = e instanceof Error ? e.message : "Error al exportar";
+    } finally {
+      generando = null;
+    }
+  }
 </script>
 
 <h1>Asistencia</h1>
@@ -95,6 +133,14 @@
       Fincas: {tabla.fincas.join(" · ")}
     </p>
   {/if}
+  <p style="display:flex;gap:8px">
+    <button type="button" disabled={!!generando} onclick={() => exportar("xlsx")}>
+      {generando === "xlsx" ? "…" : "Excel"}
+    </button>
+    <button type="button" disabled={!!generando} onclick={() => exportar("csv")}>
+      {generando === "csv" ? "…" : "CSV"}
+    </button>
+  </p>
   <div class="tabla-wrap">
     <table class="datos asis">
       <thead>

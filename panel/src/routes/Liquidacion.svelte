@@ -3,6 +3,13 @@
   import type { Liquidacion } from "@cuadrilla/shared/domain";
   import { get } from "../lib/api";
   import { eur } from "../lib/money";
+  import { descargar, slug } from "../lib/export/descargar";
+  import {
+    tablaACsv,
+    tablaAXlsx,
+    tablaAPdf,
+    type Tabla,
+  } from "../lib/export/tabla";
 
   function primerDiaMes(): string {
     const d = new Date();
@@ -41,6 +48,61 @@
       cargando = false;
     }
   }
+
+  const c2 = (centimos: number): number => Math.round(centimos) / 100;
+
+  function tabla(): Tabla {
+    const l = liq!;
+    const cuad = crews.find((c) => c.id === crewId)?.name ?? "Todas las cuadrillas";
+    return {
+      titulo: "Liquidación",
+      meta: [`Periodo: ${l.desde} — ${l.hasta}`, `Cuadrilla: ${cuad}`],
+      cabeceras: [
+        "Trabajador",
+        "Unidades",
+        "Destajo (€)",
+        "Días",
+        "Transporte (€)",
+        "Total (€)",
+      ],
+      filas: l.trabajadores.map((t) => [
+        t.name,
+        t.totalUnidades,
+        c2(t.importeCentimos),
+        t.diasTrabajados,
+        c2(t.transporteCentimos),
+        c2(t.totalCentimos),
+      ]),
+      total: [
+        "TOTAL",
+        l.totalUnidades,
+        c2(l.destajoCentimos),
+        "",
+        c2(l.transporteCentimos),
+        c2(l.totalCentimos),
+      ],
+    };
+  }
+
+  let generando = $state<string | null>(null);
+  async function exportar(fmt: "csv" | "xlsx" | "pdf"): Promise<void> {
+    if (!liq || generando) return;
+    generando = fmt;
+    try {
+      const t = tabla();
+      const blob =
+        fmt === "csv"
+          ? tablaACsv(t)
+          : fmt === "xlsx"
+            ? await tablaAXlsx(t)
+            : await tablaAPdf(t);
+      descargar(blob, `liquidacion_${slug(liq.desde)}_${slug(liq.hasta)}.${fmt}`);
+    } catch (e) {
+      error = e instanceof Error ? e.message : "Error al exportar";
+    } finally {
+      generando = null;
+    }
+  }
 </script>
 
 <h1>Liquidación por periodo</h1>
@@ -74,6 +136,17 @@
       Revisa las Tarifas.
     </p>
   {/if}
+  <p style="display:flex;gap:8px">
+    <button type="button" disabled={!!generando} onclick={() => exportar("xlsx")}>
+      {generando === "xlsx" ? "…" : "Excel"}
+    </button>
+    <button type="button" disabled={!!generando} onclick={() => exportar("pdf")}>
+      {generando === "pdf" ? "…" : "PDF"}
+    </button>
+    <button type="button" disabled={!!generando} onclick={() => exportar("csv")}>
+      {generando === "csv" ? "…" : "CSV"}
+    </button>
+  </p>
   <div class="tabla-wrap">
     <table class="datos">
       <thead>

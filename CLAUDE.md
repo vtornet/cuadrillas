@@ -249,8 +249,13 @@ El `plan` marca qué tiene la org: `foreman` = solo PWA (1 jefe, 2 cuadrillas, s
     ?desde&hasta&crewId` (→ `calcularLiquidacion`). Panel: vistas Tarifas (tabla + form),
     Asistencia (rejilla mes×trabajador), Liquidación (periodo + tabla). `panel/lib/api.ts`
     generalizado (método/body/params) + `panel/lib/money.ts`.
-  - Falta en la Fase B: **exports** (PDF/Excel del panel) · **deploy** (`panel.cuadrillas.app`,
-    ver `DEPLOY.md` Fase 5).
+  - **Exports hechos (2026-09-09):** `panel/src/lib/export/` — `descargar.ts`
+    (`<a download>`), `tabla.ts` (modelo `Tabla` genérico → `tablaACsv` / `tablaAXlsx`
+    (`xlsx-js-style`) / `tablaAPdf` (`jspdf`), ambos lazy `import()`). Botones Excel/CSV en
+    Asistencia y Excel/PDF/CSV en Liquidación. `panel/package.json` gana `jspdf` +
+    `xlsx-js-style` (chunks aparte, solo se cargan al exportar).
+  - Falta en la Fase B: **deploy** (`panel.cuadrillas.app`, `panel/wrangler.toml` listo,
+    ver `DEPLOY.md` Fase 5 — acción de infra, no de código).
 - **C — Altas**: pantalla "Altas" con los campos `Worker.laboral` y estado
   (pendiente/completa). Ajustes finos de RGPD. Endpoint `PUT /admin/trabajadores/:id/laboral`.
 - **D — Autoservicio**: la empresa se registra, paga plan `company`, invita a sus jefes

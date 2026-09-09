@@ -1,0 +1,14 @@
+# Config de despliegue del PANEL en Cloudflare (Workers Builds, Worker de
+# solo-estáticos). Es un proyecto de Cloudflare distinto del de la PWA
+# (`cuadrillas`, ver `wrangler.toml` de la raíz).
+#
+# En el proyecto de Cloudflare del panel: Root directory = `/` (raíz del
+# monorepo, para que pnpm resuelva `@cuadrilla/shared`), y "Wrangler
+# configuration file" = `panel/wrangler.toml`. `directory` se resuelve
+# relativo a ESTE archivo → `panel/dist`.
+name = "cuadrillas-panel"
+compatibility_date = "2026-09-09"
+
+[assets]
+directory = "dist"
+not_found_handling = "single-page-application"

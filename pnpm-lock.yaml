@@ -127,6 +127,12 @@ importers:
       '@cuadrilla/shared':
         specifier: workspace:*
         version: link:../shared
+      jspdf:
+        specifier: ^4.2.1
+        version: 4.2.1
+      xlsx-js-style:
+        specifier: ^1.2.0
+        version: 1.2.0
     devDependencies:
       '@sveltejs/vite-plugin-svelte':
         specifier: ^5.0.3
