@@ -8,6 +8,9 @@
   import Trabajadores from "./routes/Trabajadores.svelte";
   import Partes from "./routes/Partes.svelte";
   import ParteDetalle from "./routes/ParteDetalle.svelte";
+  import Asistencia from "./routes/Asistencia.svelte";
+  import Tarifas from "./routes/Tarifas.svelte";
+  import Liquidacion from "./routes/Liquidacion.svelte";
 
   let errorEntrada = $state<string | null>(null);
 
@@ -63,6 +66,12 @@
         {/key}
       {:else if router.vista === "partes"}
         <Partes />
+      {:else if router.vista === "asistencia"}
+        <Asistencia />
+      {:else if router.vista === "tarifas"}
+        <Tarifas />
+      {:else if router.vista === "liquidacion"}
+        <Liquidacion />
       {/if}
     </main>
   </div>

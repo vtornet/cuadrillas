@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { Worker, Crew } from "@cuadrilla/shared";
-  import { api } from "../lib/api";
+  import { api, get } from "../lib/api";
   import { router } from "../lib/router.svelte";
 
   type Fila = Worker & { cuadrilla: string };
@@ -17,7 +17,7 @@
     filas = null;
     error = null;
     try {
-      filas = await api<Fila[]>("/trabajadores", {
+      filas = await get<Fila[]>("/trabajadores", {
         crewId: crewId || undefined,
         q: q.trim() || undefined,
       });

@@ -1,4 +1,17 @@
-import type { EntityName } from "@cuadrilla/shared";
+import { randomUUID } from "node:crypto";
+import type {
+  EntityName,
+  Entry,
+  Rate,
+  Shift,
+  Worker,
+} from "@cuadrilla/shared";
+import {
+  asistenciaMensual,
+  calcularLiquidacion,
+  type AsistenciaMensual,
+  type Liquidacion,
+} from "@cuadrilla/shared/domain";
 import { Modelos, type DocBase } from "../models/sync";
 
 /**
@@ -191,4 +204,143 @@ export async function parte(
     entries,
     workers: workers.filter((w) => asistentes.has(w.id as string)),
   };
+}
+
+// ── Catálogos para los formularios ──────────────────────────────────────────
+
+export async function productos(organizationId: string): Promise<Wire[]> {
+  return (await listar("product", organizationId)).sort((a, b) =>
+    String(a.name).localeCompare(String(b.name), "es"),
+  );
+}
+
+export async function unidades(organizationId: string): Promise<Wire[]> {
+  return (await listar("unitType", organizationId)).sort((a, b) =>
+    String(a.name).localeCompare(String(b.name), "es"),
+  );
+}
+
+// ── Tarifas (CRUD) ─────────────────────────────────────────────────────────
+
+export async function tarifas(organizationId: string): Promise<Wire[]> {
+  const [rates, prods, units] = await Promise.all([
+    listar("rate", organizationId),
+    listar("product", organizationId),
+    listar("unitType", organizationId),
+  ]);
+  const np = mapa(prods as { id: unknown; name?: unknown }[]);
+  const nu = mapa(units as { id: unknown; name?: unknown }[]);
+  return rates
+    .map((r): Wire => ({
+      ...r,
+      producto: np.get(r.productId) ?? "?",
+      unidad: nu.get(r.unitTypeId) ?? "?",
+    }))
+    .sort(
+      (a, b) =>
+        String(a.producto).localeCompare(String(b.producto), "es") ||
+        String(b.validFrom).localeCompare(String(a.validFrom)),
+    );
+}
+
+export interface DatosTarifa {
+  productId: string;
+  unitTypeId: string;
+  amountPerUnit: number;
+  validFrom: string;
+  validTo: string | null;
+}
+
+export async function crearTarifa(
+  organizationId: string,
+  datos: DatosTarifa,
+): Promise<Wire> {
+  const id = randomUUID();
+  const ahora = new Date();
+  await Modelos.rate.updateOne(
+    { _id: id },
+    {
+      $set: {
+        _id: id,
+        organizationId,
+        ...datos,
+        updatedAt: Date.now(),
+        serverUpdatedAt: ahora,
+        deleted: false,
+      },
+    },
+    { upsert: true },
+  );
+  const doc = await Modelos.rate.findById(id).lean<DocBase>();
+  return aWire(doc!);
+}
+
+export async function actualizarTarifa(
+  organizationId: string,
+  id: string,
+  datos: DatosTarifa,
+): Promise<Wire | null> {
+  const existe = await Modelos.rate
+    .findOne({ _id: id, organizationId })
+    .lean<DocBase | null>();
+  if (!existe) return null;
+  await Modelos.rate.updateOne(
+    { _id: id, organizationId },
+    { $set: { ...datos, updatedAt: Date.now(), serverUpdatedAt: new Date() } },
+  );
+  const doc = await Modelos.rate.findById(id).lean<DocBase>();
+  return aWire(doc!);
+}
+
+export async function borrarTarifa(
+  organizationId: string,
+  id: string,
+): Promise<boolean> {
+  const r = await Modelos.rate.updateOne(
+    { _id: id, organizationId },
+    { $set: { deleted: true, updatedAt: Date.now(), serverUpdatedAt: new Date() } },
+  );
+  return r.matchedCount > 0;
+}
+
+// ── Asistencia mensual ─────────────────────────────────────────────────────
+
+export async function asistencia(
+  organizationId: string,
+  opts: { anio: number; mes: number; crewId?: string },
+): Promise<AsistenciaMensual> {
+  const [shifts, workers, entries] = await Promise.all([
+    listar("shift", organizationId, opts.crewId ? { crewId: opts.crewId } : {}),
+    listar("worker", organizationId, opts.crewId ? { crewId: opts.crewId } : {}),
+    listar("entry", organizationId),
+  ]);
+  return asistenciaMensual(
+    shifts as unknown as Shift[],
+    workers as unknown as Worker[],
+    opts.anio,
+    opts.mes,
+    entries as unknown as Entry[],
+  );
+}
+
+// ── Liquidación por periodo ────────────────────────────────────────────────
+
+export async function liquidacion(
+  organizationId: string,
+  opts: { desde: string; hasta: string; crewId?: string },
+): Promise<Liquidacion> {
+  const filtroCrew = opts.crewId ? { crewId: opts.crewId } : {};
+  const [shifts, workers, entries, rates] = await Promise.all([
+    listar("shift", organizationId, filtroCrew),
+    listar("worker", organizationId, filtroCrew),
+    listar("entry", organizationId),
+    listar("rate", organizationId),
+  ]);
+  return calcularLiquidacion(
+    shifts as unknown as Shift[],
+    workers as unknown as Worker[],
+    entries as unknown as Entry[],
+    rates as unknown as Rate[],
+    { desde: opts.desde, hasta: opts.hasta },
+  );
 }

@@ -8,6 +8,9 @@ describe("router del panel", () => {
       "cuadrillas",
       "trabajadores",
       "partes",
+      "asistencia",
+      "tarifas",
+      "liquidacion",
     ]);
   });
 });

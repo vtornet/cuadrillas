@@ -137,4 +137,115 @@ describe("/admin", () => {
       .set("authorization", `Bearer ${token}`);
     expect(r.body.map((w: { name: string }) => w.name)).toEqual(["Ana Ruiz"]);
   });
+
+  it("CRUD de tarifas", async () => {
+    const token = await tokenPara("tarifas@empresa.com");
+    const auth = { authorization: `Bearer ${token}` };
+    const tarifa = {
+      productId: "p1",
+      unitTypeId: "u1",
+      amountPerUnit: 18,
+      validFrom: "2026-01-01",
+      validTo: null,
+    };
+
+    const creada = await request(app)
+      .post("/admin/tarifas")
+      .set(auth)
+      .send(tarifa);
+    expect(creada.status).toBe(201);
+    const id = creada.body.id as string;
+
+    const lista = await request(app).get("/admin/tarifas").set(auth);
+    expect(lista.body).toHaveLength(1);
+    expect(lista.body[0].amountPerUnit).toBe(18);
+
+    const upd = await request(app)
+      .put(`/admin/tarifas/${id}`)
+      .set(auth)
+      .send({ ...tarifa, amountPerUnit: 20 });
+    expect(upd.body.amountPerUnit).toBe(20);
+
+    const borrado = await request(app)
+      .delete(`/admin/tarifas/${id}`)
+      .set(auth);
+    expect(borrado.body.ok).toBe(true);
+    const tras = await request(app).get("/admin/tarifas").set(auth);
+    expect(tras.body).toHaveLength(0);
+
+    const mal = await request(app)
+      .post("/admin/tarifas")
+      .set(auth)
+      .send({ ...tarifa, amountPerUnit: -1 });
+    expect(mal.status).toBe(400);
+  });
+
+  it("liquidación de un periodo con tarifa", async () => {
+    const token = await tokenPara("liq@empresa.com");
+    const orgId = await orgDe("liq@empresa.com");
+    const crewId = await crewIdDe(orgId);
+    const auth = { authorization: `Bearer ${token}` };
+
+    await sync(token, [
+      opWorker(orgId, "w1", { crewId, name: "Ana" }),
+      {
+        entity: "shift",
+        entityId: "s1",
+        op: "upsert" as const,
+        updatedAt: 1000,
+        payload: {
+          id: "s1",
+          organizationId: orgId,
+          crewId,
+          fecha: "2026-03-10",
+          horaInicio: "08:00",
+          horaFin: "14:00",
+          productId: "p1",
+          unitTypeId: "u1",
+          estado: "closed",
+          attendeeIds: ["w1"],
+          updatedAt: 1000,
+          deleted: 0,
+        },
+      },
+      {
+        entity: "entry",
+        entityId: "e1",
+        op: "upsert" as const,
+        updatedAt: 1000,
+        payload: {
+          id: "e1",
+          organizationId: orgId,
+          shiftId: "s1",
+          workerId: "w1",
+          cantidad: 100,
+          timestamp: 1000,
+          registradoPor: "u1",
+          updatedAt: 1000,
+          deleted: 0,
+        },
+      },
+    ]);
+
+    await request(app)
+      .post("/admin/tarifas")
+      .set(auth)
+      .send({
+        productId: "p1",
+        unitTypeId: "u1",
+        amountPerUnit: 18,
+        validFrom: "2026-01-01",
+        validTo: null,
+      });
+
+    const r = await request(app)
+      .get("/admin/liquidacion?desde=2026-03-01&hasta=2026-03-31")
+      .set(auth);
+    expect(r.status).toBe(200);
+    expect(r.body.destajoCentimos).toBe(1800); // 100 × 18
+    expect(r.body.trabajadores[0].name).toBe("Ana");
+
+    const sinFechas = await request(app).get("/admin/liquidacion").set(auth);
+    expect(sinFechas.status).toBe(400);
+  });
 });

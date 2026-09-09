@@ -3,13 +3,19 @@ export type Vista =
   | "resumen"
   | "cuadrillas"
   | "trabajadores"
-  | "partes";
+  | "partes"
+  | "asistencia"
+  | "tarifas"
+  | "liquidacion";
 
 export const VISTAS: { id: Vista; etiqueta: string }[] = [
   { id: "resumen", etiqueta: "Resumen" },
   { id: "cuadrillas", etiqueta: "Cuadrillas" },
   { id: "trabajadores", etiqueta: "Trabajadores" },
   { id: "partes", etiqueta: "Partes" },
+  { id: "asistencia", etiqueta: "Asistencia" },
+  { id: "tarifas", etiqueta: "Tarifas" },
+  { id: "liquidacion", etiqueta: "Liquidación" },
 ];
 
 function segmentos(): string[] {
