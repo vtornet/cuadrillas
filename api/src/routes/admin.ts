@@ -43,6 +43,59 @@ adminRouter.get(
   h((req) => admin.cuadrillas(req.auth!.organizationId)),
 );
 
+const nombreSchema = z.object({ name: z.string().trim().min(1).max(80) });
+
+adminRouter.post("/cuadrillas", (req, res, next) => {
+  const datos = nombreSchema.safeParse(req.body);
+  if (!datos.success) {
+    res.status(400).json({ error: "Nombre inválido" });
+    return;
+  }
+  admin
+    .crearCuadrilla(req.auth!.organizationId, datos.data.name)
+    .then((r) => {
+      if ("error" in r) {
+        res.status(409).json({ error: r.error });
+        return;
+      }
+      res.status(201).json(r);
+    })
+    .catch(next);
+});
+
+adminRouter.put("/cuadrillas/:id", (req, res, next) => {
+  const datos = nombreSchema.safeParse(req.body);
+  if (!datos.success) {
+    res.status(400).json({ error: "Nombre inválido" });
+    return;
+  }
+  admin
+    .renombrarCuadrilla(req.auth!.organizationId, req.params.id, datos.data.name)
+    .then((c) => {
+      if (!c) {
+        res.status(404).json({ error: "Cuadrilla no encontrada" });
+        return;
+      }
+      res.json(c);
+    })
+    .catch(next);
+});
+
+adminRouter.delete("/cuadrillas/:id", (req, res, next) => {
+  admin
+    .borrarCuadrilla(req.auth!.organizationId, req.params.id)
+    .then((r) => {
+      if ("error" in r) {
+        res
+          .status(r.error.includes("no encontrada") ? 404 : 409)
+          .json({ error: r.error });
+        return;
+      }
+      res.json(r);
+    })
+    .catch(next);
+});
+
 adminRouter.get(
   "/trabajadores",
   h((req) =>

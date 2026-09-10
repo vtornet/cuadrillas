@@ -138,6 +138,77 @@ describe("/admin", () => {
     expect(r.body.map((w: { name: string }) => w.name)).toEqual(["Ana Ruiz"]);
   });
 
+  it("CRUD de cuadrillas desde el panel", async () => {
+    const token = await tokenPara("gc@empresa.com");
+    const orgId = await orgDe("gc@empresa.com");
+    const auth = { authorization: `Bearer ${token}` };
+    await Modelos.organization.updateOne(
+      { _id: orgId },
+      { $set: { "planLimits.crews": 25 } },
+    );
+
+    const c = await request(app)
+      .post("/admin/cuadrillas")
+      .set(auth)
+      .send({ name: "  Cuadrilla Sur  " });
+    expect(c.status).toBe(201);
+    const id = c.body.id as string;
+
+    const lista = await request(app).get("/admin/cuadrillas").set(auth);
+    expect(lista.body.map((x: { name: string }) => x.name)).toContain(
+      "Cuadrilla Sur",
+    );
+
+    const ren = await request(app)
+      .put(`/admin/cuadrillas/${id}`)
+      .set(auth)
+      .send({ name: "Cuadrilla Este" });
+    expect(ren.body.name).toBe("Cuadrilla Este");
+
+    // Con un trabajador dentro no se puede borrar.
+    await Modelos.worker.create({
+      _id: "w1",
+      organizationId: orgId,
+      crewId: id,
+      name: "Ana",
+      updatedAt: 1,
+      serverUpdatedAt: new Date(),
+      deleted: false,
+    });
+    const bloqueado = await request(app)
+      .delete(`/admin/cuadrillas/${id}`)
+      .set(auth);
+    expect(bloqueado.status).toBe(409);
+
+    // Sin trabajadores, se borra.
+    await Modelos.worker.deleteOne({ _id: "w1" });
+    const borrado = await request(app)
+      .delete(`/admin/cuadrillas/${id}`)
+      .set(auth);
+    expect(borrado.body.ok).toBe(true);
+    const tras = await request(app).get("/admin/cuadrillas").set(auth);
+    expect(tras.body.map((x: { name: string }) => x.name)).not.toContain(
+      "Cuadrilla Este",
+    );
+  });
+
+  it("no deja crear cuadrillas por encima del límite del plan", async () => {
+    const token = await tokenPara("gc2@empresa.com");
+    const auth = { authorization: `Bearer ${token}` };
+    // Plan free: 2 cuadrillas. verify ya crea 1.
+    const ok = await request(app)
+      .post("/admin/cuadrillas")
+      .set(auth)
+      .send({ name: "Segunda" });
+    expect(ok.status).toBe(201);
+    const no = await request(app)
+      .post("/admin/cuadrillas")
+      .set(auth)
+      .send({ name: "Tercera" });
+    expect(no.status).toBe(409);
+    expect(no.body.error).toMatch(/plan/i);
+  });
+
   it("edita los datos laborales de un trabajador (alta)", async () => {
     const token = await tokenPara("altas@empresa.com");
     const orgId = await orgDe("altas@empresa.com");

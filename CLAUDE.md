@@ -254,8 +254,17 @@ El `plan` marca qué tiene la org: `foreman` = solo PWA (1 jefe, 2 cuadrillas, s
     (`xlsx-js-style`) / `tablaAPdf` (`jspdf`), ambos lazy `import()`). Botones Excel/CSV en
     Asistencia y Excel/PDF/CSV en Liquidación. `panel/package.json` gana `jspdf` +
     `xlsx-js-style` (chunks aparte, solo se cargan al exportar).
-  - Falta en la Fase B: **deploy** (`panel.cuadrillas.app`, `panel/wrangler.toml` listo,
-    ver `DEPLOY.md` Fase 5 — acción de infra, no de código).
+  - **Cuadrillas editables desde el panel (2026-09-10):** `POST/PUT/DELETE
+    /admin/cuadrillas` (zod nombre; crear respeta `planLimits.crews`; borrar solo si no
+    tiene trabajadores). La cuadrilla es **estructura de la empresa** — la gestiona el
+    panel, y la PWA también (un jefe puede crear una sobre la marcha). Antes había una
+    contradicción: el formulario de invitación pedía asignar cuadrillas que la empresa no
+    podía crear. Ahora las cuadrillas del formulario de invitación son opcionales.
+  - **Deploy hecho (2026-09-10):** `panel.cuadrillas.app` en Cloudflare Workers Builds
+    (proyecto `cuadrillas-panel`, deploy command `npx wrangler deploy --config
+    panel/wrangler.toml`, var de build `VITE_API_URL`). Railway: `PANEL_URL` para que el
+    enlace mágico del panel apunte al panel (`/auth/magic-link` acepta `destino:
+    "app"|"panel"`).
 - **C — Altas**: **hecha (2026-09-10).**
   - `shared/domain/laboral.ts`: `CAMPOS_ALTA_MINIMOS` (dni, numAfiliacionSS, iban,
     fechaAlta), `estadoAlta(w)` (`pendiente` | `completa`), `faltanDatosAlta(w)`,

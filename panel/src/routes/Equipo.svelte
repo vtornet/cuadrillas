@@ -160,7 +160,9 @@
         <input type="email" bind:value={invEmail} placeholder="jefe@correo.com" />
       </label>
       {#if crews.length > 0}
-        <p style="margin:6px 0 4px;color:var(--suave)">Cuadrillas que lidera:</p>
+        <p style="margin:6px 0 4px;color:var(--suave)">
+          Cuadrillas que lidera (opcional, se puede asignar después):
+        </p>
         <div class="checks">
           {#each crews as c (c.id)}
             <label>
@@ -172,6 +174,11 @@
             </label>
           {/each}
         </div>
+      {:else}
+        <p style="margin:6px 0 4px;color:var(--suave)">
+          Todavía no hay cuadrillas. Crea alguna en <a href="#/cuadrillas">Cuadrillas</a>
+          y podrás asignarla al invitar (o después).
+        </p>
       {/if}
       <button
         type="button"

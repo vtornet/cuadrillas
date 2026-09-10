@@ -81,11 +81,85 @@ export async function cuadrillas(organizationId: string): Promise<Wire[]> {
   return crews
     .map((c): Wire => ({
       ...c,
-      numTrabajadores: workers.filter(
-        (w) => w.crewId === c.id && w.activo === 1,
-      ).length,
+      numTrabajadores: workers.filter((w) => w.crewId === c.id).length,
     }))
     .sort((a, b) => String(a.name).localeCompare(String(b.name), "es"));
+}
+
+async function limiteCuadrillas(organizationId: string): Promise<number> {
+  const org = await Modelos.organization
+    .findById(organizationId)
+    .lean<{ planLimits?: { crews?: number } } | null>();
+  return org?.planLimits?.crews ?? 2;
+}
+
+export async function crearCuadrilla(
+  organizationId: string,
+  name: string,
+): Promise<{ error: string } | { id: string }> {
+  const activas = await Modelos.crew.countDocuments({ organizationId, ...VIVO });
+  const limite = await limiteCuadrillas(organizationId);
+  if (activas >= limite) {
+    return { error: `El plan actual permite ${limite} cuadrillas.` };
+  }
+  const id = randomUUID();
+  await Modelos.crew.updateOne(
+    { _id: id },
+    {
+      $set: {
+        _id: id,
+        organizationId,
+        name: name.trim(),
+        foremanIds: [],
+        updatedAt: Date.now(),
+        serverUpdatedAt: new Date(),
+        deleted: false,
+      },
+    },
+    { upsert: true },
+  );
+  return { id };
+}
+
+export async function renombrarCuadrilla(
+  organizationId: string,
+  id: string,
+  name: string,
+): Promise<Wire | null> {
+  const c = await Modelos.crew
+    .findOne({ _id: id, organizationId, ...VIVO })
+    .lean<DocBase | null>();
+  if (!c) return null;
+  await Modelos.crew.updateOne(
+    { _id: id, organizationId },
+    { $set: { name: name.trim(), updatedAt: Date.now(), serverUpdatedAt: new Date() } },
+  );
+  return aWire((await Modelos.crew.findById(id).lean<DocBase>())!);
+}
+
+export async function borrarCuadrilla(
+  organizationId: string,
+  id: string,
+): Promise<{ error: string } | { ok: true }> {
+  const c = await Modelos.crew
+    .findOne({ _id: id, organizationId, ...VIVO })
+    .lean<DocBase | null>();
+  if (!c) return { error: "Cuadrilla no encontrada" };
+  const n = await Modelos.worker.countDocuments({
+    organizationId,
+    crewId: id,
+    ...VIVO,
+  });
+  if (n > 0) {
+    return {
+      error: `La cuadrilla tiene ${n} trabajador(es). Muévelos a otra cuadrilla antes de eliminarla.`,
+    };
+  }
+  await Modelos.crew.updateOne(
+    { _id: id, organizationId },
+    { $set: { deleted: true, updatedAt: Date.now(), serverUpdatedAt: new Date() } },
+  );
+  return { ok: true };
 }
 
 export async function trabajadores(
