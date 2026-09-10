@@ -10,19 +10,24 @@ import { firmarToken } from "../lib/jwt";
 
 export const authRouter = Router();
 
-const emailSchema = z.object({ email: z.string().email() });
+const emailSchema = z.object({
+  email: z.string().email(),
+  /** A qué app vuelve el enlace del correo. `app` (PWA) por defecto. */
+  destino: z.enum(["app", "panel"]).optional(),
+});
 const tokenSchema = z.object({ token: z.string().min(1) });
 
 authRouter.post("/magic-link", async (req, res, next) => {
   try {
-    const { email } = emailSchema.parse(req.body);
+    const { email, destino } = emailSchema.parse(req.body);
     const token = randomUUID();
     await MagicToken.create({
       token,
       email: email.toLowerCase(),
       expiresAt: new Date(Date.now() + 15 * 60_000),
     });
-    const enlace = `${env.appUrl}/#/entrar?token=${token}`;
+    const base = destino === "panel" ? env.panelUrl : env.appUrl;
+    const enlace = `${base}/#/entrar?token=${token}`;
     await enviarEnlaceMagico(email, enlace);
     // En desarrollo devolvemos el enlace para poder probar sin email.
     res.json({ ok: true, ...(env.isProd ? {} : { enlace }) });

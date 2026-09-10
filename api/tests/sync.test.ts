@@ -54,6 +54,18 @@ function opWorker(id: string, updatedAt: number, extra: Record<string, unknown> 
 }
 
 describe("/auth + /sync", () => {
+  it("magic-link con destino=panel enlaza al panel", async () => {
+    const app0 = await request(app)
+      .post("/auth/magic-link")
+      .send({ email: "x@ejemplo.com" });
+    expect(String(app0.body.enlace)).toContain("localhost:5173");
+
+    const panel = await request(app)
+      .post("/auth/magic-link")
+      .send({ email: "y@ejemplo.com", destino: "panel" });
+    expect(String(panel.body.enlace)).toContain("localhost:5175");
+  });
+
   it("verify crea organizacion, cuadrilla y usuario owner", async () => {
     const { token, user } = await login();
     expect(token).toBeTruthy();

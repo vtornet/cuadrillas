@@ -42,7 +42,7 @@ class Sesion {
     const r = await fetch(`${API_URL}/auth/magic-link`, {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ email }),
+      body: JSON.stringify({ email, destino: "panel" }),
     });
     if (!r.ok) throw new Error("No se pudo enviar el enlace");
     return r.json();

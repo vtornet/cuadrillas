@@ -12,6 +12,7 @@ export const env = {
   mongoUri: requerido("MONGODB_URI", "mongodb://127.0.0.1:27017/cuadrilla"),
   jwtSecret: requerido("JWT_SECRET", "dev-secret-no-usar-en-produccion"),
   appUrl: process.env.APP_URL ?? "http://localhost:5173",
+  panelUrl: process.env.PANEL_URL ?? "http://localhost:5175",
   resendApiKey: process.env.RESEND_API_KEY ?? "",
   emailFrom: process.env.EMAIL_FROM ?? "Cuadrillas <login@cuadrillas.local>",
   stripeSecretKey: process.env.STRIPE_SECRET_KEY ?? "",
