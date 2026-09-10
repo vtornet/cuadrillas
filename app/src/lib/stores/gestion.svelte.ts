@@ -15,7 +15,7 @@ import {
 } from "@cuadrilla/shared/domain";
 import { persistir } from "../db/repositories/base";
 import { tablaPorEntidad } from "../db/tablas";
-import { crewsDeOrg } from "../db/repositories/crews";
+import { crewsDelForeman } from "../db/repositories/crews";
 import { todosLosWorkers } from "../db/repositories/workers";
 import { todosLosGrupos } from "../db/repositories/groups";
 import { todasLasFincas } from "../db/repositories/fincas";
@@ -51,11 +51,24 @@ class GestionStore {
   units = $state<UnitType[]>([]);
   org = $state<Organization | null>(null);
 
+  /**
+   * Carga los datos de la pantalla "Datos". **Cuadrillas, trabajadores y
+   * grupos van filtrados a las cuadrillas del jefe** (`Crew.foremanIds`): en
+   * una empresa con varios jefes cada uno gestiona lo suyo. Productos, unidades
+   * y fincas son catálogo de la organización (compartidos).
+   */
   async cargar(): Promise<void> {
     const org = sesion.organizationId;
-    this.crews = await crewsDeOrg(org);
-    this.workers = await todosLosWorkers(org);
-    this.groups = await todosLosGrupos(org);
+    this.crews = await crewsDelForeman(sesion.userId);
+    const mias = new Set(this.crews.map((c) => c.id));
+
+    const [todosWorkers, todosGrupos] = await Promise.all([
+      todosLosWorkers(org),
+      todosLosGrupos(org),
+    ]);
+    this.workers = todosWorkers.filter((w) => mias.has(w.crewId));
+    this.groups = todosGrupos.filter((g) => mias.has(g.crewId));
+
     this.fincas = await todasLasFincas(org);
     this.products = await todosLosProductos(org);
     this.units = await todasLasUnidades(org);

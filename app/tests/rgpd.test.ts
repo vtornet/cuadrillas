@@ -50,7 +50,7 @@ describe("RGPD end-to-end", () => {
       id: "c1",
       organizationId: ORG,
       name: "Cuadrilla Norte",
-      foremanIds: ["u1"],
+      foremanIds: [sesion.userId], // gestion.cargar() filtra por foremanIds
       updatedAt: 1,
       deleted: 0,
     });

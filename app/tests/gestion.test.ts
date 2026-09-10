@@ -24,7 +24,8 @@ function cuadrilla(p: Partial<Crew> = {}): Crew {
     id: crypto.randomUUID(),
     organizationId: ORG,
     name: "Cuadrilla Norte",
-    foremanIds: ["u1"],
+    // gestion.cargar() filtra por foremanIds; en test el userId es "demo-user".
+    foremanIds: [sesion.userId],
     updatedAt: 1,
     deleted: 0,
     ...p,

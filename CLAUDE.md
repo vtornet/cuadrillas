@@ -106,6 +106,12 @@ Stores singleton en archivos `*.svelte.ts`:
   síncrono <100 ms, IndexedDB + cola después). `activeShiftId` en `meta`. **Un solo parte
   activo a la vez** (simplificación deliberada, sin selector de "otras jornadas abiertas").
 - `gestion.svelte.ts` — CRUD genérico `guardar(tipo, record)` / `eliminar(tipo, record)`.
+  **`cargar()` filtra `crews`/`workers`/`groups` a las cuadrillas del jefe**
+  (`Crew.foremanIds.includes(sesion.userId)`) — en una empresa con varios jefes cada uno
+  ve lo suyo. `products`/`unitTypes`/`fincas` son catálogo de la organización (compartidos).
+  **Ojo**: el `/sync` sigue siendo org-wide (todos los docs de la org llegan al
+  IndexedDB del jefe); el filtro es solo de UI. Aislamiento real de datos entre
+  cuadrillas = sync con cursor por cuadrilla (pendiente, ver "Panel de empresa").
 - `router.svelte.ts` — router por hash (`#/registro`, …). Vistas: registro, historial,
   estadisticas, asistencia, gestion, cuenta, privacidad. **No hay pantalla "jornada" separada**: `Registro.svelte`
   es autosuficiente — con parte activo muestra el registro normal y un botón "Finalizar

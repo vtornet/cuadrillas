@@ -12,14 +12,3 @@ export async function crewsDelForeman(userId: string): Promise<Crew[]> {
 export function obtenerCrew(id: string): Promise<Crew | undefined> {
   return db.crews.get(id);
 }
-
-/** Todas las cuadrillas (no borradas) de la organizacion. */
-export async function crewsDeOrg(organizationId: string): Promise<Crew[]> {
-  const todas = await db.crews
-    .where("organizationId")
-    .equals(organizationId)
-    .toArray();
-  return todas
-    .filter((c) => c.deleted === 0)
-    .sort((a, b) => a.name.localeCompare(b.name, "es"));
-}
