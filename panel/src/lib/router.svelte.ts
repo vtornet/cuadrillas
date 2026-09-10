@@ -5,6 +5,7 @@ export type Vista =
   | "trabajadores"
   | "partes"
   | "asistencia"
+  | "altas"
   | "tarifas"
   | "liquidacion";
 
@@ -12,6 +13,7 @@ export const VISTAS: { id: Vista; etiqueta: string }[] = [
   { id: "resumen", etiqueta: "Resumen" },
   { id: "cuadrillas", etiqueta: "Cuadrillas" },
   { id: "trabajadores", etiqueta: "Trabajadores" },
+  { id: "altas", etiqueta: "Altas" },
   { id: "partes", etiqueta: "Partes" },
   { id: "asistencia", etiqueta: "Asistencia" },
   { id: "tarifas", etiqueta: "Tarifas" },

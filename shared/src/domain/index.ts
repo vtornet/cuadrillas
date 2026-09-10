@@ -8,3 +8,4 @@ export * from "./attendance";
 export * from "./products";
 export * from "./parte";
 export * from "./groups";
+export * from "./laboral";

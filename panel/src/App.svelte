@@ -9,6 +9,7 @@
   import Partes from "./routes/Partes.svelte";
   import ParteDetalle from "./routes/ParteDetalle.svelte";
   import Asistencia from "./routes/Asistencia.svelte";
+  import Altas from "./routes/Altas.svelte";
   import Tarifas from "./routes/Tarifas.svelte";
   import Liquidacion from "./routes/Liquidacion.svelte";
 
@@ -68,6 +69,8 @@
         <Partes />
       {:else if router.vista === "asistencia"}
         <Asistencia />
+      {:else if router.vista === "altas"}
+        <Altas />
       {:else if router.vista === "tarifas"}
         <Tarifas />
       {:else if router.vista === "liquidacion"}

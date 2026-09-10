@@ -58,6 +58,43 @@ adminRouter.get(
   h((req) => admin.trabajador(req.auth!.organizationId, req.params.id)),
 );
 
+const ISO_D = /^\d{4}-\d{2}-\d{2}$/;
+const opcional = (max: number) => z.string().max(max).optional();
+const fechaOpcional = z
+  .string()
+  .regex(ISO_D)
+  .optional()
+  .or(z.literal(""));
+const laboralSchema = z
+  .object({
+    dni: opcional(30),
+    numAfiliacionSS: opcional(30),
+    iban: opcional(40),
+    fechaAlta: fechaOpcional,
+    fechaBaja: fechaOpcional,
+    tipoContrato: opcional(60),
+    categoria: opcional(60),
+  })
+  .strict();
+
+adminRouter.put("/trabajadores/:id/laboral", (req, res, next) => {
+  const datos = laboralSchema.safeParse(req.body);
+  if (!datos.success) {
+    res.status(400).json({ error: "Datos laborales inválidos" });
+    return;
+  }
+  admin
+    .actualizarLaboral(req.auth!.organizationId, req.params.id, datos.data)
+    .then((w) => {
+      if (!w) {
+        res.status(404).json({ error: "Trabajador no encontrado" });
+        return;
+      }
+      res.json(w);
+    })
+    .catch(next);
+});
+
 adminRouter.get(
   "/partes",
   h((req) =>

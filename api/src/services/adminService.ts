@@ -9,9 +9,11 @@ import type {
 import {
   asistenciaMensual,
   calcularLiquidacion,
+  normalizarLaboral,
   type AsistenciaMensual,
   type Liquidacion,
 } from "@cuadrilla/shared/domain";
+import type { DatosLaborales } from "@cuadrilla/shared";
 import { Modelos, type DocBase } from "../models/sync";
 
 /**
@@ -122,6 +124,31 @@ export async function trabajador(
     .findOne({ _id: doc.crewId, organizationId })
     .lean<DocBase | null>();
   return { ...aWire(doc), cuadrilla: crew ? String(crew.name) : "?" };
+}
+
+/**
+ * Escribe los datos laborales (alta) de un trabajador. Solo desde el panel.
+ * Upsert con `serverUpdatedAt` para que el `/sync` del jefe lo reciba.
+ */
+export async function actualizarLaboral(
+  organizationId: string,
+  id: string,
+  datos: Partial<Record<keyof DatosLaborales, string | undefined>>,
+): Promise<Wire | null> {
+  const existe = await Modelos.worker
+    .findOne({ _id: id, organizationId, ...VIVO })
+    .lean<DocBase | null>();
+  if (!existe) return null;
+  const limpio = normalizarLaboral(datos);
+  const control = { updatedAt: Date.now(), serverUpdatedAt: new Date() };
+  await Modelos.worker.updateOne(
+    { _id: id, organizationId },
+    limpio
+      ? { $set: { laboral: limpio, ...control } }
+      : { $unset: { laboral: "" }, $set: control },
+  );
+  const doc = await Modelos.worker.findById(id).lean<DocBase>();
+  return aWire(doc!);
 }
 
 interface FiltrosPartes {

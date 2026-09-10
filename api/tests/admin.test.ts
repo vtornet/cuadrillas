@@ -138,6 +138,54 @@ describe("/admin", () => {
     expect(r.body.map((w: { name: string }) => w.name)).toEqual(["Ana Ruiz"]);
   });
 
+  it("edita los datos laborales de un trabajador (alta)", async () => {
+    const token = await tokenPara("altas@empresa.com");
+    const orgId = await orgDe("altas@empresa.com");
+    const crewId = await crewIdDe(orgId);
+    const auth = { authorization: `Bearer ${token}` };
+    await sync(token, [opWorker(orgId, "w1", { crewId, name: "Ana" })]);
+
+    const r = await request(app)
+      .put("/admin/trabajadores/w1/laboral")
+      .set(auth)
+      .send({
+        dni: "  12345678Z ",
+        iban: "ES91 2100 0418 4502 0005 1332",
+        fechaAlta: "2026-01-15",
+      });
+    expect(r.status).toBe(200);
+    expect(r.body.laboral.dni).toBe("12345678Z"); // recortado
+
+    const ficha = await request(app)
+      .get("/admin/trabajadores/w1")
+      .set(auth);
+    expect(ficha.body.laboral.fechaAlta).toBe("2026-01-15");
+
+    // Campo no permitido → 400
+    const mal = await request(app)
+      .put("/admin/trabajadores/w1/laboral")
+      .set(auth)
+      .send({ sueldo: 1000 });
+    expect(mal.status).toBe(400);
+
+    // Vaciar todo → laboral desaparece
+    await request(app)
+      .put("/admin/trabajadores/w1/laboral")
+      .set(auth)
+      .send({ dni: "", iban: "" });
+    const vacia = await request(app)
+      .get("/admin/trabajadores/w1")
+      .set(auth);
+    expect(vacia.body.laboral).toBeUndefined();
+
+    // Trabajador inexistente → 404
+    const noExiste = await request(app)
+      .put("/admin/trabajadores/zzz/laboral")
+      .set(auth)
+      .send({ dni: "X" });
+    expect(noExiste.status).toBe(404);
+  });
+
   it("CRUD de tarifas", async () => {
     const token = await tokenPara("tarifas@empresa.com");
     const auth = { authorization: `Bearer ${token}` };

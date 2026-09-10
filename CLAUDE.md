@@ -256,8 +256,18 @@ El `plan` marca qué tiene la org: `foreman` = solo PWA (1 jefe, 2 cuadrillas, s
     `xlsx-js-style` (chunks aparte, solo se cargan al exportar).
   - Falta en la Fase B: **deploy** (`panel.cuadrillas.app`, `panel/wrangler.toml` listo,
     ver `DEPLOY.md` Fase 5 — acción de infra, no de código).
-- **C — Altas**: pantalla "Altas" con los campos `Worker.laboral` y estado
-  (pendiente/completa). Ajustes finos de RGPD. Endpoint `PUT /admin/trabajadores/:id/laboral`.
+- **C — Altas**: **hecha (2026-09-10).**
+  - `shared/domain/laboral.ts`: `CAMPOS_ALTA_MINIMOS` (dni, numAfiliacionSS, iban,
+    fechaAlta), `estadoAlta(w)` (`pendiente` | `completa`), `faltanDatosAlta(w)`,
+    `normalizarLaboral(datos)` (recorta strings, descarta vacíos, `undefined` si nada).
+    Tests `shared/tests/laboral.test.ts`.
+  - API `PUT /admin/trabajadores/:id/laboral` (zod `.strict()`, upsert con
+    `serverUpdatedAt`; si queda vacío → `$unset laboral`). Tests en `api/tests/admin.test.ts`.
+  - Panel: vista **"Altas"** (`Altas.svelte`, filtro pendientes/completas/todas +
+    cuadrilla, tabla con estado y campos que faltan, edición inline) + componente
+    reutilizable `panel/src/lib/FichaLaboral.svelte` (formulario de los 7 campos), usado
+    también en la ficha de Trabajadores (ya editable, ya no read-only).
+  - RGPD: `anonimizarWorker` ya borra `worker.laboral` (Fase A). Sin más ajustes.
 - **D — Autoservicio**: la empresa se registra, paga plan `company`, invita a sus jefes
   (`POST /admin/invitaciones` → `User` con rol `foreman` en la org + enlace mágico).
 

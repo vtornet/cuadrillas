@@ -2,6 +2,7 @@
   import type { Worker, Crew } from "@cuadrilla/shared";
   import { api, get } from "../lib/api";
   import { router } from "../lib/router.svelte";
+  import FichaLaboral from "../lib/FichaLaboral.svelte";
 
   type Fila = Worker & { cuadrilla: string };
 
@@ -105,24 +106,27 @@
 
 {#if detalle}
   {@const d = detalle}
-  <h2>{d.name}</h2>
+  <h2>{d.name} <em style="color:var(--suave)">{d.alias}</em></h2>
   <dl class="pares">
-    <dt>Alias</dt><dd>{d.alias}</dd>
     <dt>Cuadrilla</dt><dd>{d.cuadrilla}</dd>
     <dt>Idioma</dt><dd>{d.language}</dd>
+    <dt>Función</dt>
+    <dd>{d.funcion === "auxiliar" ? "Auxiliar" : "Recolector"}</dd>
     <dt>Transporte / día</dt><dd>{eur(d.transporteCentimos)}</dd>
-    <dt>DNI / NIE</dt><dd>{d.laboral?.dni ?? "—"}</dd>
-    <dt>Nº afiliación SS</dt><dd>{d.laboral?.numAfiliacionSS ?? "—"}</dd>
-    <dt>IBAN</dt><dd>{d.laboral?.iban ?? "—"}</dd>
-    <dt>Fecha de alta</dt><dd>{d.laboral?.fechaAlta ?? "—"}</dd>
-    <dt>Fecha de baja</dt><dd>{d.laboral?.fechaBaja ?? "—"}</dd>
-    <dt>Tipo de contrato</dt><dd>{d.laboral?.tipoContrato ?? "—"}</dd>
-    <dt>Categoría</dt><dd>{d.laboral?.categoria ?? "—"}</dd>
   </dl>
-  <p style="margin-top:12px">
-    <button type="button" onclick={() => (detalle = null)}>Cerrar</button>
-  </p>
-  <p class="et" style="color:var(--suave);font-size:13px">
-    La edición de los datos laborales llega en la Fase C.
+
+  <h3 style="margin:18px 0 8px">Datos laborales</h3>
+  {#key d.id}
+    <FichaLaboral
+      worker={d}
+      onguardado={(w) => {
+        detalle = w;
+        cargar();
+      }}
+    />
+  {/key}
+
+  <p style="margin-top:14px">
+    <button type="button" onclick={() => (detalle = null)}>Cerrar ficha</button>
   </p>
 {/if}

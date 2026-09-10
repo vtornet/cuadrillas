@@ -7,6 +7,7 @@ describe("router del panel", () => {
       "resumen",
       "cuadrillas",
       "trabajadores",
+      "altas",
       "partes",
       "asistencia",
       "tarifas",
