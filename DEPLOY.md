@@ -5,10 +5,12 @@ empezar a probar con un jefe de cuadrilla de verdad.
 
 - Repo: https://github.com/vtornet/cuadrillas
 - Dominio propio: `cuadrillas.app`, comprado en Namecheap
-  - PWA → `https://cuadrillas.app` (Cloudflare Workers con assets estáticos —
-    la cuenta usa el sistema "Workers Builds" que sustituye a Pages, ver nota
-    en fase 1)
+  - PWA (jefe de cuadrilla) → `https://cuadrillas.app` (Cloudflare Workers con
+    assets estáticos — la cuenta usa el sistema "Workers Builds" que sustituye a
+    Pages, ver nota en fase 1)
   - API → `https://api.cuadrillas.app` (Railway)
+  - Panel de empresa → `https://panel.cuadrillas.app` (Cloudflare Workers,
+    proyecto aparte — **pendiente de crear**, ver fase 5)
 
 ## Fase 1 — PWA en modo demo (sin backend)
 
@@ -120,38 +122,86 @@ mismo, no para usuarios reales.
 4. Prueba un pago con tarjeta de test (`4242 4242 4242 4242`). Cuando funcione,
    repite el paso 2-3 con las claves **live**.
 
-## Fase 5 — Panel de empresa (`panel/`, en marcha 2026-09-09)
+## Fase 5 — Panel de empresa (`panel/`)
 
 Paquete `panel/` — SPA **online** (sin service worker, sin IndexedDB), habla con
 la misma API. Roles `owner` / `gestor` (JWT). Endpoints `/admin/*`. La API ya
 sirve `/admin` y el CORS ya es `*` → **no hace falta tocar Railway**.
 
-**Dev local**: `pnpm dev:api` (necesita un Mongo) + `pnpm dev:panel` → panel en
-`localhost:5175`, apunta al API en `:8080` por defecto.
+### Estado del código: completo (Fases A–D, 2026-09-10)
 
-**Despliegue (Cloudflare, mismo sistema "Workers Builds" que la PWA):**
+Todo implementado, con tests (157 en total). Solo falta **crear el proyecto en
+Cloudflare** (acción de dashboard, ~5 clics).
 
-1. Es un **proyecto de Cloudflare distinto** del de la PWA. Cloudflare →
-   *Workers & Pages* → *Create* → *Connect to Git* → repo `vtornet/cuadrillas`.
+| Área | Estado |
+|---|---|
+| Rol `gestor`, `Worker.laboral`, `planLimits.foremen` | ✅ (shared + api) |
+| API `/admin`: resumen, cuadrillas, trabajadores (+ficha), partes (+detalle) | ✅ |
+| API `/admin`: productos/unidades, **tarifas (CRUD)** | ✅ |
+| API `/admin`: **asistencia mensual**, **liquidación por periodo** | ✅ (usa `asistenciaMensual` / `calcularLiquidacion` de `shared`) |
+| API `/admin`: **altas** (`PUT .../laboral`) | ✅ |
+| API `/admin`: **equipo/invitaciones** (`/equipo`, `POST/DELETE /invitaciones`, `PUT /jefes/:id/cuadrillas`) | ✅ |
+| `/auth/verify`: aceptar invitación (une a org existente como `foreman`) | ✅ |
+| Panel: login (enlace mágico, solo `owner`/`gestor`), 9 vistas | ✅ |
+| Panel: exports Excel/CSV/PDF (`panel/src/lib/export/`) | ✅ (liquidación y asistencia) |
+| Panel: gate de plan + botón "cambiar a Empresa" → `/billing/checkout` | ✅ |
+| Deploy en `panel.cuadrillas.app` | ❌ **pendiente (dashboard)** |
+| i18n del panel | ❌ solo español (aceptable: los gestores son de oficina) |
+
+### Dev local
+
+`pnpm dev:api` (necesita un Mongo: `docker run -p 27017:27017 mongo:7`) +
+`pnpm dev:panel` → panel en `localhost:5175`, apunta al API en `:8080`.
+
+### Desplegar (Cloudflare, mismo sistema "Workers Builds" que la PWA)
+
+Es un **proyecto de Cloudflare NUEVO**, distinto del de la PWA (`cuadrillas`).
+
+1. Cloudflare → *Workers & Pages* → **Create** → **Import a repository** (o
+   "Connect to Git") → repo `vtornet/cuadrillas` → nombre del proyecto:
+   `cuadrillas-panel`.
 2. Build settings:
-   - **Root directory**: `/` (raíz del monorepo, para que pnpm resuelva
-     `@cuadrilla/shared`).
+   - **Root directory**: `/` (raíz del monorepo — pnpm necesita el
+     `pnpm-workspace.yaml` para resolver `@cuadrilla/shared`).
    - **Build command**: `pnpm --filter @cuadrilla/panel build`
-   - **Wrangler configuration file**: `panel/wrangler.toml` (en él,
-     `[assets] directory = "dist"` se resuelve como `panel/dist`; nombre del
-     Worker `cuadrillas-panel`).
-   - Si el panel de Cloudflare no ofrece el campo de "wrangler config file",
-     usa **Build output directory** `panel/dist` y borra/renombra
-     `panel/wrangler.toml` para que no colisione con el de la raíz.
-3. **Variable de build**: `VITE_API_URL=https://api.cuadrillas.app`.
-4. **Dominio** `panel.cuadrillas.app`: en el proyecto → *Domains* → *Add Domain*
-   → subdominio `panel`. Cloudflare crea el DNS y el SSL solo.
+   - **Deploy command / Wrangler config**: si te deja indicar el archivo de
+     configuración de Wrangler, pon `panel/wrangler.toml` (ahí
+     `[assets] directory = "dist"` → `panel/dist`, nombre del Worker
+     `cuadrillas-panel`). Si NO te deja: pon **Build output directory** =
+     `panel/dist` y **borra `panel/wrangler.toml`** (para que `wrangler deploy`
+     no lo confunda con el de la raíz — o renómbralo a `panel/wrangler.jsonc`
+     y ajusta).
+3. **Variables y secretos → Variables de build**:
+   `VITE_API_URL = https://api.cuadrillas.app`
+   (sin ella el panel intenta `http://localhost:8080` y no conecta).
+4. Lanza el primer deploy. Sale en `cuadrillas-panel.<tu-subdominio>.workers.dev`.
+5. **Dominio** `panel.cuadrillas.app`: en el proyecto → pestaña **Domains** →
+   **Add** → subdominio `panel`. Cloudflare crea el registro DNS y el SSL solo
+   (la zona `cuadrillas.app` ya está en tu cuenta desde la Fase 1).
+6. A partir de aquí, cada `git push` a `main` redespliega solo (igual que la
+   PWA y la API).
 
-**Estado**: Fase B casi completa — resumen · cuadrillas · trabajadores (+ficha
-con datos laborales) · partes (consulta) · **asistencia mensual** · **tarifas
-(CRUD)** · **liquidación por periodo** + exports (Excel/CSV/PDF). Falta desplegar.
-Luego: Fase C (edición de `Worker.laboral` = altas) y Fase D (invitaciones).
-Ver `CLAUDE.md` > "Panel de empresa".
+### Qué necesito para hacerlo yo
+
+No puedo tocar tu cuenta de Cloudflare. Dos vías:
+
+- **Recomendada — tú creas el proyecto** (pasos 1–5 de arriba, una vez). Luego
+  yo ya no hago falta para el panel: los cambios van solos con `git push`.
+- **Deploy manual por CLI** (yo, si me das acceso): necesito un
+  **`CLOUDFLARE_API_TOKEN`** con permiso *Account → Workers Scripts → Edit* (y
+  *Zone → Workers Routes → Edit* si además quiero enganchar el dominio) y el
+  **`CLOUDFLARE_ACCOUNT_ID`**. Con eso corro:
+  ```bash
+  VITE_API_URL=https://api.cuadrillas.app pnpm --filter @cuadrilla/panel build
+  cd panel && pnpm dlx wrangler@latest deploy   # usa panel/wrangler.toml
+  ```
+  Eso publica el Worker `cuadrillas-panel` y te da el `*.workers.dev`. El
+  dominio `panel.cuadrillas.app` sigue necesitando el paso 5 (dashboard) o el
+  permiso de Zone. Pásame el token por un canal privado (no lo pegues aquí);
+  ponlo en un `.env` fuera del repo o como variable de entorno de la sesión.
+
+  > Nota: el deploy manual NO deja el proyecto conectado a Git. Para que los
+  > `git push` sigan redesplegando solos hace falta igualmente el paso 1.
 
 ## Pendiente antes de usuarios reales
 
