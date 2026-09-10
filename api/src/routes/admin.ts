@@ -212,3 +212,74 @@ adminRouter.get("/liquidacion", (req, res, next) => {
     .then((data) => res.json(data))
     .catch(next);
 });
+
+// ── Equipo: jefes de cuadrilla e invitaciones ──────────────────────────────
+
+adminRouter.get(
+  "/equipo",
+  h((req) => admin.equipo(req.auth!.organizationId)),
+);
+
+const inviteSchema = z.object({
+  email: z.string().email(),
+  crewIds: z.array(z.string()).max(50).optional(),
+});
+
+adminRouter.post("/invitaciones", (req, res, next) => {
+  const datos = inviteSchema.safeParse(req.body);
+  if (!datos.success) {
+    res.status(400).json({ error: "Email inválido" });
+    return;
+  }
+  admin
+    .invitar(
+      req.auth!.organizationId,
+      datos.data.email,
+      datos.data.crewIds ?? [],
+    )
+    .then((r) => {
+      if (r.error) {
+        res.status(409).json({ error: r.error });
+        return;
+      }
+      res.status(201).json(r);
+    })
+    .catch(next);
+});
+
+adminRouter.delete("/invitaciones/:token", (req, res, next) => {
+  admin
+    .revocarInvitacion(req.auth!.organizationId, req.params.token)
+    .then((ok) => {
+      if (!ok) {
+        res.status(404).json({ error: "Invitación no encontrada" });
+        return;
+      }
+      res.json({ ok: true });
+    })
+    .catch(next);
+});
+
+const asignarSchema = z.object({ crewIds: z.array(z.string()).max(50) });
+
+adminRouter.put("/jefes/:userId/cuadrillas", (req, res, next) => {
+  const datos = asignarSchema.safeParse(req.body);
+  if (!datos.success) {
+    res.status(400).json({ error: "crewIds inválido" });
+    return;
+  }
+  admin
+    .asignarCuadrillas(
+      req.auth!.organizationId,
+      req.params.userId,
+      datos.data.crewIds,
+    )
+    .then((r) => {
+      if ("error" in r) {
+        res.status(404).json({ error: r.error });
+        return;
+      }
+      res.json(r);
+    })
+    .catch(next);
+});

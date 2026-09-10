@@ -7,7 +7,8 @@ export type Vista =
   | "asistencia"
   | "altas"
   | "tarifas"
-  | "liquidacion";
+  | "liquidacion"
+  | "equipo";
 
 export const VISTAS: { id: Vista; etiqueta: string }[] = [
   { id: "resumen", etiqueta: "Resumen" },
@@ -18,6 +19,7 @@ export const VISTAS: { id: Vista; etiqueta: string }[] = [
   { id: "asistencia", etiqueta: "Asistencia" },
   { id: "tarifas", etiqueta: "Tarifas" },
   { id: "liquidacion", etiqueta: "Liquidación" },
+  { id: "equipo", etiqueta: "Equipo" },
 ];
 
 function segmentos(): string[] {

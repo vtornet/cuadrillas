@@ -12,6 +12,7 @@ describe("router del panel", () => {
       "asistencia",
       "tarifas",
       "liquidacion",
+      "equipo",
     ]);
   });
 });

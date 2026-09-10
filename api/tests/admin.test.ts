@@ -228,6 +228,87 @@ describe("/admin", () => {
     expect(mal.status).toBe(400);
   });
 
+  it("invitar un jefe: gate de plan, aceptación y asignación de cuadrilla", async () => {
+    const token = await tokenPara("empresa@x.com");
+    const orgId = await orgDe("empresa@x.com");
+    const crewId = await crewIdDe(orgId);
+    const auth = { authorization: `Bearer ${token}` };
+
+    // Plan gratis (foremen: 1) → no se puede invitar.
+    const bloqueada = await request(app)
+      .post("/admin/invitaciones")
+      .set(auth)
+      .send({ email: "jefe2@x.com", crewIds: [crewId] });
+    expect(bloqueada.status).toBe(409);
+    expect(bloqueada.body.error).toMatch(/plan/i);
+
+    // Subimos el límite (lo haría el webhook de Stripe al pasar a "company").
+    await Modelos.organization.updateOne(
+      { _id: orgId },
+      { $set: { "planLimits.foremen": 25 } },
+    );
+
+    const inv = await request(app)
+      .post("/admin/invitaciones")
+      .set(auth)
+      .send({ email: "jefe2@x.com", crewIds: [crewId] });
+    expect(inv.status).toBe(201);
+    const magico = String(inv.body.enlace).split("token=")[1];
+
+    // Pendiente en /equipo.
+    const eq1 = await request(app).get("/admin/equipo").set(auth);
+    expect(eq1.body.invitaciones.map((i: { email: string }) => i.email)).toEqual([
+      "jefe2@x.com",
+    ]);
+
+    // El jefe acepta: se une a la MISMA org como foreman, en la cuadrilla.
+    const v = await request(app).post("/auth/verify").send({ token: magico });
+    expect(v.body.user.role).toBe("foreman");
+    expect(v.body.user.organizationId).toBe(orgId);
+
+    const eq2 = await request(app).get("/admin/equipo").set(auth);
+    expect(eq2.body.invitaciones).toHaveLength(0);
+    const jefe = eq2.body.jefes.find(
+      (j: { email: string }) => j.email === "jefe2@x.com",
+    );
+    expect(jefe.cuadrillas.map((c: { id: string }) => c.id)).toEqual([crewId]);
+
+    // Reasignar: quitarle la cuadrilla.
+    await request(app)
+      .put(`/admin/jefes/${jefe.id}/cuadrillas`)
+      .set(auth)
+      .send({ crewIds: [] });
+    const eq3 = await request(app).get("/admin/equipo").set(auth);
+    expect(
+      eq3.body.jefes.find((j: { email: string }) => j.email === "jefe2@x.com")
+        .cuadrillas,
+    ).toEqual([]);
+  });
+
+  it("revocar una invitación pendiente", async () => {
+    const token = await tokenPara("empresa2@x.com");
+    const orgId = await orgDe("empresa2@x.com");
+    const auth = { authorization: `Bearer ${token}` };
+    await Modelos.organization.updateOne(
+      { _id: orgId },
+      { $set: { "planLimits.foremen": 25 } },
+    );
+
+    const inv = await request(app)
+      .post("/admin/invitaciones")
+      .set(auth)
+      .send({ email: "otro@x.com" });
+    const t = inv.body.token as string;
+
+    const del = await request(app)
+      .delete(`/admin/invitaciones/${t}`)
+      .set(auth);
+    expect(del.body.ok).toBe(true);
+
+    const eq = await request(app).get("/admin/equipo").set(auth);
+    expect(eq.body.invitaciones).toHaveLength(0);
+  });
+
   it("liquidación de un periodo con tarifa", async () => {
     const token = await tokenPara("liq@empresa.com");
     const orgId = await orgDe("liq@empresa.com");

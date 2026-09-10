@@ -1,4 +1,7 @@
 import { randomUUID } from "node:crypto";
+import { MagicToken, User } from "../models/auth";
+import { enviarInvitacion } from "../lib/email";
+import { env } from "../config/env";
 import type {
   EntityName,
   Entry,
@@ -370,4 +373,154 @@ export async function liquidacion(
     rates as unknown as Rate[],
     { desde: opts.desde, hasta: opts.hasta },
   );
+}
+
+// ── Equipo: jefes de cuadrilla e invitaciones ──────────────────────────────
+
+interface Jefe {
+  id: string;
+  email: string;
+  role: string;
+  cuadrillas: { id: string; name: string }[];
+}
+
+interface EquipoResumen {
+  jefes: Jefe[];
+  invitaciones: { token: string; email: string; expiresAt: string }[];
+  limite: number;
+  /** jefes actuales + invitaciones pendientes. */
+  ocupados: number;
+}
+
+async function limiteJefes(organizationId: string): Promise<number> {
+  const org = await Modelos.organization
+    .findById(organizationId)
+    .lean<{ planLimits?: { foremen?: number } } | null>();
+  return org?.planLimits?.foremen ?? 1;
+}
+
+export async function equipo(organizationId: string): Promise<EquipoResumen> {
+  const [users, crews, invites] = await Promise.all([
+    User.find({ organizationId }).lean<
+      { _id: string; email: string; role: string }[]
+    >(),
+    listar("crew", organizationId),
+    MagicToken.find({
+      inviteOrg: organizationId,
+      usedAt: null,
+      expiresAt: { $gt: new Date() },
+    }).lean<{ token: string; email: string; expiresAt: Date }[]>(),
+  ]);
+
+  const jefes: Jefe[] = users
+    .filter((u) => u.role === "foreman" || u.role === "owner")
+    .map((u) => ({
+      id: u._id,
+      email: u.email,
+      role: u.role,
+      cuadrillas: crews
+        .filter((c) => ((c.foremanIds as string[]) ?? []).includes(u._id))
+        .map((c) => ({ id: c.id as string, name: String(c.name) })),
+    }))
+    .sort((a, b) => a.email.localeCompare(b.email, "es"));
+
+  const invitaciones = invites
+    .map((i) => ({
+      token: i.token,
+      email: i.email,
+      expiresAt: i.expiresAt.toISOString(),
+    }))
+    .sort((a, b) => a.email.localeCompare(b.email, "es"));
+
+  const limite = await limiteJefes(organizationId);
+  return {
+    jefes,
+    invitaciones,
+    limite,
+    ocupados:
+      jefes.filter((j) => j.role === "foreman").length +
+      1 + // el owner cuenta como jefe
+      invitaciones.length,
+  };
+}
+
+export async function invitar(
+  organizationId: string,
+  email: string,
+  crewIds: string[],
+): Promise<{ error?: string; token?: string; enlace?: string }> {
+  const limpio = email.trim().toLowerCase();
+
+  const eq = await equipo(organizationId);
+  if (eq.ocupados >= eq.limite) {
+    return {
+      error: `El plan actual permite ${eq.limite} jefe(s) de cuadrilla. Cambia al plan Empresa para invitar a más.`,
+    };
+  }
+  if (await User.exists({ email: limpio })) {
+    return { error: "Ese email ya tiene una cuenta en Cuadrillas." };
+  }
+  if (eq.invitaciones.some((i) => i.email === limpio)) {
+    return { error: "Ya hay una invitación pendiente para ese email." };
+  }
+
+  const crewsValidas = (await listar("crew", organizationId))
+    .map((c) => c.id as string)
+    .filter((id) => crewIds.includes(id));
+
+  const token = randomUUID();
+  await MagicToken.create({
+    token,
+    email: limpio,
+    expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60_000),
+    inviteOrg: organizationId,
+    inviteRole: "foreman",
+    inviteCrewIds: crewsValidas,
+  });
+
+  const org = await Modelos.organization
+    .findById(organizationId)
+    .lean<{ name?: string } | null>();
+  const enlace = `${env.appUrl}/#/entrar?token=${token}`;
+  await enviarInvitacion(limpio, org?.name ?? "Tu empresa", enlace);
+
+  return { token, ...(env.isProd ? {} : { enlace }) };
+}
+
+export async function revocarInvitacion(
+  organizationId: string,
+  token: string,
+): Promise<boolean> {
+  const r = await MagicToken.deleteOne({
+    token,
+    inviteOrg: organizationId,
+    usedAt: null,
+  });
+  return r.deletedCount > 0;
+}
+
+/** Fija exactamente qué cuadrillas lidera un jefe (añade/quita en bloque). */
+export async function asignarCuadrillas(
+  organizationId: string,
+  userId: string,
+  crewIds: string[],
+): Promise<{ error?: string } | { ok: true }> {
+  const u = await User.findOne({ _id: userId, organizationId }).lean();
+  if (!u) return { error: "Jefe no encontrado" };
+
+  await Modelos.crew.updateMany(
+    { organizationId, _id: { $in: crewIds } },
+    {
+      $addToSet: { foremanIds: userId },
+      $set: { updatedAt: Date.now(), serverUpdatedAt: new Date() },
+    },
+  );
+  await Modelos.crew.updateMany(
+    { organizationId, _id: { $nin: crewIds }, foremanIds: userId },
+    {
+      $pull: { foremanIds: userId },
+      $set: { updatedAt: Date.now(), serverUpdatedAt: new Date() },
+    },
+  );
+  return { ok: true };
 }

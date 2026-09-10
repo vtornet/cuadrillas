@@ -268,8 +268,25 @@ El `plan` marca qué tiene la org: `foreman` = solo PWA (1 jefe, 2 cuadrillas, s
     reutilizable `panel/src/lib/FichaLaboral.svelte` (formulario de los 7 campos), usado
     también en la ficha de Trabajadores (ya editable, ya no read-only).
   - RGPD: `anonimizarWorker` ya borra `worker.laboral` (Fase A). Sin más ajustes.
-- **D — Autoservicio**: la empresa se registra, paga plan `company`, invita a sus jefes
-  (`POST /admin/invitaciones` → `User` con rol `foreman` en la org + enlace mágico).
+- **D — Autoservicio / invitaciones: hecha (2026-09-10).**
+  - `MagicToken` gana `inviteOrg` / `inviteRole` / `inviteCrewIds` (opcionales). Si
+    `inviteOrg` está, `/auth/verify` llama a `altaInvitado` (une el usuario a esa org
+    como `foreman`, lo mete en `Crew.foremanIds` de las cuadrillas dadas) en vez de
+    `altaInicial` (que crea org+cuadrilla nuevas).
+  - API (`/admin`, owner/gestor): `GET /equipo` (jefes + sus cuadrillas + invitaciones
+    pendientes + `limite`/`ocupados`), `POST /invitaciones` `{email, crewIds?}` (gate por
+    `planLimits.foremen`; 409 si el email ya tiene cuenta o ya hay invitación; email vía
+    `enviarInvitacion`, 7 días), `DELETE /invitaciones/:token`, `PUT /jefes/:userId/
+    cuadrillas` `{crewIds}` (fija en bloque qué cuadrillas lidera). Tests en
+    `api/tests/admin.test.ts` (20 en total).
+  - Panel: vista **"Equipo"** (`Equipo.svelte`): contador `ocupados/limite`, formulario de
+    invitación (email + cuadrillas), lista de pendientes con revocar, lista de jefes con
+    reasignación de cuadrillas inline. Si se llega al límite del plan → botón "Cambiar de
+    plan" que llama a `POST /billing/checkout {plan:"company"}` y redirige a Stripe.
+  - El "registro" de la empresa no necesita nada nuevo: `/auth/verify` ya crea una org
+    `free` para un email nuevo; el owner sube a `company` desde el panel (o la PWA).
+  - Límite: `LIMITES_POR_PLAN` — free/foreman 1 jefe, company 25, campaign 3. El owner
+    siempre cuenta como 1 jefe.
 
 ### Despliegue (en marcha, 2026-09-05)
 

@@ -45,7 +45,14 @@ authRouter.post("/verify", async (req, res, next) => {
     let usuario: DatosUsuario | null = await User.findOne({ email: doc.email })
       .lean<DatosUsuario | null>();
     if (!usuario) {
-      usuario = await altaInicial(doc.email);
+      usuario = doc.inviteOrg
+        ? await altaInvitado(
+            doc.email,
+            doc.inviteOrg,
+            doc.inviteRole ?? "foreman",
+            doc.inviteCrewIds ?? [],
+          )
+        : await altaInicial(doc.email);
     }
 
     res.json({
@@ -109,4 +116,29 @@ async function altaInicial(email: string): Promise<DatosUsuario> {
   });
 
   return { _id: userId, email, role: "owner", organizationId: orgId };
+}
+
+/**
+ * Alta de un jefe invitado por una empresa: se une a la organización existente
+ * (sin crear org ni cuadrilla) y se asigna a las cuadrillas indicadas.
+ */
+async function altaInvitado(
+  email: string,
+  organizationId: string,
+  role: Rol,
+  crewIds: string[],
+): Promise<DatosUsuario> {
+  const userId = randomUUID();
+  await User.create({ _id: userId, email, role, organizationId });
+
+  if (crewIds.length > 0) {
+    await Modelos.crew.updateMany(
+      { _id: { $in: crewIds }, organizationId },
+      {
+        $addToSet: { foremanIds: userId },
+        $set: { updatedAt: Date.now(), serverUpdatedAt: new Date() },
+      },
+    );
+  }
+  return { _id: userId, email, role, organizationId };
 }

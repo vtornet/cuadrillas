@@ -12,6 +12,7 @@
   import Altas from "./routes/Altas.svelte";
   import Tarifas from "./routes/Tarifas.svelte";
   import Liquidacion from "./routes/Liquidacion.svelte";
+  import Equipo from "./routes/Equipo.svelte";
 
   let errorEntrada = $state<string | null>(null);
 
@@ -75,6 +76,8 @@
         <Tarifas />
       {:else if router.vista === "liquidacion"}
         <Liquidacion />
+      {:else if router.vista === "equipo"}
+        <Equipo />
       {/if}
     </main>
   </div>

@@ -31,6 +31,14 @@ export interface MagicTokenDoc {
   email: string;
   expiresAt: Date;
   usedAt: Date | null;
+  /**
+   * Invitación de una empresa a un jefe de cuadrilla. Si está presente,
+   * `/auth/verify` NO crea una organización nueva: adjunta el usuario a
+   * `inviteOrg` con `inviteRole` y lo asigna a `inviteCrewIds`.
+   */
+  inviteOrg?: string;
+  inviteRole?: Rol;
+  inviteCrewIds?: string[];
 }
 
 const magicSchema = new Schema<MagicTokenDoc>(
@@ -39,6 +47,9 @@ const magicSchema = new Schema<MagicTokenDoc>(
     email: { type: String, required: true, lowercase: true, trim: true },
     expiresAt: { type: Date, required: true },
     usedAt: { type: Date, default: null },
+    inviteOrg: { type: String },
+    inviteRole: { type: String },
+    inviteCrewIds: { type: [String] },
   },
   { versionKey: false },
 );
