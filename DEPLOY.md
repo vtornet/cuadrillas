@@ -126,7 +126,12 @@ mismo, no para usuarios reales.
 
 Paquete `panel/` — SPA **online** (sin service worker, sin IndexedDB), habla con
 la misma API. Roles `owner` / `gestor` (JWT). Endpoints `/admin/*`. La API ya
-sirve `/admin` y el CORS ya es `*` → **no hace falta tocar Railway**.
+sirve `/admin` y el CORS ya es `*`.
+
+**Railway (API)** — añade una variable:
+`PANEL_URL = https://panel.cuadrillas.app`
+(así el enlace mágico pedido desde el panel llega apuntando al panel, no a la
+PWA; sin ella se usa `http://localhost:5175`). Nada más que tocar en Railway.
 
 ### Estado del código: completo (Fases A–D, 2026-09-10)
 
