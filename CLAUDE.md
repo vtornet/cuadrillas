@@ -536,6 +536,12 @@ Los detalles de cada punto están en **Backlog sin planificar** justo debajo.
     `mailto:contact@appstracta.app`. Definir: ¿pantalla propia en el menú?, ¿en varios
     idiomas o solo español al principio?, ¿texto largo tipo la política de privacidad o
     lista de pasos?
+16. **Botón de acceso al panel de empresa desde la PWA.** Pedido por el usuario
+    (2026-09-11), sin implementar. Probablemente en Cuenta, enlazando a
+    `panel.cuadrillas.app`. Pendiente de definir: ¿visible solo para `owner`/`gestor`
+    (los únicos roles que el panel admite) o para todos aunque a un `foreman` le
+    rebote?, ¿abre en la misma pestaña o en una nueva?, ¿lleva algo en la URL para
+    saltar directo al login (enlace mágico) o solo al home del panel?
 
 **Cuando toque cobrar de verdad**
 
@@ -605,6 +611,16 @@ Los detalles de cada punto están en **Backlog sin planificar** justo debajo.
     horas sin destajo y falsearían la media de la cuadrilla.
   - **`attendance.ts`**: horas anotadas en modo "horas" cuentan como "anotó" (igual que
     tarea/horas de un auxiliar).
+  - **Tope de horas — hecho (2026-09-11).** No se pueden anotar más horas de las que
+    dura el parte (`horaFin - horaInicio`; si sigue abierto, lo transcurrido hasta
+    ahora, vía `horasDeJornada` de `shared/domain/stats.ts` — se le reutiliza tal
+    cual, ya hacía justo este cálculo). Aplica tanto a `HorasRow`/
+    `AplicarHorasATodos` (recolectores en modo horas) como a `AuxiliarSheet` (horas
+    de un auxiliar, en cualquier modo). `Registro.svelte`/`ParteDetalle.svelte`
+    calculan `maxHoras` (con `minutosAhora()`, mismo patrón que `Estadisticas.svelte`)
+    y lo pasan como prop; cada componente marca el campo en rojo y bloquea el guardado
+    si se supera (con un margen de 0,01 h por redondeo de coma flotante). i18n
+    `horas.max_error`.
   - **Pendiente para el panel de empresa (no tocado)**: cómo entra en la liquidación
     (jornal × horas) — `settlement.ts` sigue siendo solo de destajo.
   - Tests: `shared/tests/parte.test.ts` (`informeParteHoras`), `shared/tests/

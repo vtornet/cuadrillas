@@ -70,6 +70,7 @@
   },
   "horas": {
     "horas_de": "Hours for {nombre}",
+    "max_error": "Cannot exceed the shift's hours ({max} h).",
     "aplicar_ph": "Hours",
     "aplicar_todos": "Apply to all",
     "total_envases": "Total containers",

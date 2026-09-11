@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import type { Entry, Product, Shift, UnitType, Worker } from "@cuadrilla/shared";
-  import { etiquetaProducto, sumarConteos } from "@cuadrilla/shared/domain";
+  import { etiquetaProducto, horasDeJornada, sumarConteos } from "@cuadrilla/shared/domain";
   import { i18n } from "../i18n/i18n.svelte";
   import { sesion } from "../stores/sesion.svelte";
   import type { CambiosWorker } from "../stores/jornada.svelte";
@@ -47,6 +47,13 @@
   const grupos = $derived(shift?.groups ?? []);
   const trabajaPorGrupos = $derived(grupos.length > 0);
   const porHoras = $derived((shift?.modo ?? "destajo") === "horas");
+
+  function minutosAhora(): number {
+    const d = new Date();
+    return d.getHours() * 60 + d.getMinutes();
+  }
+  /** Tope de horas que se pueden anotar (auxiliares y modo "por horas"). */
+  const maxHoras = $derived(shift ? horasDeJornada(shift, minutosAhora()) : 0);
 
   const recolectores = $derived(
     workers.filter((w) => w.funcion !== "auxiliar"),
@@ -398,13 +405,17 @@
     {:else if porHoras}
       <ul class="lista">
         <li>
-          <AplicarHorasATodos onaplicar={(h) => aplicarHorasATodos(h)} />
+          <AplicarHorasATodos
+            {maxHoras}
+            onaplicar={(h) => aplicarHorasATodos(h)}
+          />
         </li>
         {#each recolectores as w (w.id)}
           <li>
             <HorasRow
               item={w}
               horas={horasDe(w.id)}
+              {maxHoras}
               onhoras={(h) => actualizarHorasRecolector(w.id, h)}
               onabrir={() => (workerAbiertoId = w.id)}
             />
@@ -521,6 +532,7 @@
     {#key aa.worker.id}
       <AuxiliarSheet
         aux={aa}
+        {maxHoras}
         soloLectura={modo === "consulta"}
         onsave={(datos) => actualizarAuxiliar(aa.worker.id, datos)}
         onclose={() => (auxAbiertoId = null)}

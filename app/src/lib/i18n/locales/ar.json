@@ -70,6 +70,7 @@
   },
   "horas": {
     "horas_de": "ساعات {nombre}",
+    "max_error": "لا يمكن أن تتجاوز ساعات يوم العمل ({max} س).",
     "aplicar_ph": "الساعات",
     "aplicar_todos": "تطبيق على الجميع",
     "total_envases": "إجمالي العبوات",

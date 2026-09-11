@@ -70,6 +70,7 @@
   },
   "horas": {
     "horas_de": "Horas de {nombre}",
+    "max_error": "No puede superar las horas de la jornada ({max} h).",
     "aplicar_ph": "Horas",
     "aplicar_todos": "Aplicar a todos",
     "total_envases": "Total de envases",

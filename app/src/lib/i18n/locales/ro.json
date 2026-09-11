@@ -70,6 +70,7 @@
   },
   "horas": {
     "horas_de": "Orele lui {nombre}",
+    "max_error": "Nu poate depăși orele zilei de lucru ({max} h).",
     "aplicar_ph": "Ore",
     "aplicar_todos": "Aplică tuturor",
     "total_envases": "Total ambalaje",

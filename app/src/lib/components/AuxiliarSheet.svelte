@@ -5,11 +5,14 @@
 
   let {
     aux,
+    maxHoras,
     onsave,
     onclose,
     soloLectura = false,
   }: {
     aux: AuxiliarConTrabajo;
+    /** Duración de la jornada (o lo transcurrido si sigue abierta): tope de horas. */
+    maxHoras: number;
     onsave: (datos: { tarea: string; horas: number | null }) => Promise<void> | void;
     onclose: () => void;
     soloLectura?: boolean;
@@ -29,7 +32,11 @@
     const n = Number.parseFloat(t);
     return Number.isFinite(n) && n >= 0 ? n : NaN;
   });
-  const horasValidas = $derived(!Number.isNaN(horasNum));
+  // Pequeño margen para no rechazar por redondeo de coma flotante.
+  const superaTope = $derived(
+    horasNum != null && !Number.isNaN(horasNum) && horasNum > maxHoras + 0.01,
+  );
+  const horasValidas = $derived(!Number.isNaN(horasNum) && !superaTope);
   const dirty = $derived(
     tarea.trim() !== aux.tarea || (horasNum ?? null) !== (aux.horas ?? null),
   );
@@ -91,7 +98,9 @@
           placeholder={i18n.t("auxiliar.horas_ph")}
         />
       </label>
-      {#if !horasValidas}
+      {#if superaTope}
+        <p class="login-error">{i18n.t("horas.max_error", { max: maxHoras })}</p>
+      {:else if !horasValidas}
         <p class="login-error">{i18n.t("auxiliar.horas_error")}</p>
       {/if}
     </div>

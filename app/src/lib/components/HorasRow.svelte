@@ -10,12 +10,15 @@
   let {
     item,
     horas,
+    maxHoras,
     onhoras,
     onabrir,
     soloLectura = false,
   }: {
     item: { name: string; alias: string };
     horas: number | null;
+    /** Duración de la jornada (o lo transcurrido si sigue abierta): tope de horas. */
+    maxHoras: number;
     onhoras: (horas: number | null) => void;
     onabrir: () => void;
     soloLectura?: boolean;
@@ -36,7 +39,9 @@
     const n = Number.parseFloat(t);
     return Number.isFinite(n) && n >= 0 ? n : NaN;
   });
-  const valido = $derived(!Number.isNaN(valor));
+  // Pequeño margen para no rechazar por redondeo de coma flotante.
+  const superaTope = $derived(valor != null && !Number.isNaN(valor) && valor > maxHoras + 0.01);
+  const valido = $derived(!Number.isNaN(valor) && !superaTope);
 
   function alSalir(): void {
     if (!soloLectura && valido && valor !== horas) onhoras(valor);
@@ -60,6 +65,7 @@
       disabled={soloLectura}
       placeholder="0"
       aria-label={i18n.t("horas.horas_de", { nombre: item.name })}
+      title={superaTope ? i18n.t("horas.max_error", { max: maxHoras }) : undefined}
       class:invalido={!valido}
     />
     <span class="horas-unidad">{i18n.t("compartir.horas")}</span>

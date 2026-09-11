@@ -70,6 +70,7 @@
   },
   "horas": {
     "horas_de": "Heures de {nombre}",
+    "max_error": "Ne peut pas dépasser les heures de la journée ({max} h).",
     "aplicar_ph": "Heures",
     "aplicar_todos": "Appliquer à tous",
     "total_envases": "Total des caisses",

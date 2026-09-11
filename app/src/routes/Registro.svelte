@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { etiquetaProducto } from "@cuadrilla/shared/domain";
+  import { etiquetaProducto, horasDeJornada } from "@cuadrilla/shared/domain";
   import { jornada } from "../lib/stores/jornada.svelte";
   import { i18n } from "../lib/i18n/i18n.svelte";
   import AppBar from "../lib/components/AppBar.svelte";
@@ -27,6 +27,20 @@
   let firmaAbierta = $state(false);
   let avisoSinAnotar = $state(false);
   let compartirAbierto = $state(false);
+
+  function minutosAhora(): number {
+    const d = new Date();
+    return d.getHours() * 60 + d.getMinutes();
+  }
+  /**
+   * Tope de horas que se pueden anotar (auxiliares y modo "por horas"): la
+   * duración real de la jornada, o lo transcurrido hasta ahora si sigue
+   * abierta. Se recalcula cada vez que cambia el parte (no en vivo cada
+   * minuto, pero sí en cada interacción).
+   */
+  const maxHoras = $derived(
+    jornada.shift ? horasDeJornada(jornada.shift, minutosAhora()) : 0,
+  );
 
   function intentarFinalizar(): void {
     if (jornada.sinAnotar.length === 0) firmaAbierta = true;
@@ -166,13 +180,17 @@
     <ul class="lista">
       {#if jornada.porHoras}
         <li>
-          <AplicarHorasATodos onaplicar={(h) => jornada.aplicarHorasATodos(h)} />
+          <AplicarHorasATodos
+            {maxHoras}
+            onaplicar={(h) => jornada.aplicarHorasATodos(h)}
+          />
         </li>
         {#each visiblesWorkers as w (w.id)}
           <li>
             <HorasRow
               item={w}
               horas={jornada.horasDe(w.id)}
+              {maxHoras}
               onhoras={(h) => jornada.actualizarHorasRecolector(w.id, h)}
               onabrir={() => (workerAbiertoId = w.id)}
             />
@@ -286,6 +304,7 @@
       {#key aa.worker.id}
         <AuxiliarSheet
           aux={aa}
+          {maxHoras}
           onsave={(datos) => jornada.actualizarAuxiliar(aa.worker.id, datos)}
           onclose={() => (auxAbiertoId = null)}
         />
