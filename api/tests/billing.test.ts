@@ -93,7 +93,6 @@ describe("billing", () => {
         name: `W${i}`,
         alias: `W${i}`,
         crewId,
-        language: "es",
         activo: 1,
         updatedAt: 1,
         deleted: 0,

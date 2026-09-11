@@ -1,7 +1,6 @@
 <script lang="ts">
   import { untrack } from "svelte";
-  import type { FuncionTrabajador, Idioma, Worker } from "@cuadrilla/shared";
-  import { IDIOMAS } from "@cuadrilla/shared";
+  import type { FuncionTrabajador, Worker } from "@cuadrilla/shared";
   import { i18n } from "../../i18n/i18n.svelte";
   import { sesion } from "../../stores/sesion.svelte";
   import { gestion } from "../../stores/gestion.svelte";
@@ -14,14 +13,6 @@
   let { registro, onclose }: { registro: Worker | null; onclose: () => void } =
     $props();
 
-  const IDIOMA_LABEL: Record<Idioma, string> = {
-    es: "Español",
-    ro: "Română",
-    ar: "العربية",
-    fr: "Français",
-    en: "English",
-  };
-
   const { reg, ini } = untrack(() => {
     const reg = registro;
     const transporte = reg?.transporteCentimos ?? 0;
@@ -31,7 +22,6 @@
         name: reg?.name ?? "",
         alias: reg?.alias ?? "",
         crewId: reg?.crewId ?? gestion.crews[0]?.id ?? "",
-        language: (reg?.language ?? "es") as Idioma,
         funcion: (reg?.funcion ?? "recolector") as FuncionTrabajador,
         activo: (reg?.activo ?? 1) === 1,
         qrCode: reg?.qrCode ?? "",
@@ -44,7 +34,6 @@
   let name = $state(ini.name);
   let alias = $state(ini.alias);
   let crewId = $state(ini.crewId);
-  let language = $state<Idioma>(ini.language);
   let funcion = $state<FuncionTrabajador>(ini.funcion);
   let activo = $state(ini.activo);
   let qrCode = $state(ini.qrCode);
@@ -59,7 +48,6 @@
     name.trim() !== ini.name ||
       alias.trim() !== ini.alias ||
       crewId !== ini.crewId ||
-      language !== ini.language ||
       funcion !== ini.funcion ||
       activo !== ini.activo ||
       qrCode.trim() !== ini.qrCode ||
@@ -113,7 +101,6 @@
       name: name.trim(),
       alias: alias.trim(),
       crewId,
-      language,
       funcion: funcion === "auxiliar" ? "auxiliar" : undefined,
       activo: activo ? 1 : 0,
       qrCode: qrCode.trim() || undefined,
@@ -148,14 +135,6 @@
     <select bind:value={crewId}>
       {#each gestion.crews as c (c.id)}
         <option value={c.id}>{c.name}</option>
-      {/each}
-    </select>
-  </label>
-  <label class="campo">
-    <span>{i18n.t("worker.idioma")}</span>
-    <select bind:value={language}>
-      {#each IDIOMAS as id (id)}
-        <option value={id}>{IDIOMA_LABEL[id]}</option>
       {/each}
     </select>
   </label>

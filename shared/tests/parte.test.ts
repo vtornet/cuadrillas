@@ -24,7 +24,6 @@ function worker(id: string, name: string, p: Partial<Worker> = {}): Worker {
     name,
     alias: id,
     crewId: "c1",
-    language: "es",
     activo: 1,
     updatedAt: 1,
     deleted: 0,

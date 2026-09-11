@@ -272,7 +272,6 @@
     "editar": "Worker details",
     "nombre": "Name",
     "alias": "Alias or code",
-    "idioma": "Language",
     "funcion": "Role",
     "funcion_recolector": "Picker (piecework)",
     "funcion_auxiliar": "Support worker (other tasks)",

@@ -16,7 +16,6 @@ function worker(p: Partial<Worker> = {}): Worker {
     name: "Juan Pérez",
     alias: "JUAN",
     crewId: "c1",
-    language: "es",
     activo: 1,
     qrCode: "JUAN",
     transporteCentimos: 500,
@@ -86,7 +85,6 @@ describe("informeTrabajador", () => {
       name: "Juan Pérez",
       alias: "JUAN",
       cuadrilla: "Cuadrilla 1",
-      idioma: "es",
       codigoQr: "JUAN",
       transporteCentimos: 500,
     });
@@ -143,7 +141,6 @@ describe("anonimizarWorker", () => {
     expect(a.qrCode).toBeUndefined();
     expect(a.transporteCentimos).toBe(0);
     expect(a.laboral).toBeUndefined();
-    expect(a.language).toBe("es");
     expect(a.activo).toBe(0);
     expect(a.deleted).toBe(0);
     expect(a.crewId).toBe(w.crewId);

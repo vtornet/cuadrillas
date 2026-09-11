@@ -184,12 +184,8 @@
       </section>
 
       <section class="bloque">
-        <h2>{i18n.t("cuenta.idioma")}</h2>
-        <SelectorIdioma />
-      </section>
-
-      <section class="bloque">
         <h2>{i18n.t("perfil.titulo")}</h2>
+        <SelectorIdioma />
         <PerfilForm />
         <button
           type="button"

@@ -56,7 +56,6 @@ function opWorker(
       name: `W-${id}`,
       alias: id.toUpperCase(),
       crewId,
-      language: "es",
       activo: 1,
       updatedAt,
       deleted: 0,

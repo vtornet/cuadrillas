@@ -13,7 +13,6 @@ function worker(id: string, updatedAt: number, name: string): Worker {
     name,
     alias: id.toUpperCase(),
     crewId: "c",
-    language: "es",
     activo: 1,
     updatedAt,
     deleted: 0,

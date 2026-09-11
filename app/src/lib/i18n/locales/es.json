@@ -272,7 +272,6 @@
     "editar": "Ficha del trabajador",
     "nombre": "Nombre",
     "alias": "Alias o codigo",
-    "idioma": "Idioma",
     "funcion": "Funcion",
     "funcion_recolector": "Recolector (destajo)",
     "funcion_auxiliar": "Auxiliar (otras tareas)",

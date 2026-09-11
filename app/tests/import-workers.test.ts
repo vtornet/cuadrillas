@@ -28,7 +28,6 @@ function worker(p: Partial<Worker> = {}): Worker {
     name: "Ana",
     alias: "ANA",
     crewId: "c1",
-    language: "es",
     activo: 1,
     updatedAt: 1,
     deleted: 0,
@@ -48,9 +47,9 @@ function ctx(p: Partial<ContextoImport> = {}): ContextoImport {
 describe("construirWorkers", () => {
   it("mapea cabeceras con acentos/mayusculas y crea trabajadores", () => {
     const matriz = [
-      ["Nombre", "Alias", "Cuadrilla", "Idioma", "Transporte"],
-      ["Juan Pérez", "JUAN", "Cuadrilla Norte", "es", "5,00"],
-      ["María López", "MARIA", "cuadrilla norte", "Inglés", "3"],
+      ["Nombre", "Alias", "Cuadrilla", "Transporte"],
+      ["Juan Pérez", "JUAN", "Cuadrilla Norte", "5,00"],
+      ["María López", "MARIA", "cuadrilla norte", "3"],
     ];
     const r = construirWorkers(matriz, ctx());
 
@@ -60,7 +59,6 @@ describe("construirWorkers", () => {
       name: "Juan Pérez",
       alias: "JUAN",
       crewId: "c1",
-      language: "es",
       transporteCentimos: 500,
       activo: 1,
       organizationId: ORG,
@@ -68,7 +66,6 @@ describe("construirWorkers", () => {
     });
     expect(r.validos[1]).toMatchObject({
       name: "María López",
-      language: "en",
       transporteCentimos: 300,
     });
     expect(r.validos[0].id).not.toBe(r.validos[1].id);
@@ -81,7 +78,6 @@ describe("construirWorkers", () => {
       name: "Solo Nombre",
       alias: "Solo Nombre",
       crewId: "c1",
-      language: "es",
       transporteCentimos: 0,
     });
   });

@@ -60,7 +60,6 @@ function opWorker(orgId: string, id: string, extra: Record<string, unknown> = {}
       organizationId: orgId,
       name: `W-${id}`,
       alias: id.toUpperCase(),
-      language: "es",
       activo: 1,
       updatedAt: 1000,
       deleted: 0,

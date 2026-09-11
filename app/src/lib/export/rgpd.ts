@@ -19,7 +19,6 @@ export function informeATexto(inf: InformeTrabajador): string {
   L.push(`  Nombre:      ${w.name}`);
   L.push(`  Alias/código: ${w.alias}`);
   L.push(`  Cuadrilla:   ${w.cuadrilla}`);
-  L.push(`  Idioma:      ${w.idioma}`);
   if (w.codigoQr) L.push(`  Código QR:   ${w.codigoQr}`);
   if (w.transporteCentimos > 0) {
     L.push(`  Transporte:  ${centimosAEuros(w.transporteCentimos)} por día`);

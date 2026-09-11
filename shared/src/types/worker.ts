@@ -37,7 +37,6 @@ export interface Worker extends RegistroSincronizable {
   /** Alias o código corto para buscar y mostrar rápido en campo. */
   alias: string;
   crewId: string;
-  language: Idioma;
   activo: 0 | 1;
   /** `auxiliar` = no recolecta. Ausente o `recolector` = destajo normal. */
   funcion?: FuncionTrabajador;

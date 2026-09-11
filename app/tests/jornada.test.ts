@@ -10,7 +10,6 @@ const WORKER: Worker = {
   name: "Ana",
   alias: "ANA",
   crewId: "c1",
-  language: "es",
   activo: 1,
   updatedAt: 1,
   deleted: 0,
@@ -99,14 +98,13 @@ describe("jornada store", () => {
     await jornada.guardarTrabajador("w1", {
       name: "Ana Ruiz",
       alias: "ANAR",
-      language: "en",
       activo: 1,
     });
 
     expect(jornada.workers[0].name).toBe("Ana Ruiz");
     const guardado = await db.workers.get("w1");
     expect(guardado?.name).toBe("Ana Ruiz");
-    expect(guardado?.language).toBe("en");
+    expect(guardado?.alias).toBe("ANAR");
   });
 
   it("separa recolectores y auxiliares y guarda tarea/horas del auxiliar", async () => {

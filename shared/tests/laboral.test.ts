@@ -13,7 +13,6 @@ function worker(p: Partial<Worker> = {}): Worker {
     name: "Ana",
     alias: "ANA",
     crewId: "c1",
-    language: "es",
     activo: 1,
     updatedAt: 1,
     deleted: 0,

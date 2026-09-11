@@ -37,7 +37,6 @@ export interface InformeTrabajador {
     name: string;
     alias: string;
     cuadrilla: string;
-    idioma: string;
     codigoQr: string | null;
     transporteCentimos: number;
   };
@@ -100,7 +99,6 @@ export function informeTrabajador(
       name: worker.name,
       alias: worker.alias,
       cuadrilla: nombres.crew(worker.crewId),
-      idioma: worker.language,
       codigoQr: worker.qrCode ?? null,
       transporteCentimos: worker.transporteCentimos ?? 0,
     },
@@ -127,7 +125,6 @@ export function anonimizarWorker(worker: Worker, nombreGenerico: string): Worker
     ...worker,
     name: nombreGenerico,
     alias: aliasAnonimo(worker.id),
-    language: "es",
     qrCode: undefined,
     transporteCentimos: 0,
     laboral: undefined,

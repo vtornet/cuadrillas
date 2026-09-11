@@ -1,5 +1,4 @@
-import type { Crew, Idioma, Worker } from "@cuadrilla/shared";
-import { IDIOMAS } from "@cuadrilla/shared";
+import type { Crew, Worker } from "@cuadrilla/shared";
 import { eurosACentimos } from "../money";
 
 /**
@@ -42,13 +41,12 @@ function norm(v: unknown): string {
     .toLowerCase();
 }
 
-type Campo = "name" | "alias" | "crew" | "language" | "qr" | "transporte" | "activo";
+type Campo = "name" | "alias" | "crew" | "qr" | "transporte" | "activo";
 
 const ALIAS_CABECERA: Record<Campo, string[]> = {
   name: ["nombre", "name", "trabajador", "nombre completo"],
   alias: ["alias", "codigo", "code", "clave", "apodo"],
   crew: ["cuadrilla", "crew", "equipo", "grupo de trabajo"],
-  language: ["idioma", "language", "lengua", "lang"],
   qr: ["qr", "qrcode", "codigo qr", "codigoqr"],
   transporte: [
     "transporte",
@@ -76,30 +74,6 @@ function mapearCabeceras(cabecera: unknown[]): Partial<Record<Campo, number>> {
     }
   });
   return mapa;
-}
-
-function resolverIdioma(valor: unknown): Idioma | null {
-  const n = norm(valor);
-  if (!n) return "es";
-  const mapa: Record<string, Idioma> = {
-    es: "es",
-    espanol: "es",
-    castellano: "es",
-    spanish: "es",
-    ro: "ro",
-    rumano: "ro",
-    romana: "ro",
-    ar: "ar",
-    arabe: "ar",
-    fr: "fr",
-    frances: "fr",
-    french: "fr",
-    en: "en",
-    ingles: "en",
-    english: "en",
-  };
-  if (mapa[n]) return mapa[n];
-  return (IDIOMAS as readonly string[]).includes(n) ? (n as Idioma) : null;
 }
 
 /**
@@ -181,16 +155,6 @@ export function construirWorkers(
       continue;
     }
 
-    const idioma = resolverIdioma(celda(f, "language"));
-    if (!idioma) {
-      filas.push({
-        fila,
-        worker: null,
-        motivo: `Idioma "${celda(f, "language")}" no reconocido.`,
-      });
-      continue;
-    }
-
     let transporteCentimos = 0;
     const transRaw = celda(f, "transporte");
     if (transRaw) {
@@ -228,7 +192,6 @@ export function construirWorkers(
       name,
       alias,
       crewId,
-      language: idioma,
       activo,
       qrCode: qr || undefined,
       transporteCentimos,

@@ -77,7 +77,6 @@ describe("RGPD end-to-end", () => {
       name: "Juan Pérez",
       alias: "JUAN",
       crewId: "c1",
-      language: "es",
       activo: 1,
       qrCode: "JUAN",
       transporteCentimos: 500,

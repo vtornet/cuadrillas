@@ -109,7 +109,6 @@
   <h2>{d.name} <em style="color:var(--suave)">{d.alias}</em></h2>
   <dl class="pares">
     <dt>Cuadrilla</dt><dd>{d.cuadrilla}</dd>
-    <dt>Idioma</dt><dd>{d.language}</dd>
     <dt>Función</dt>
     <dd>{d.funcion === "auxiliar" ? "Auxiliar" : "Recolector"}</dd>
     <dt>Transporte / día</dt><dd>{eur(d.transporteCentimos)}</dd>

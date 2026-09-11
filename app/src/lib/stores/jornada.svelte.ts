@@ -2,7 +2,6 @@ import type {
   AuxiliarDeJornada,
   Entry,
   GrupoDeJornada,
-  Idioma,
   Product,
   Shift,
   UnitType,
@@ -32,7 +31,6 @@ import { sesion } from "./sesion.svelte";
 export interface CambiosWorker {
   name: string;
   alias: string;
-  language: Idioma;
   activo: 0 | 1;
 }
 
@@ -283,7 +281,6 @@ class JornadaStore {
       ...actual,
       name: cambios.name,
       alias: cambios.alias,
-      language: cambios.language,
       activo: cambios.activo,
       updatedAt: Date.now(),
     };

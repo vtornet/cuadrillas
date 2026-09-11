@@ -1,7 +1,6 @@
 import type {
   Crew,
   Finca,
-  Idioma,
   Organization,
   Product,
   Shift,
@@ -99,7 +98,6 @@ export async function seedDemo(): Promise<void> {
     name,
     alias,
     crewId: CREW_ID,
-    language: "es" as Idioma,
     // El último es auxiliar (carga, paletizado…): no recolecta.
     funcion: i === NOMBRES.length - 1 ? ("auxiliar" as const) : undefined,
     activo: 1,

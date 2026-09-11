@@ -1,7 +1,6 @@
 <script lang="ts">
   import { onDestroy, onMount, untrack } from "svelte";
-  import type { Entry, Idioma, Worker } from "@cuadrilla/shared";
-  import { IDIOMAS } from "@cuadrilla/shared";
+  import type { Entry, Worker } from "@cuadrilla/shared";
   import { i18n } from "../i18n/i18n.svelte";
   import type { CambiosWorker } from "../stores/jornada.svelte";
 
@@ -19,27 +18,17 @@
     onclose: () => void;
   } = $props();
 
-  const IDIOMA_LABEL: Record<Idioma, string> = {
-    es: "Español",
-    ro: "Română",
-    ar: "العربية",
-    fr: "Français",
-    en: "English",
-  };
-
   // La ficha se re-monta por trabajador ({#key} en Registro), asi que tomar el
   // valor inicial del prop es intencionado.
   const inicial = untrack(() => ({
     name: worker.name,
     alias: worker.alias,
-    language: worker.language,
     activo: worker.activo === 1,
   }));
 
   // Formulario.
   let name = $state(inicial.name);
   let alias = $state(inicial.alias);
-  let language = $state<Idioma>(inicial.language);
   let activo = $state(inicial.activo);
 
   // Instantanea para detectar cambios sin guardar.
@@ -48,7 +37,6 @@
   const dirty = $derived(
     name.trim() !== base.name ||
       alias.trim() !== base.alias ||
-      language !== base.language ||
       activo !== base.activo,
   );
   const valido = $derived(name.trim().length > 0 && alias.trim().length > 0);
@@ -65,14 +53,12 @@
       const cambios: CambiosWorker = {
         name: name.trim(),
         alias: alias.trim(),
-        language,
         activo: activo ? 1 : 0,
       };
       await onsave(cambios);
       base = {
         name: cambios.name,
         alias: cambios.alias,
-        language,
         activo,
       };
       guardadoOk = true;
@@ -136,15 +122,6 @@
       <label class="campo">
         <span>{i18n.t("worker.alias")}</span>
         <input type="text" bind:value={alias} autocomplete="off" />
-      </label>
-
-      <label class="campo">
-        <span>{i18n.t("worker.idioma")}</span>
-        <select bind:value={language}>
-          {#each IDIOMAS as id (id)}
-            <option value={id}>{IDIOMA_LABEL[id]}</option>
-          {/each}
-        </select>
       </label>
 
       <label class="campo campo-check">

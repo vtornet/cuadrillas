@@ -475,7 +475,7 @@ Perfil de usuario bajo → simplificar. Plan en 4 fases:
   vistas ni las rutas `#/registro` `#/gestion`). Import de trabajadores desde Excel/CSV:
   `app/src/lib/import/workers.ts` (`filasDeArchivo` carga SheetJS bajo demanda →
   `sheet_to_json` matriz; `construirWorkers` puro: mapea cabeceras sin acentos/mayúsculas
-  —Nombre/Alias/Cuadrilla/Idioma/Transporte/QR/Activo—, valida fila a fila, dedup por
+  —Nombre/Alias/Cuadrilla/Transporte/QR/Activo—, valida fila a fila, dedup por
   `crewId::alias` contra los existentes y dentro del propio archivo). UI:
   `gestion/ImportWorkersSheet.svelte` (botón "Importar de Excel/CSV" en la pestaña
   Trabajadores → hoja con `<input type=file>` oculto → previsualización de válidos +
@@ -567,6 +567,26 @@ Los detalles de cada punto están en **Backlog sin planificar** justo debajo.
 
 ### Backlog sin planificar
 
+- **Eliminado `Worker.language` — hecho (2026-09-11).** El selector "Idioma" en la
+  ficha del trabajador (alta/edición en Datos y en la hoja rápida al tocar un
+  trabajador durante un parte) no accionaba nada — no hay vista del trabajador que lo
+  use (sigue fuera del MVP) — así que se ha quitado el campo por completo, no solo el
+  `<select>`: `Worker.language` (tipo `shared/src/types/worker.ts`), su columna en el
+  import de Excel/CSV (`import/workers.ts`, incluía validación de idioma reconocido),
+  la línea "Idioma:" del informe RGPD (`shared/domain/rgpd.ts` `InformeTrabajador.
+  worker.idioma` + `app/lib/export/rgpd.ts`), `anonimizarWorker` (ya no lo resetea),
+  `CambiosWorker` (`jornada.svelte.ts` / `ParteDetalle.svelte`), el seed de demo, y la
+  fila "Idioma" en la ficha de trabajador del panel (`panel/routes/Trabajadores.svelte`
+  — solo mostraba el valor, tampoco accionaba nada ahí). El tipo `Idioma` en sí se
+  conserva (lo usa `i18n.svelte.ts` para el idioma de la propia app, ver abajo).
+  Datos ya sincronizados con un `language` viejo no se borran (los modelos de Mongo son
+  `strict: false`) pero quedan ignorados por todo el código.
+- **Selector de idioma de la app movido a Cuenta › Perfil (2026-09-11).** Antes vivía
+  en su propia sección "Idioma" separada, encima de "Perfil"; ahora `SelectorIdioma`
+  (sin `compacto`) es el primer campo dentro de la sección "Perfil" — es una preferencia
+  personal del jefe, como su nombre o teléfono. Sigue siendo el mismo componente/store
+  (`i18n.cambiar()`, `meta.locale`); solo cambió la ubicación en `Cuenta.svelte`. El
+  selector `compacto` de la pantalla de login no se toca.
 - **Auxiliares — hecho (2026-09-07).** Recolectores (destajo por unidad) vs auxiliares
   (carga, paletizado, pesaje…). Decidido: rol **fijo en la ficha** (`Worker.funcion?:
   "recolector" | "auxiliar"`, ausente = recolector), en el parte salen en **sección
@@ -746,7 +766,7 @@ Los detalles de cada punto están en **Backlog sin planificar** justo debajo.
   - **Borrado = anonimizar** (no borrado físico). `shared/src/domain/rgpd.ts`
     → `anonimizarWorker(worker, nombreGenerico)`: conserva el `Worker` (`deleted: 0`)
     para que el histórico siga resolviéndolo, pone `name` genérico, `alias`
-    `ELIMINADO-<id8>` (`aliasAnonimo`), borra `qrCode`/`transporteCentimos`, `language: "es"`,
+    `ELIMINADO-<id8>` (`aliasAnonimo`), borra `qrCode`/`transporteCentimos`,
     `activo: 0`. Los `Entry` solo guardan `workerId`, nada más que raspar.
     `gestion.anonimizarWorker()` lo persiste (encolado como update normal).
   - **Export = hoja legible** (`.txt`), **sin importes de destajo**. Lógica pura

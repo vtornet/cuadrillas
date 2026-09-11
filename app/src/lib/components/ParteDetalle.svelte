@@ -206,7 +206,6 @@
       ...actual,
       name: cambios.name,
       alias: cambios.alias,
-      language: cambios.language,
       activo: cambios.activo,
       updatedAt: Date.now(),
     };
