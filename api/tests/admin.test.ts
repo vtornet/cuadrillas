@@ -47,6 +47,8 @@ async function crewIdDe(orgId: string, excepto?: string): Promise<string> {
   return c!._id;
 }
 
+/** `extra` debe traer un `crewId` real (de `crewIdDe`) — el push de /sync
+ * exige que sea una cuadrilla del jefe que sincroniza (ver `syncService`). */
 function opWorker(orgId: string, id: string, extra: Record<string, unknown> = {}) {
   return {
     entity: "worker",
@@ -58,7 +60,6 @@ function opWorker(orgId: string, id: string, extra: Record<string, unknown> = {}
       organizationId: orgId,
       name: `W-${id}`,
       alias: id.toUpperCase(),
-      crewId: "c1",
       language: "es",
       activo: 1,
       updatedAt: 1000,
@@ -129,9 +130,10 @@ describe("/admin", () => {
   it("filtra trabajadores por texto", async () => {
     const token = await tokenPara("g2@empresa.com");
     const orgId = await orgDe("g2@empresa.com");
+    const crewId = await crewIdDe(orgId);
     await sync(token, [
-      opWorker(orgId, "w1", { name: "Ana Ruiz" }),
-      opWorker(orgId, "w2", { name: "Beto Sanz" }),
+      opWorker(orgId, "w1", { crewId, name: "Ana Ruiz" }),
+      opWorker(orgId, "w2", { crewId, name: "Beto Sanz" }),
     ]);
 
     const r = await request(app)

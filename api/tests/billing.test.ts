@@ -28,7 +28,12 @@ async function login(email = "jefe@ejemplo.com") {
   const ml = await request(app).post("/auth/magic-link").send({ email });
   const token = String(ml.body.enlace).split("token=")[1];
   const v = await request(app).post("/auth/verify").send({ token });
-  return v.body as { token: string; user: { organizationId: string } };
+  const data = v.body as { token: string; user: { organizationId: string } };
+  // El push de /sync exige que el `crewId` sea de una cuadrilla del jefe.
+  const crew = await Modelos.crew
+    .findOne({ organizationId: data.user.organizationId })
+    .lean<{ _id: string } | null>();
+  return { ...data, crewId: crew!._id };
 }
 
 function evento(type: string, object: unknown): Stripe.Event {
@@ -69,7 +74,7 @@ describe("billing", () => {
   });
 
   it("con plan de pago se puede pasar de 10 trabajadores en /sync", async () => {
-    const { token, user } = await login();
+    const { token, user, crewId } = await login();
     await procesarEventoStripe(
       evento("checkout.session.completed", {
         metadata: { organizationId: user.organizationId, plan: "company" },
@@ -87,7 +92,7 @@ describe("billing", () => {
         organizationId: "x",
         name: `W${i}`,
         alias: `W${i}`,
-        crewId: "c1",
+        crewId,
         language: "es",
         activo: 1,
         updatedAt: 1,

@@ -76,8 +76,8 @@ con arrays anidados como `attendeeIds`).
   `updatedAt` (epoch ms del cliente); **fuerza `organizationId` al del token**; valida
   límites de plan; pone `serverUpdatedAt` (Date del servidor) en cada escritura.
   El pull son los docs con `serverUpdatedAt > lastSyncAt` — **nunca** se compara contra el
-  reloj del cliente. La **escritura** (push) no está acotada por cuadrilla (un jefe podría
-  empujar un registro con el `crewId` de otro); es la **lectura** (pull) la que se acota.
+  reloj del cliente. La **escritura** (push) también está acotada por cuadrilla desde
+  2026-09-11 (`autorizadoParaEscribir`, ver más abajo) — simétrica con la lectura.
 - Disparadores de sync: al volver la red, rebote de 2 s tras cada escritura local, y cada
   30 s (`app/src/lib/sync/status.svelte.ts`).
 
@@ -90,9 +90,8 @@ invitar a un segundo jefe desde el panel.
 - `syncService.cambiosDesde(organizationId, userId, lastSyncAt)`: `crew` → solo las que
   lidera (`foremanIds` contiene `userId`); `worker`/`group`/`shift` → solo `crewId` en esas
   cuadrillas; `entry` → solo `shiftId` de esos partes. `organization`/`product`/`unitType`/
-  `finca`/`rate` siguen siendo catálogo de la organización, igual para todos (no tienen
-  `crewId`, no son datos de una cuadrilla concreta — nota: `rate` viaja al dispositivo del
-  jefe aunque no lo use, heredado de antes del panel; pendiente de revisar si debería).
+  `finca` siguen siendo catálogo de la organización, igual para todos (no tienen `crewId`,
+  no son datos de una cuadrilla concreta). `rate` **no se envía** — ver más abajo.
 - **Backfill al ganar una cuadrilla**: como el pull es un cursor por fecha
   (`serverUpdatedAt > lastSyncAt`), un jefe con sync ya avanzado que gana acceso a una
   cuadrilla con historial antiguo se lo saltaría. `refrescarCuadrilla(organizationId,
@@ -100,7 +99,27 @@ invitar a un segundo jefe desde el panel.
   grupos, partes y anotaciones; se llama desde `adminService.asignarCuadrillas` (solo para
   las cuadrillas que se AÑADEN) y no hace falta en `altaInvitado` (la primera sincronización
   de un jefe nuevo siempre es `lastSyncAt: null` → backfill completo ya de serie).
-- Tests: `api/tests/sync.test.ts` (aislamiento entre dos cuadrillas de la misma org),
+- **Escritura (push) acotada por cuadrilla**: `autorizadoParaEscribir(entity, entrante,
+  actual, misCuadrillas, crewDeShift, ctx)`, llamada por cada op antes de aplicarla. Sin
+  esto, un jefe podía empujar un `worker`/`group`/`shift` con el `crewId` de una cuadrilla
+  ajena de la misma organización, una `entry` con el `shiftId` de un parte ajeno, o
+  secuestrar una `crew` ajena (renombrarla, meterse en su `foremanIds`). Reglas: `worker`/
+  `group`/`shift` → `crewId` tiene que estar en las cuadrillas del jefe; `entry` → el
+  `crewId` del `shift` referenciado tiene que estarlo (se resuelve de Mongo o, si el
+  `shift` se acaba de crear en el mismo lote, del mapa `crewDeShift`); `crew` → alta nueva
+  siempre permitida (el jefe se pone a sí mismo como jefe desde `CrewForm`), pero una
+  cuadrilla ya existente solo se puede tocar si el jefe YA está en su `foremanIds`.
+  `misCuadrillas` (un `Set`, arranca en `crewIdsDe`) se amplía sobre la marcha según se
+  aplican altas de cuadrilla dentro del MISMO lote, para que un alta de cuadrilla seguida
+  de sus trabajadores en el mismo push funcione. Un op rechazado por esto cae en
+  `rejected` (no en `applied`) — el cliente revierte el registro local huérfano, igual que
+  un rechazo por límite de plan.
+- `rate` **no viaja a la app del jefe** (dato económico que no usa desde que se quitó
+  Liquidación, ver "Dinero" — antes se enviaba igualmente, heredado de antes del panel).
+  El panel lo lee por su cuenta vía `GET /admin/tarifas` (`adminService`), no por `/sync`.
+- Tests: `api/tests/sync.test.ts` (aislamiento del pull entre dos cuadrillas de la misma
+  org; rechazo del push de `worker`/`entry` ajenos; rechazo de secuestro de `crew` ajena
+  + alta de cuadrilla y su trabajador en el mismo lote; `rate` ausente del pull),
   `api/tests/admin.test.ts` (backfill tras `PUT /admin/jefes/:id/cuadrillas`).
 
 **Bug de infra que esto destapó**: `api/src/config/db.ts` tenía `mongoose.set("strictQuery",

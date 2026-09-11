@@ -30,7 +30,7 @@ async function login(email = "jefe@ejemplo.com") {
   const ml = await request(app).post("/auth/magic-link").send({ email });
   const token = String(ml.body.enlace).split("token=")[1];
   const v = await request(app).post("/auth/verify").send({ token });
-  const data = v.body as { token: string; user: { organizationId: string } };
+  const data = v.body as { token: string; user: { id: string; organizationId: string } };
   // El pull de /sync es por cuadrilla: los tests de worker necesitan la
   // cuadrilla REAL del jefe (la que crea altaInicial), no una inventada.
   const crew = await Modelos.crew
@@ -173,8 +173,6 @@ describe("/auth + /sync", () => {
       deleted: false,
     });
 
-    // El jefe empuja un trabajador a SU cuadrilla y (por error o malicia) uno
-    // a la otra: el push no está restringido por cuadrilla, solo el pull.
     const r = await request(app)
       .post("/sync")
       .set("authorization", `Bearer ${token}`)
@@ -192,6 +190,196 @@ describe("/auth + /sync", () => {
     // Tampoco ve la cuadrilla ajena en changes.crew.
     const crewIds = (r.body.changes.crew ?? []).map((x: { id: string }) => x.id);
     expect(crewIds).not.toContain(otraCrew);
+  });
+
+  it("el push rechaza un trabajador con el crewId de una cuadrilla ajena", async () => {
+    const { token, user, crewId } = await login();
+
+    const otraCrew = "crew-otra-push";
+    await Modelos.crew.create({
+      _id: otraCrew,
+      organizationId: user.organizationId,
+      name: "Otra cuadrilla",
+      foremanIds: ["otro-jefe"],
+      updatedAt: 1,
+      serverUpdatedAt: new Date(),
+      deleted: false,
+    });
+
+    const r = await request(app)
+      .post("/sync")
+      .set("authorization", `Bearer ${token}`)
+      .send({
+        lastSyncAt: null,
+        ops: [
+          opWorker("w-mio2", 1000, crewId),
+          opWorker("w-ajeno2", 1000, otraCrew),
+        ],
+      });
+
+    expect(r.body.applied).toContain("w-mio2");
+    expect(r.body.applied).not.toContain("w-ajeno2");
+    const rechazo = r.body.rejected.find(
+      (x: { id: string }) => x.id === "w-ajeno2",
+    );
+    expect(rechazo).toBeTruthy();
+    expect(rechazo.reason).toMatch(/cuadrilla/i);
+
+    // No se ha escrito en la base de datos.
+    const enBd = await Modelos.worker.findById("w-ajeno2").lean();
+    expect(enBd).toBeNull();
+  });
+
+  it("el push rechaza una anotación (entry) de un parte de una cuadrilla ajena", async () => {
+    const { token, user, crewId } = await login();
+
+    const otraCrew = "crew-otra-entry";
+    await Modelos.crew.create({
+      _id: otraCrew,
+      organizationId: user.organizationId,
+      name: "Otra cuadrilla",
+      foremanIds: ["otro-jefe"],
+      updatedAt: 1,
+      serverUpdatedAt: new Date(),
+      deleted: false,
+    });
+    await Modelos.shift.create({
+      _id: "shift-ajeno",
+      organizationId: user.organizationId,
+      crewId: otraCrew,
+      productId: "p1",
+      unitTypeId: "u1",
+      fecha: "2026-09-11",
+      estado: "open",
+      attendeeIds: [],
+      updatedAt: 1,
+      serverUpdatedAt: new Date(),
+      deleted: false,
+    });
+
+    const r = await request(app)
+      .post("/sync")
+      .set("authorization", `Bearer ${token}`)
+      .send({
+        lastSyncAt: null,
+        ops: [
+          {
+            entity: "entry",
+            entityId: "e-ajeno",
+            op: "upsert" as const,
+            updatedAt: 1000,
+            payload: {
+              id: "e-ajeno",
+              organizationId: "ajeno",
+              shiftId: "shift-ajeno",
+              workerId: "w-x",
+              cantidad: 5,
+              hora: "10:00",
+              updatedAt: 1000,
+              deleted: 0,
+            },
+          },
+        ],
+      });
+
+    expect(r.body.applied).not.toContain("e-ajeno");
+    const rechazo = r.body.rejected.find((x: { id: string }) => x.id === "e-ajeno");
+    expect(rechazo).toBeTruthy();
+    expect(rechazo.reason).toMatch(/parte/i);
+  });
+
+  it("el push rechaza renombrar/secuestrar una cuadrilla ajena, pero permite crear una y usarla en el mismo lote", async () => {
+    const { token, user, crewId } = await login();
+
+    const otraCrew = "crew-secuestro";
+    await Modelos.crew.create({
+      _id: otraCrew,
+      organizationId: user.organizationId,
+      name: "Cuadrilla ajena",
+      foremanIds: ["otro-jefe"],
+      updatedAt: 1,
+      serverUpdatedAt: new Date(),
+      deleted: false,
+    });
+
+    // Ya hay 2 cuadrillas (la inicial de altaInicial + otraCrew), el límite
+    // del plan gratis: sube la cuota para no mezclar esa restricción con la
+    // de autorización por cuadrilla, que es lo que prueba este test.
+    await Modelos.organization.updateOne(
+      { _id: user.organizationId },
+      { $set: { "planLimits.crews": 5 } },
+    );
+
+    const nuevaCrew = "crew-nueva-en-lote";
+    const r = await request(app)
+      .post("/sync")
+      .set("authorization", `Bearer ${token}`)
+      .send({
+        lastSyncAt: null,
+        ops: [
+          // Intento de secuestro: renombrar la ajena y meterse como jefe.
+          {
+            entity: "crew",
+            entityId: otraCrew,
+            op: "upsert" as const,
+            updatedAt: 1000,
+            payload: {
+              id: otraCrew,
+              organizationId: "ajeno",
+              name: "Hackeada",
+              foremanIds: ["otro-jefe", user.id],
+              updatedAt: 1000,
+              deleted: 0,
+            },
+          },
+          // Cuadrilla nueva, propia.
+          {
+            entity: "crew",
+            entityId: nuevaCrew,
+            op: "upsert" as const,
+            updatedAt: 1000,
+            payload: {
+              id: nuevaCrew,
+              organizationId: "ajeno",
+              name: "Nueva cuadrilla",
+              foremanIds: [user.id],
+              updatedAt: 1000,
+              deleted: 0,
+            },
+          },
+          // Trabajador de la cuadrilla recién creada, en el MISMO lote.
+          opWorker("w-en-nueva", 1000, nuevaCrew),
+        ],
+      });
+
+    expect(r.body.rejected.find((x: { id: string }) => x.id === otraCrew)).toBeTruthy();
+    const ajenaEnBd = await Modelos.crew.findById(otraCrew).lean<{ foremanIds: string[] } | null>();
+    expect(ajenaEnBd!.foremanIds).not.toContain(user.id);
+
+    expect(r.body.applied).toContain(nuevaCrew);
+    expect(r.body.applied).toContain("w-en-nueva");
+  });
+
+  it("no envía la entidad rate al dispositivo del jefe", async () => {
+    const { token, user, crewId } = await login();
+    await Modelos.rate.create({
+      _id: "r1",
+      organizationId: user.organizationId,
+      productId: "p1",
+      unitTypeId: "u1",
+      amountPerUnit: 100,
+      vigenteDesde: "2026-01-01",
+      updatedAt: 1,
+      serverUpdatedAt: new Date(),
+      deleted: false,
+    });
+
+    const r = await request(app)
+      .post("/sync")
+      .set("authorization", `Bearer ${token}`)
+      .send({ lastSyncAt: null, ops: [opWorker("wr", 1000, crewId)] });
+
+    expect(r.body.changes.rate).toBeUndefined();
   });
 
   it("/sync sin token responde 401", async () => {

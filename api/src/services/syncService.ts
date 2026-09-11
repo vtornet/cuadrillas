@@ -28,6 +28,15 @@ export async function procesarSync(
   const rejected: SyncResponse["rejected"] = [];
   const ahora = new Date();
 
+  // Cuadrillas de las que `userId` es jefe ahora mismo. Se amplía sobre la
+  // marcha según se aplican altas de cuadrilla DENTRO del mismo lote (p. ej.
+  // el jefe crea una cuadrilla y en el mismo push ya manda trabajadores para
+  // ella — ver el `add()` al final del bucle).
+  const misCuadrillas = new Set(await crewIdsDe(ctx.organizationId, ctx.userId));
+  // shiftId -> crewId ya resueltos en este lote (evita repetir la consulta
+  // y ve los `shift` recien creados en el propio lote).
+  const crewDeShift = new Map<string, string>();
+
   for (const op of ops) {
     const modelo = Modelos[op.entity];
     if (!modelo) {
@@ -42,6 +51,25 @@ export async function procesarSync(
     }
 
     const actual = await modelo.findById(entrante._id).lean<DocBase | null>();
+
+    // Autorización por cuadrilla: igual que el pull (`cambiosDesde`) solo
+    // entrega lo de las cuadrillas del jefe, la escritura solo debe aceptar
+    // registros de SUS cuadrillas — si no, un jefe podría empujar un
+    // trabajador/parte/anotación con el `crewId`/`shiftId` de una cuadrilla
+    // ajena de la misma organización, o secuestrar una cuadrilla ajena
+    // (renombrarla, meterse en su `foremanIds`).
+    const motivoRechazo = await autorizadoParaEscribir(
+      op.entity,
+      entrante,
+      actual,
+      misCuadrillas,
+      crewDeShift,
+      ctx,
+    );
+    if (motivoRechazo) {
+      rejected.push({ id: op.entityId, entity: op.entity, reason: motivoRechazo });
+      continue;
+    }
 
     // LWW: si el servidor ya tiene una version mas nueva, no se aplica; el
     // cliente recibira esa version en `changes` y se cuenta como "applied".
@@ -70,10 +98,65 @@ export async function procesarSync(
       { upsert: true },
     );
     applied.push(op.entityId);
+
+    // Registrar lo recién creado para que el resto del MISMO lote lo vea.
+    if (op.entity === "crew" && ((entrante.foremanIds as string[] | undefined) ?? []).includes(ctx.userId)) {
+      misCuadrillas.add(entrante._id);
+    } else if (op.entity === "shift" && typeof entrante.crewId === "string") {
+      crewDeShift.set(entrante._id, entrante.crewId);
+    }
   }
 
   const changes = await cambiosDesde(ctx.organizationId, ctx.userId, lastSyncAt);
   return { serverTime: ahora.toISOString(), changes, applied, rejected };
+}
+
+/**
+ * `null` si `userId` puede escribir este registro; si no, el motivo del
+ * rechazo. Solo mira las entidades ligadas a una cuadrilla (`crew` incluida);
+ * el resto (organization/product/unitType/finca/rate) es catálogo de la
+ * organización, igual para todos los jefes — sin restricción aquí.
+ */
+async function autorizadoParaEscribir(
+  entity: EntityName,
+  entrante: RegistroEntrante & { _id: string },
+  actual: DocBase | null,
+  misCuadrillas: Set<string>,
+  crewDeShift: Map<string, string>,
+  ctx: Contexto,
+): Promise<string | null> {
+  if (entity === "crew") {
+    // Alta de cuadrilla nueva: permitida (el jefe se pone a sí mismo como
+    // jefe desde `CrewForm`). Cuadrilla ya existente: solo si ya es jefe de
+    // ella — si no, podría secuestrarla.
+    if (actual && !(((actual.foremanIds as string[] | undefined) ?? []).includes(ctx.userId))) {
+      return "cuadrilla ajena";
+    }
+    return null;
+  }
+
+  if (entity === "worker" || entity === "group" || entity === "shift") {
+    const crewId = entrante.crewId;
+    if (typeof crewId !== "string" || !misCuadrillas.has(crewId)) {
+      return "cuadrilla ajena";
+    }
+    return null;
+  }
+
+  if (entity === "entry") {
+    const shiftId = entrante.shiftId;
+    if (typeof shiftId !== "string") return "parte ajeno";
+    let crewId = crewDeShift.get(shiftId);
+    if (!crewId) {
+      const shift = await Modelos.shift.findById(shiftId).lean<{ crewId?: string } | null>();
+      crewId = shift?.crewId;
+      if (crewId) crewDeShift.set(shiftId, crewId);
+    }
+    if (!crewId || !misCuadrillas.has(crewId)) return "parte ajeno";
+    return null;
+  }
+
+  return null;
 }
 
 /** Fuerza `organizationId` al del token y `deleted` a booleano. */
@@ -115,8 +198,13 @@ async function crewIdsDe(organizationId: string, userId: string): Promise<string
  * - `crew`: solo las cuadrillas de las que es jefe.
  * - `worker` / `group` / `shift`: solo los de esas cuadrillas.
  * - `entry`: solo los de los partes (`shift`) de esas cuadrillas.
- * - `organization` / `product` / `unitType` / `finca` / `rate`: catálogo de la
+ * - `organization` / `product` / `unitType` / `finca`: catálogo de la
  *   organización, igual para todos (sin `crewId`, no son datos de una cuadrilla).
+ * - `rate`: **no se envía** (2026-09-11) — es dato económico y la app del
+ *   jefe no lo usa desde que se quitó Liquidación (ver "Dinero" en
+ *   CLAUDE.md); antes viajaba al dispositivo sin usarse, heredado de antes
+ *   del panel. El panel lo lee por su cuenta vía `GET /admin/tarifas`
+ *   (`adminService`), no por `/sync`.
  *
  * Antes se enviaba TODO lo de la organización a cualquier jefe — en una
  * empresa con varias cuadrillas, un jefe recibía los trabajadores y partes de
@@ -137,6 +225,8 @@ async function cambiosDesde(
 
   const changes: SyncResponse["changes"] = {};
   for (const entity of ENTIDADES) {
+    if (entity === "rate") continue;
+
     let filtro = base;
     if (entity === "crew") {
       filtro = { ...base, foremanIds: userId };
