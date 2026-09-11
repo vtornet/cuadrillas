@@ -528,13 +528,9 @@ Los detalles de cada punto están en **Backlog sin planificar** justo debajo.
 
 **Pendientes nuevos (2026-09-09) — sin planificar**
 
-14. **Trabajo por horas.** Añadir un modo alternativo al destajo: registrar el trabajo
-    de un recolector por **horas** (no por unidades). Pendiente de conversación de
-    modelado: ¿a nivel de parte (`Shift` "por unidades" | "por horas")?, ¿a nivel de
-    trabajador?, ¿cómo se registra (una entrada de horas/día, similar a los
-    auxiliares)?, ¿qué pasa con `stats.ts` (unidades/hora deja de tener sentido) y con
-    la futura liquidación (jornal × horas)? Ver también "Auxiliares" (ya guardan
-    tarea/horas por día) — puede que la infraestructura sirva.
+14. **Trabajo por horas.** **HECHO (2026-09-11).** Ver detalle en "Backlog sin
+    planificar". Queda pendiente para el futuro panel: cómo entra en la liquidación
+    (jornal × horas) — `settlement.ts` no se ha tocado.
 15. **Apartado de instrucciones / ayuda.** Nueva pantalla (o sección en Cuenta) con
     instrucciones de uso de la app y un **botón de contacto** para dudas que abra un
     `mailto:contact@appstracta.app`. Definir: ¿pantalla propia en el menú?, ¿en varios
@@ -567,6 +563,54 @@ Los detalles de cada punto están en **Backlog sin planificar** justo debajo.
 
 ### Backlog sin planificar
 
+- **Trabajo por horas — hecho (2026-09-11).** Modo alternativo al destajo, elegido al
+  comenzar el parte, fijo para toda su vida (no cambia después).
+  - **Modelo**: `Shift.modo?: "destajo" | "horas"` (ausente = "destajo", partes de
+    antes de este campo). `Shift.horasRecolectores?: HorasRecolector[]`
+    (`{workerId, horas?}`, igual patrón que `AuxiliarDeJornada`). `Shift.totalEnvases?:
+    number` — en modo horas no se cuenta por persona, así que el jefe anota el total
+    del día en conjunto y se calcula la **media por recolector** (`totalEnvases /
+    nº recolectores`). El modo "por horas" **no se combina con grupos** — es
+    individual, uno a uno; `ComenzarJornadaSheet` oculta "Trabajar por grupos" cuando
+    el modo es "horas" y resetea `porGrupos` si se cambia de modo.
+  - **`ComenzarJornadaSheet`**: `<select>` "Modo de trabajo" (a destajo / por horas)
+    junto a cuadrilla; sigue pidiendo producto/unidad en los dos modos (los envases se
+    cuentan en esa unidad).
+  - **`jornada.svelte.ts`**: getters `modo`/`porHoras`, `horasDe(workerId)`,
+    `totalEnvases`; métodos `actualizarHorasRecolector`, `aplicarHorasATodos` (anota
+    la misma hora a todos los recolectores presentes de una vez, un solo guardado) y
+    `actualizarTotalEnvases` — mismo patrón optimista que `actualizarAuxiliar`.
+    `sinAnotar` (aviso al finalizar con 0) mira `horasDe` en vez de `conteoDe` cuando
+    `porHoras`. Misma lógica duplicada localmente en `ParteDetalle.svelte` (Historial),
+    como ya pasaba con auxiliares/observaciones.
+  - **UI**: `HorasRow.svelte` (fila de recolector con campo de horas inline en vez del
+    contador +1/+5, guarda al perder el foco — mismo sitio en el grid CSS que
+    `.conteo`), `AplicarHorasATodos.svelte` (input + botón "Aplicar a todos"),
+    `TotalEnvasesParte.svelte` (mismo patrón que `ObservacionesParte`: guarda al
+    perder el foco, calcula la media al vuelo, `soloLectura` en consulta). En modo
+    horas, `Registro.svelte`/`ParteDetalle.svelte` ocultan el total de unidades de la
+    cabecera y la barra de "Escanear QR"/"Deshacer" (no aplican). Auxiliares se
+    siguen mostrando en su sección aparte, sin cambios. `CabeceraParte` añade "· Por
+    horas" a la línea meta cuando aplica.
+  - **Informes/exports**: `shared/domain/parte.ts` → `informeParteHoras` (paralelo a
+    `informeParte`: horas por recolector en vez de unidades, con `totalHoras` y
+    `totalEnvases`/`mediaEnvases`). `documento.ts` → `docParteHoras` (tabla
+    Nº/Trabajador/Horas con fila de TOTAL, envases y media como pares en la cabecera);
+    como el PDF/Excel ya renderizan el modelo genérico `Documento`, no hizo falta
+    tocar `pdf.ts`/`xlsx.ts` más que añadir los wrappers `parteHorasAPdf`/
+    `parteHorasAXlsx`. El informe de asistencia (lista de nombres) no cambia con el
+    modo.
+  - **`stats.ts`**: los partes "por horas" quedan **fuera** de horas/unidades-por-hora
+    (mismo criterio que los auxiliares) — no tienen unidades individuales, contarían
+    horas sin destajo y falsearían la media de la cuadrilla.
+  - **`attendance.ts`**: horas anotadas en modo "horas" cuentan como "anotó" (igual que
+    tarea/horas de un auxiliar).
+  - **Pendiente para el panel de empresa (no tocado)**: cómo entra en la liquidación
+    (jornal × horas) — `settlement.ts` sigue siendo solo de destajo.
+  - Tests: `shared/tests/parte.test.ts` (`informeParteHoras`), `shared/tests/
+    attendance.test.ts`, `shared/tests/stats.test.ts`, `app/tests/jornada.test.ts`
+    (nuevo describe "jornada store por horas"), `app/tests/documento.test.ts`
+    (`docParteHoras`).
 - **Eliminado `Worker.language` — hecho (2026-09-11).** El selector "Idioma" en la
   ficha del trabajador (alta/edición en Datos y en la hoja rápida al tocar un
   trabajador durante un parte) no accionaba nada — no hay vista del trabajador que lo

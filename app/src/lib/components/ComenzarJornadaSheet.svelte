@@ -5,6 +5,7 @@
     Finca,
     Group,
     GrupoDeJornada,
+    ModoTrabajo,
     Product,
     UnitType,
     Worker,
@@ -39,6 +40,7 @@
   let cargado = $state(false);
 
   let crewId = $state("");
+  let modo = $state<ModoTrabajo>("destajo");
   let productId = $state("");
   let unitTypeId = $state("");
   let fincas = $state<Finca[]>([]);
@@ -126,6 +128,13 @@
     porGrupos = false;
     gruposSel = new Set();
   }
+  /** El modo "por horas" es individual: no se combina con trabajar por grupos. */
+  function alCambiarModo(): void {
+    if (modo === "horas") {
+      porGrupos = false;
+      gruposSel = new Set();
+    }
+  }
   function alCambiarProducto(): void {
     if (!units.some((u) => u.id === unitTypeId)) unitTypeId = primeraUnidad();
   }
@@ -167,6 +176,7 @@
         horaInicio,
         attendeeIds: [...asistentes],
         groups,
+        modo,
       });
       await jornada.activar(shift.id);
       oncomenzado();
@@ -208,6 +218,14 @@
             {#each crews as c (c.id)}
               <option value={c.id}>{c.name}</option>
             {/each}
+          </select>
+        </label>
+
+        <label class="campo">
+          <span>{i18n.t("jornada.modo")}</span>
+          <select bind:value={modo} onchange={alCambiarModo}>
+            <option value="destajo">{i18n.t("jornada.modo_destajo")}</option>
+            <option value="horas">{i18n.t("jornada.modo_horas")}</option>
           </select>
         </label>
 
@@ -293,7 +311,7 @@
           {/each}
         </ul>
 
-        {#if gruposActuales.length > 0}
+        {#if modo === "destajo" && gruposActuales.length > 0}
           <label class="campo campo-check">
             <input
               type="checkbox"

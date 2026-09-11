@@ -1,6 +1,7 @@
 import type {
   InformeAsistencia,
   InformeParte,
+  InformeParteHoras,
 } from "@cuadrilla/shared/domain";
 import { fechaES } from "@cuadrilla/shared/domain";
 import { i18n } from "../i18n/i18n.svelte";
@@ -135,6 +136,58 @@ export function docParte(inf: InformeParte): Documento {
   return {
     titulo: i18n.t("compartir.pdf_titulo_parte"),
     cabecera: camposCabecera(inf.cabecera),
+    tablas,
+    observaciones: inf.cabecera.observaciones?.trim() || undefined,
+    firmaPng: inf.cabecera.firmaPng,
+    firmante: inf.cabecera.firmante,
+  };
+}
+
+/** Parte completo en modo "por horas": horas por recolector en vez de unidades. */
+export function docParteHoras(inf: InformeParteHoras): Documento {
+  const colHoras: Columna = {
+    titulo: i18n.t("compartir.horas"),
+    peso: 20,
+    align: "center",
+  };
+  const tablas: Tabla[] = [
+    {
+      titulo: `${i18n.t("compartir.recolectores")} (${inf.recolectores.length})`,
+      columnas: [colNum(), colNombre(), colHoras],
+      filas: inf.recolectores.map((r, i) => [i + 1, r.nombre, r.horas ?? ""]),
+      total: ["", colTotalEtiqueta(), inf.totalHoras],
+    },
+  ];
+
+  if (inf.auxiliares.length > 0) {
+    tablas.push({
+      titulo: `${i18n.t("auxiliar.seccion")} (${inf.auxiliares.length})`,
+      columnas: [
+        colNombre(),
+        { titulo: i18n.t("compartir.tarea"), peso: 34, align: "left" },
+        { titulo: i18n.t("compartir.horas"), peso: 14, align: "center" },
+      ],
+      filas: inf.auxiliares.map((a) => [a.nombre, a.tarea, a.horas ?? ""]),
+    });
+  }
+
+  const cabecera = camposCabecera(inf.cabecera);
+  if (inf.totalEnvases != null) {
+    cabecera.push({
+      etiqueta: i18n.t("horas.total_envases"),
+      valor: String(inf.totalEnvases),
+    });
+  }
+  if (inf.mediaEnvases != null) {
+    cabecera.push({
+      etiqueta: i18n.t("horas.media_etiqueta"),
+      valor: String(inf.mediaEnvases),
+    });
+  }
+
+  return {
+    titulo: i18n.t("compartir.pdf_titulo_parte"),
+    cabecera,
     tablas,
     observaciones: inf.cabecera.observaciones?.trim() || undefined,
     firmaPng: inf.cabecera.firmaPng,

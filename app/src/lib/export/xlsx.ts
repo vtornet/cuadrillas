@@ -1,11 +1,13 @@
 import type {
   InformeAsistencia,
   InformeParte,
+  InformeParteHoras,
 } from "@cuadrilla/shared/domain";
 import { i18n } from "../i18n/i18n.svelte";
 import {
   docAsistencia,
   docParte,
+  docParteHoras,
   type Align,
   type Documento,
 } from "./documento";
@@ -147,4 +149,8 @@ export function asistenciaAXlsx(inf: InformeAsistencia): Promise<Blob> {
 
 export function parteAXlsx(inf: InformeParte): Promise<Blob> {
   return libro(docParte(inf), i18n.t("compartir.hoja_parte"));
+}
+
+export function parteHorasAXlsx(inf: InformeParteHoras): Promise<Blob> {
+  return libro(docParteHoras(inf), i18n.t("compartir.hoja_parte"));
 }

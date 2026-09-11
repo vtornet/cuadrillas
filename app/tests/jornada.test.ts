@@ -235,3 +235,73 @@ describe("jornada store con grupos", () => {
     expect(jornada.sinAnotar).toEqual([]);
   });
 });
+
+const SHIFT_HORAS: Shift = {
+  ...SHIFT,
+  id: "s3",
+  attendeeIds: ["w1", "w2"],
+  modo: "horas",
+};
+
+describe("jornada store por horas", () => {
+  beforeEach(async () => {
+    await db.delete();
+    await db.open();
+    await db.workers.put(WORKER);
+    await db.workers.put(WORKER2);
+    await db.shifts.put(SHIFT_HORAS);
+    await db.products.put(PRODUCT);
+    await db.unitTypes.put(UNIT);
+    await jornada.cargar();
+  });
+
+  it("modo/porHoras reflejan el Shift.modo", () => {
+    expect(jornada.modo).toBe("horas");
+    expect(jornada.porHoras).toBe(true);
+  });
+
+  it("actualizarHorasRecolector guarda y quita las horas de un recolector", async () => {
+    expect(jornada.horasDe("w1")).toBeNull();
+
+    await jornada.actualizarHorasRecolector("w1", 8);
+    expect(jornada.horasDe("w1")).toBe(8);
+    expect((await db.shifts.get("s3"))?.horasRecolectores).toEqual([
+      { workerId: "w1", horas: 8 },
+    ]);
+
+    await jornada.actualizarHorasRecolector("w1", null);
+    expect(jornada.horasDe("w1")).toBeNull();
+    expect((await db.shifts.get("s3"))?.horasRecolectores).toEqual([]);
+  });
+
+  it("aplicarHorasATodos anota la misma hora a todos los recolectores presentes", async () => {
+    await jornada.aplicarHorasATodos(7.5);
+
+    expect(jornada.horasDe("w1")).toBe(7.5);
+    expect(jornada.horasDe("w2")).toBe(7.5);
+    const guardado = await db.shifts.get("s3");
+    expect(guardado?.horasRecolectores).toEqual([
+      { workerId: "w1", horas: 7.5 },
+      { workerId: "w2", horas: 7.5 },
+    ]);
+  });
+
+  it("actualizarTotalEnvases guarda y quita el total", async () => {
+    expect(jornada.totalEnvases).toBeNull();
+
+    await jornada.actualizarTotalEnvases(120);
+    expect(jornada.totalEnvases).toBe(120);
+    expect((await db.shifts.get("s3"))?.totalEnvases).toBe(120);
+
+    await jornada.actualizarTotalEnvases(null);
+    expect(jornada.totalEnvases).toBeNull();
+    expect((await db.shifts.get("s3"))?.totalEnvases).toBeUndefined();
+  });
+
+  it("sinAnotar mira las horas cuando el parte es 'por horas'", async () => {
+    // WORKER2 clona el nombre de WORKER (igual que en "jornada store con grupos").
+    expect(jornada.sinAnotar).toEqual(["Ana", "Ana"]);
+    await jornada.actualizarHorasRecolector("w1", 8);
+    expect(jornada.sinAnotar).toEqual(["Ana"]);
+  });
+});

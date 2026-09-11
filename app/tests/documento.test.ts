@@ -1,9 +1,13 @@
 import "fake-indexeddb/auto";
 import { beforeAll, describe, expect, it } from "vitest";
-import type { InformeAsistencia, InformeParte } from "@cuadrilla/shared/domain";
+import type {
+  InformeAsistencia,
+  InformeParte,
+  InformeParteHoras,
+} from "@cuadrilla/shared/domain";
 import { db } from "../src/lib/db/dexie";
 import { i18n } from "../src/lib/i18n/i18n.svelte";
-import { docAsistencia, docParte } from "../src/lib/export/documento";
+import { docAsistencia, docParte, docParteHoras } from "../src/lib/export/documento";
 
 const cab = {
   cuadrilla: "Cuadrilla 1",
@@ -136,5 +140,51 @@ describe("docParte", () => {
       [2, "Beto", 40],
     ]);
     expect(d.tablas[0].total).toEqual(["", "TOTAL", 80]);
+  });
+});
+
+describe("docParteHoras", () => {
+  it("recolectores con horas (no unidades), total de horas, y envases en la cabecera", () => {
+    const inf: InformeParteHoras = {
+      cabecera: cab,
+      recolectores: [
+        { nombre: "Ana", horas: 8 },
+        { nombre: "Beto", horas: null },
+      ],
+      auxiliares: [{ nombre: "Zoe", tarea: "Carga", horas: 6 }],
+      totalHoras: 8,
+      totalEnvases: 100,
+      mediaEnvases: 50,
+    };
+    const d = docParteHoras(inf);
+
+    const rec = d.tablas[0];
+    expect(rec.columnas.map((c) => c.titulo)).toEqual(["Nº", "Trabajador", "Horas"]);
+    expect(rec.filas).toEqual([
+      [1, "Ana", 8],
+      [2, "Beto", ""],
+    ]);
+    expect(rec.total).toEqual(["", "TOTAL", 8]);
+
+    const aux = d.tablas[1];
+    expect(aux.filas).toEqual([["Zoe", "Carga", 6]]);
+
+    expect(
+      d.cabecera.slice(-2).map((c) => `${c.etiqueta}: ${c.valor}`),
+    ).toEqual(["Total de envases: 100", "Media por recolector: 50"]);
+  });
+
+  it("sin datos de envases no añade esos campos a la cabecera", () => {
+    const inf: InformeParteHoras = {
+      cabecera: cab,
+      recolectores: [{ nombre: "Ana", horas: 8 }],
+      auxiliares: [],
+      totalHoras: 8,
+      totalEnvases: null,
+      mediaEnvases: null,
+    };
+    const d = docParteHoras(inf);
+    expect(d.cabecera.some((c) => c.etiqueta === "Total de envases")).toBe(false);
+    expect(d.cabecera.some((c) => c.etiqueta === "Media por recolector")).toBe(false);
   });
 });

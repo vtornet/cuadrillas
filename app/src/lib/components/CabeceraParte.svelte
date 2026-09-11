@@ -11,6 +11,7 @@
     horaFin,
     nRecolectores,
     nAuxiliares,
+    porHoras = false,
   }: {
     fecha: string;
     finca?: string;
@@ -20,6 +21,8 @@
     horaFin?: string | null;
     nRecolectores: number;
     nAuxiliares: number;
+    /** Parte "por horas" (sin conteo individual de unidades). */
+    porHoras?: boolean;
   } = $props();
 
   const titulo = $derived(unidad ? `${producto} · ${unidad}` : producto);
@@ -38,6 +41,7 @@
       nAuxiliares > 0
         ? i18n.t("cabecera.auxiliares", { n: nAuxiliares })
         : null,
+      porHoras ? i18n.t("cabecera.por_horas") : null,
     ]
       .filter(Boolean)
       .join(" · "),

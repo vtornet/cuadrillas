@@ -54,6 +54,7 @@
     "horario": "التوقيت",
     "recolectores": "{n} قاطف",
     "auxiliares": "{n} مساعد",
+    "por_horas": "بالساعات",
     "firma_pdf": "وقّع من قِبل"
   },
   "auxiliar": {
@@ -66,6 +67,15 @@
     "horas_error": "أدخل عدد ساعات صحيحًا.",
     "n_horas": "{n} ساعة",
     "sin_datos": "بدون مهمة أو ساعات"
+  },
+  "horas": {
+    "horas_de": "ساعات {nombre}",
+    "aplicar_ph": "الساعات",
+    "aplicar_todos": "تطبيق على الجميع",
+    "total_envases": "إجمالي العبوات",
+    "total_envases_error": "أدخل رقمًا صحيحًا.",
+    "media_por_recolector": "{n} عبوة/قاطف في المتوسط",
+    "media_etiqueta": "المتوسط لكل قاطف"
   },
   "compartir": {
     "abrir": "مشاركة ورقة العمل",
@@ -242,6 +252,9 @@
     "cerrar_confirmar": "بعد الإنهاء لن تتمكّن من متابعة التسجيل في ورقة العمل هذه.",
     "nueva": "ابدأ اليوم",
     "cuadrilla": "الفرقة",
+    "modo": "طريقة العمل",
+    "modo_destajo": "بالقطعة (حسب الوحدات)",
+    "modo_horas": "بالساعات",
     "producto": "المنتج",
     "unidad": "الوحدة",
     "finca": "المزرعة (اختياري)",

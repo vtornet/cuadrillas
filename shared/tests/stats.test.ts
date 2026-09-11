@@ -107,6 +107,18 @@ describe("calcularEstadisticas", () => {
     expect(r.numTrabajadores).toBe(2);
   });
 
+  it("los partes 'por horas' quedan fuera de las horas/unidades por hora", () => {
+    const shiftHoras = shift({ id: "s2", fecha: "2026-09-02", modo: "horas" });
+    const entries = [entry({ workerId: "w1", cantidad: 40 })]; // parte "s" normal
+    const r = calcularEstadisticas([s, shiftHoras], workers, entries);
+
+    // Ana solo suma las 8h del parte a destajo, no las del parte por horas.
+    const ana = r.filas.find((f) => f.workerId === "w1")!;
+    expect(ana.horas).toBe(8);
+    expect(ana.unidadesPorHora).toBe(5); // 40 / 8, no 40 / 16
+    expect(r.totalHoras).toBe(16); // 8h x (Ana + Beto) del parte a destajo
+  });
+
   it("reparte las anotaciones de grupo a partes iguales entre sus miembros", () => {
     const ws = [worker("w1", "Ana"), worker("w2", "Beto"), worker("w3", "Cira")];
     const s = shift({

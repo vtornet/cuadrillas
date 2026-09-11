@@ -3,6 +3,7 @@ import {
   fechaES,
   informeAsistencia,
   informeParte,
+  informeParteHoras,
   type CabeceraInforme,
 } from "../src/domain/parte";
 import type { Entry } from "../src/types/entry";
@@ -115,6 +116,56 @@ describe("informeParte", () => {
       { nombre: "Beto", unidades: 40 },
     ]);
     expect(r.totalUnidades).toBe(90);
+  });
+});
+
+describe("informeParteHoras", () => {
+  const shiftHoras: Pick<
+    Shift,
+    "attendeeIds" | "auxiliares" | "horasRecolectores" | "totalEnvases"
+  > = {
+    attendeeIds: ["w1", "w2", "aux1"],
+    auxiliares: [{ workerId: "aux1", tarea: "Carga", horas: 6 }],
+    horasRecolectores: [
+      { workerId: "w1", horas: 8 },
+      { workerId: "w2", horas: 7.5 },
+    ],
+    totalEnvases: 100,
+  };
+
+  it("horas por recolector (ordenados por nombre), auxiliares igual que en destajo", () => {
+    const r = informeParteHoras(cab, shiftHoras, workers);
+    expect(r.recolectores).toEqual([
+      { nombre: "Ana", horas: 8 },
+      { nombre: "Beto", horas: 7.5 },
+    ]);
+    expect(r.auxiliares).toEqual([{ nombre: "Zoe", tarea: "Carga", horas: 6 }]);
+    expect(r.totalHoras).toBe(15.5);
+  });
+
+  it("calcula el total de envases y la media por recolector", () => {
+    const r = informeParteHoras(cab, shiftHoras, workers);
+    expect(r.totalEnvases).toBe(100);
+    expect(r.mediaEnvases).toBe(50); // 100 / 2 recolectores
+  });
+
+  it("recolector sin horas anotadas sale con horas null", () => {
+    const r = informeParteHoras(
+      cab,
+      { ...shiftHoras, horasRecolectores: [{ workerId: "w1", horas: 8 }] },
+      workers,
+    );
+    expect(r.recolectores).toEqual([
+      { nombre: "Ana", horas: 8 },
+      { nombre: "Beto", horas: null },
+    ]);
+    expect(r.totalHoras).toBe(8);
+  });
+
+  it("sin total de envases: mediaEnvases es null", () => {
+    const r = informeParteHoras(cab, { ...shiftHoras, totalEnvases: undefined }, workers);
+    expect(r.totalEnvases).toBeNull();
+    expect(r.mediaEnvases).toBeNull();
   });
 });
 

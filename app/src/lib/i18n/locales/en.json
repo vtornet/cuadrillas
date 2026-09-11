@@ -54,6 +54,7 @@
     "horario": "Hours",
     "recolectores": "{n} picker(s)",
     "auxiliares": "{n} support worker(s)",
+    "por_horas": "By hours",
     "firma_pdf": "Signed by"
   },
   "auxiliar": {
@@ -66,6 +67,15 @@
     "horas_error": "Enter a valid number of hours.",
     "n_horas": "{n} h",
     "sin_datos": "No task or hours"
+  },
+  "horas": {
+    "horas_de": "Hours for {nombre}",
+    "aplicar_ph": "Hours",
+    "aplicar_todos": "Apply to all",
+    "total_envases": "Total containers",
+    "total_envases_error": "Enter a valid number.",
+    "media_por_recolector": "{n} containers/picker on average",
+    "media_etiqueta": "Average per picker"
   },
   "compartir": {
     "abrir": "Share shift",
@@ -242,6 +252,9 @@
     "cerrar_confirmar": "Once finished you cannot keep recording in this shift.",
     "nueva": "Start shift",
     "cuadrilla": "Crew",
+    "modo": "Work mode",
+    "modo_destajo": "Piecework (by unit)",
+    "modo_horas": "By hours",
     "producto": "Product",
     "unidad": "Unit",
     "finca": "Farm (optional)",

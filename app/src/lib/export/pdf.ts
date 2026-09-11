@@ -1,11 +1,13 @@
 import type {
   InformeAsistencia,
   InformeParte,
+  InformeParteHoras,
 } from "@cuadrilla/shared/domain";
 import { i18n } from "../i18n/i18n.svelte";
 import {
   docAsistencia,
   docParte,
+  docParteHoras,
   type Columna,
   type Documento,
   type Tabla,
@@ -222,4 +224,8 @@ export function asistenciaAPdf(inf: InformeAsistencia): Promise<Blob> {
 
 export function parteAPdf(inf: InformeParte): Promise<Blob> {
   return render(docParte(inf));
+}
+
+export function parteHorasAPdf(inf: InformeParteHoras): Promise<Blob> {
+  return render(docParteHoras(inf));
 }

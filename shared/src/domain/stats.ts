@@ -99,9 +99,13 @@ export function calcularEstadisticas(
     evolucionMap.set(s.fecha, (evolucionMap.get(s.fecha) ?? 0) + e.cantidad);
   }
 
-  // Horas imputadas: suma de horas de las jornadas a las que el trabajador asistio.
+  // Horas imputadas: suma de horas de las jornadas a las que el trabajador
+  // asistio. Los partes "por horas" quedan fuera: no tienen unidades
+  // individuales, así que contarían horas sin destajo y falsearían las
+  // unidades/hora (igual criterio que los auxiliares).
   const horasPorTrabajador = new Map<string, number>();
   for (const s of shifts) {
+    if (s.modo === "horas") continue;
     const h = horasDeJornada(s, opts.ahoraMin);
     if (h <= 0) continue;
     const asistentes =

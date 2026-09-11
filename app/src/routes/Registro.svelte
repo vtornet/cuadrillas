@@ -4,6 +4,9 @@
   import { i18n } from "../lib/i18n/i18n.svelte";
   import AppBar from "../lib/components/AppBar.svelte";
   import WorkerRow from "../lib/components/WorkerRow.svelte";
+  import HorasRow from "../lib/components/HorasRow.svelte";
+  import AplicarHorasATodos from "../lib/components/AplicarHorasATodos.svelte";
+  import TotalEnvasesParte from "../lib/components/TotalEnvasesParte.svelte";
   import WorkerSheet from "../lib/components/WorkerSheet.svelte";
   import GroupSheet from "../lib/components/GroupSheet.svelte";
   import QrScanner from "../lib/components/QrScanner.svelte";
@@ -134,6 +137,7 @@
           horaFin={jornada.shift.horaFin}
           nRecolectores={jornada.recolectores.length}
           nAuxiliares={jornada.auxiliares.length}
+          porHoras={jornada.porHoras}
         />
       {/if}
       <button
@@ -143,10 +147,12 @@
       >
         {i18n.t("compartir.abrir")}
       </button>
-      <div class="total">
-        <span>{i18n.t("registro.total_jornada")}</span>
-        <strong>{jornada.total}</strong>
-      </div>
+      {#if !jornada.porHoras}
+        <div class="total">
+          <span>{i18n.t("registro.total_jornada")}</span>
+          <strong>{jornada.total}</strong>
+        </div>
+      {/if}
       <input
         class="buscar"
         type="search"
@@ -158,7 +164,23 @@
     </header>
 
     <ul class="lista">
-      {#if jornada.trabajaPorGrupos}
+      {#if jornada.porHoras}
+        <li>
+          <AplicarHorasATodos onaplicar={(h) => jornada.aplicarHorasATodos(h)} />
+        </li>
+        {#each visiblesWorkers as w (w.id)}
+          <li>
+            <HorasRow
+              item={w}
+              horas={jornada.horasDe(w.id)}
+              onhoras={(h) => jornada.actualizarHorasRecolector(w.id, h)}
+              onabrir={() => (workerAbiertoId = w.id)}
+            />
+          </li>
+        {:else}
+          <li class="vacio-busqueda">{i18n.t("registro.sin_resultados")}</li>
+        {/each}
+      {:else if jornada.trabajaPorGrupos}
         {#each visiblesGrupos as g (g.groupId)}
           <li>
             <WorkerRow
@@ -207,6 +229,16 @@
         {/each}
       {/if}
 
+      {#if jornada.porHoras}
+        <li class="obs-item">
+          <TotalEnvasesParte
+            total={jornada.totalEnvases}
+            numRecolectores={jornada.recolectores.length}
+            onguardar={(t) => jornada.actualizarTotalEnvases(t)}
+          />
+        </li>
+      {/if}
+
       <li class="obs-item">
         <ObservacionesParte
           valor={jornada.shift?.observaciones ?? ""}
@@ -225,23 +257,25 @@
       </li>
     </ul>
 
-    <div class="acciones">
-      <button
-        type="button"
-        class="btn-secundario"
-        onclick={() => (scannerAbierto = true)}
-      >
-        {i18n.t("registro.escanear")}
-      </button>
-      <button
-        type="button"
-        class="btn-deshacer"
-        disabled={!jornada.puedeDeshacer}
-        onclick={() => jornada.deshacer()}
-      >
-        {i18n.t("registro.deshacer")}
-      </button>
-    </div>
+    {#if !jornada.porHoras}
+      <div class="acciones">
+        <button
+          type="button"
+          class="btn-secundario"
+          onclick={() => (scannerAbierto = true)}
+        >
+          {i18n.t("registro.escanear")}
+        </button>
+        <button
+          type="button"
+          class="btn-deshacer"
+          disabled={!jornada.puedeDeshacer}
+          onclick={() => jornada.deshacer()}
+        >
+          {i18n.t("registro.deshacer")}
+        </button>
+      </div>
+    {/if}
 
     {#if scannerAbierto}
       <QrScanner ondetect={onScan} onclose={() => (scannerAbierto = false)} />

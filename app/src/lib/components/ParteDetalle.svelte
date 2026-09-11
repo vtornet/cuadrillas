@@ -16,6 +16,9 @@
   } from "../db/repositories/entries";
   import AppBar from "./AppBar.svelte";
   import WorkerRow from "./WorkerRow.svelte";
+  import HorasRow from "./HorasRow.svelte";
+  import AplicarHorasATodos from "./AplicarHorasATodos.svelte";
+  import TotalEnvasesParte from "./TotalEnvasesParte.svelte";
   import WorkerSheet from "./WorkerSheet.svelte";
   import GroupSheet from "./GroupSheet.svelte";
   import CompartirParteSheet from "./CompartirParteSheet.svelte";
@@ -43,6 +46,7 @@
   const total = $derived(Object.values(conteos).reduce((a, b) => a + b, 0));
   const grupos = $derived(shift?.groups ?? []);
   const trabajaPorGrupos = $derived(grupos.length > 0);
+  const porHoras = $derived((shift?.modo ?? "destajo") === "horas");
 
   const recolectores = $derived(
     workers.filter((w) => w.funcion !== "auxiliar"),
@@ -167,6 +171,65 @@
     }
   }
 
+  function horasDe(workerId: string): number | null {
+    return shift?.horasRecolectores?.find((h) => h.workerId === workerId)?.horas ?? null;
+  }
+
+  async function actualizarHorasRecolector(
+    workerId: string,
+    horas: number | null,
+  ): Promise<void> {
+    if (!shift) return;
+    const anterior = shift;
+    const valor =
+      horas != null && Number.isFinite(horas) && horas > 0 ? horas : undefined;
+    const otros = (shift.horasRecolectores ?? []).filter(
+      (h) => h.workerId !== workerId,
+    );
+    const horasRecolectores =
+      valor != null ? [...otros, { workerId, horas: valor }] : otros;
+    const actualizado: Shift = { ...shift, horasRecolectores, updatedAt: Date.now() };
+    shift = actualizado;
+    try {
+      await guardarShift(actualizado);
+    } catch (e) {
+      shift = anterior;
+      console.error("[historial] no se pudieron guardar las horas", e);
+    }
+  }
+
+  async function aplicarHorasATodos(horas: number): Promise<void> {
+    if (!shift || !(horas > 0)) return;
+    const anterior = shift;
+    const horasRecolectores = recolectores.map((w) => ({ workerId: w.id, horas }));
+    const actualizado: Shift = { ...shift, horasRecolectores, updatedAt: Date.now() };
+    shift = actualizado;
+    try {
+      await guardarShift(actualizado);
+    } catch (e) {
+      shift = anterior;
+      console.error("[historial] no se pudieron aplicar las horas a todos", e);
+    }
+  }
+
+  async function actualizarTotalEnvases(total: number | null): Promise<void> {
+    if (!shift) return;
+    if ((shift.totalEnvases ?? null) === total) return;
+    const anterior = shift;
+    const actualizado: Shift = {
+      ...shift,
+      totalEnvases: total ?? undefined,
+      updatedAt: Date.now(),
+    };
+    shift = actualizado;
+    try {
+      await guardarShift(actualizado);
+    } catch (e) {
+      shift = anterior;
+      console.error("[historial] no se pudo guardar el total de envases", e);
+    }
+  }
+
   async function actualizarObservaciones(texto: string): Promise<void> {
     if (!shift) return;
     const observaciones = texto.trim() || undefined;
@@ -247,9 +310,10 @@
         horaFin={shift.horaFin}
         nRecolectores={recolectores.length}
         nAuxiliares={auxiliares.length}
+        {porHoras}
       />
     {/if}
-    {#if !cargando && shift}
+    {#if !cargando && shift && !porHoras}
       <div class="total">
         <span>{i18n.t("registro.total_jornada")}</span>
         <strong>{total}</strong>
@@ -264,7 +328,14 @@
       <p class="vacio-lista">{i18n.t("historial.no_encontrado")}</p>
     {:else if modo === "consulta"}
       <ul class="lista-simple">
-        {#if trabajaPorGrupos}
+        {#if porHoras}
+          {#each recolectores as w (w.id)}
+            <li class="hist-fila">
+              <span class="nombre">{w.name}</span>
+              <span class="conteo">{horasDe(w.id) ?? "—"}</span>
+            </li>
+          {/each}
+        {:else if trabajaPorGrupos}
           {#each grupos as g (g.groupId)}
             <li class="hist-fila">
               <span class="nombre">{g.name}</span>
@@ -286,6 +357,14 @@
           </li>
         {/each}
       </ul>
+
+      {#if porHoras}
+        <TotalEnvasesParte
+          total={shift.totalEnvases ?? null}
+          numRecolectores={recolectores.length}
+          soloLectura
+        />
+      {/if}
 
       {#if confirmandoEditar}
         <div class="confirm-inline">
@@ -316,6 +395,22 @@
           {i18n.t("historial.editar")}
         </button>
       {/if}
+    {:else if porHoras}
+      <ul class="lista">
+        <li>
+          <AplicarHorasATodos onaplicar={(h) => aplicarHorasATodos(h)} />
+        </li>
+        {#each recolectores as w (w.id)}
+          <li>
+            <HorasRow
+              item={w}
+              horas={horasDe(w.id)}
+              onhoras={(h) => actualizarHorasRecolector(w.id, h)}
+              onabrir={() => (workerAbiertoId = w.id)}
+            />
+          </li>
+        {/each}
+      </ul>
     {:else if trabajaPorGrupos}
       <ul class="lista">
         {#each grupos as g (g.groupId)}
@@ -347,6 +442,14 @@
           </li>
         {/each}
       </ul>
+    {/if}
+
+    {#if modo === "edicion" && porHoras}
+      <TotalEnvasesParte
+        total={shift?.totalEnvases ?? null}
+        numRecolectores={recolectores.length}
+        onguardar={(t) => actualizarTotalEnvases(t)}
+      />
     {/if}
 
     {#if modo === "edicion" && auxiliares.length > 0}

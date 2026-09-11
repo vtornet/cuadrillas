@@ -168,6 +168,28 @@ describe("asistenciaMensual", () => {
     expect(a.totalSinAnotar).toBe(1);
   });
 
+  it("un parte 'por horas' cuenta como anotación para el recolector con horas", () => {
+    const s: Shift = {
+      ...shift({
+        id: "s1",
+        fecha: "2026-09-01",
+        attendeeIds: ["w1", "w2"],
+        modo: "horas",
+        horasRecolectores: [{ workerId: "w1", horas: 8 }],
+      }),
+    };
+    const workers = [
+      worker({ id: "w1", name: "Ana" }),
+      worker({ id: "w2", name: "Beto" }),
+    ];
+    const a = asistenciaMensual([s], workers, 2026, 9);
+    const ana = a.filas.find((f) => f.name === "Ana")!;
+    const beto = a.filas.find((f) => f.name === "Beto")!;
+    expect(ana.conAnotacion[0]).toBe(true);
+    expect(beto.presente[0]).toBe(true);
+    expect(beto.conAnotacion[0]).toBe(false); // presente pero sin horas anotadas
+  });
+
   it("recoge las fincas trabajadas por día y del mes", () => {
     const shifts = [
       shift({ fecha: "2026-09-01", attendeeIds: ["w1"], finca: "El Cerro" }),

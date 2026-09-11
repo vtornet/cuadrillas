@@ -30,8 +30,8 @@ export interface FilaAsistencia {
   presente: boolean[];
   /**
    * `conAnotacion[i]`: presente ese día **y** con al menos una anotación
-   * (registro propio, de un grupo suyo, o tarea/horas si es auxiliar).
-   * Implica `presente[i]`.
+   * (registro propio, de un grupo suyo, tarea/horas si es auxiliar, u horas
+   * si el parte es "por horas"). Implica `presente[i]`.
    */
   conAnotacion: boolean[];
   /** Nº de días asistidos en el mes. */
@@ -137,6 +137,9 @@ export function asistenciaMensual(
   for (const s of shiftDelMes.values()) {
     for (const a of s.auxiliares ?? []) {
       if (a.tarea?.trim() || a.horas != null) marcarAnoto(s.fecha, a.workerId);
+    }
+    for (const h of s.horasRecolectores ?? []) {
+      if (h.horas != null) marcarAnoto(s.fecha, h.workerId);
     }
   }
 

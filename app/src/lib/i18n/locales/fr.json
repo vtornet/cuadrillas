@@ -54,6 +54,7 @@
     "horario": "Horaire",
     "recolectores": "{n} cueilleur(s)",
     "auxiliares": "{n} auxiliaire(s)",
+    "por_horas": "À l'heure",
     "firma_pdf": "Signé par"
   },
   "auxiliar": {
@@ -66,6 +67,15 @@
     "horas_error": "Saisis un nombre d'heures valide.",
     "n_horas": "{n} h",
     "sin_datos": "Sans tâche ni heures"
+  },
+  "horas": {
+    "horas_de": "Heures de {nombre}",
+    "aplicar_ph": "Heures",
+    "aplicar_todos": "Appliquer à tous",
+    "total_envases": "Total des caisses",
+    "total_envases_error": "Saisis un nombre valide.",
+    "media_por_recolector": "{n} caisses/cueilleur en moyenne",
+    "media_etiqueta": "Moyenne par cueilleur"
   },
   "compartir": {
     "abrir": "Partager la fiche",
@@ -242,6 +252,9 @@
     "cerrar_confirmar": "Une fois terminée, tu ne pourras plus enregistrer sur cette fiche.",
     "nueva": "Commencer la journée",
     "cuadrilla": "Équipe",
+    "modo": "Mode de travail",
+    "modo_destajo": "À la tâche (par unité)",
+    "modo_horas": "À l'heure",
     "producto": "Produit",
     "unidad": "Unité",
     "finca": "Exploitation (facultatif)",

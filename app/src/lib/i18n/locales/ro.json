@@ -54,6 +54,7 @@
     "horario": "Program",
     "recolectores": "{n} culegător(i)",
     "auxiliares": "{n} auxiliar(i)",
+    "por_horas": "Pe ore",
     "firma_pdf": "Semnat de"
   },
   "auxiliar": {
@@ -66,6 +67,15 @@
     "horas_error": "Introdu un număr de ore valid.",
     "n_horas": "{n} h",
     "sin_datos": "Fără sarcină sau ore"
+  },
+  "horas": {
+    "horas_de": "Orele lui {nombre}",
+    "aplicar_ph": "Ore",
+    "aplicar_todos": "Aplică tuturor",
+    "total_envases": "Total ambalaje",
+    "total_envases_error": "Introdu un număr valid.",
+    "media_por_recolector": "{n} ambalaje/culegător în medie",
+    "media_etiqueta": "Medie pe culegător"
   },
   "compartir": {
     "abrir": "Partajează fișa",
@@ -242,6 +252,9 @@
     "cerrar_confirmar": "După încheiere nu vei mai putea înregistra pe această fișă.",
     "nueva": "Începe ziua",
     "cuadrilla": "Echipă",
+    "modo": "Mod de lucru",
+    "modo_destajo": "Cu bucata (pe unități)",
+    "modo_horas": "Pe ore",
     "producto": "Produs",
     "unidad": "Unitate",
     "finca": "Fermă (opțional)",

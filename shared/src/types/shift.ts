@@ -26,6 +26,24 @@ export interface AuxiliarDeJornada {
 }
 
 /**
+ * Cómo se registra el trabajo de los recolectores en un parte: `destajo` (por
+ * unidades, con el contador +1/+5 de toda la vida) o `horas` (se anotan las
+ * horas de cada uno, sin conteo individual). Se fija al comenzar el parte y
+ * no cambia después. Ausente = `destajo` (partes de antes de este campo).
+ */
+export type ModoTrabajo = "destajo" | "horas";
+
+/**
+ * Horas de un recolector en ESTA jornada, cuando `Shift.modo === "horas"`.
+ * Opcional — se crea vacío al comenzar el parte y el jefe lo va rellenando.
+ */
+export interface HorasRecolector {
+  workerId: string;
+  /** Horas trabajadas ese día. Puede dejarse en blanco. */
+  horas?: number;
+}
+
+/**
  * Jornada de trabajo de una cuadrilla. Una jornada = un producto + una unidad.
  * Si la cuadrilla trabaja dos productos el mismo día, son dos jornadas.
  */
@@ -43,6 +61,16 @@ export interface Shift extends RegistroSincronizable {
   estado: EstadoJornada;
   /** Trabajadores presentes en la jornada (asistencia individual). */
   attendeeIds: string[];
+  /** "destajo" | "horas". Ausente = "destajo". Ver `ModoTrabajo`. */
+  modo?: ModoTrabajo;
+  /** Horas de cada recolector, solo si `modo === "horas"`. */
+  horasRecolectores?: HorasRecolector[];
+  /**
+   * Total de envases recogidos ese día, si `modo === "horas"`: en ese modo no
+   * se cuenta por persona, así que se anota en conjunto (opcional) para tener
+   * una referencia de productividad (media de envases por recolector).
+   */
+  totalEnvases?: number;
   /**
    * Si se trabaja por grupos ese dia: grupos activos en este parte, con su
    * composicion de ese dia. Ausente o vacio = registro por trabajador.

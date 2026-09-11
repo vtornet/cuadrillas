@@ -2,6 +2,8 @@ import type {
   AuxiliarDeJornada,
   Entry,
   GrupoDeJornada,
+  HorasRecolector,
+  ModoTrabajo,
   Product,
   Shift,
   UnitType,
@@ -171,6 +173,28 @@ class JornadaStore {
     return this.grupos.length > 0;
   }
 
+  /** "destajo" (por defecto) | "horas". Se fija al comenzar el parte. */
+  get modo(): ModoTrabajo {
+    return this.shift?.modo ?? "destajo";
+  }
+
+  get porHoras(): boolean {
+    return this.modo === "horas";
+  }
+
+  /** Horas anotadas de un recolector (modo "horas"). `null` = sin anotar. */
+  horasDe(workerId: string): number | null {
+    return (
+      this.shift?.horasRecolectores?.find((h) => h.workerId === workerId)
+        ?.horas ?? null
+    );
+  }
+
+  /** Total de envases del día (modo "horas"). `null` = sin anotar. */
+  get totalEnvases(): number | null {
+    return this.shift?.totalEnvases ?? null;
+  }
+
   /** Trabajadores presentes que recolectan (excluye auxiliares). */
   get recolectores(): Worker[] {
     return this.workers.filter((w) => w.funcion !== "auxiliar");
@@ -197,10 +221,16 @@ class JornadaStore {
 
   /**
    * Nombres de los "sujetos" presentes sin ninguna anotación (recolectores, o
-   * grupos si se trabaja por grupos). Para el aviso al finalizar la jornada.
-   * Los auxiliares no cuentan (no recolectan).
+   * grupos si se trabaja por grupos; horas sin anotar si el parte es "por
+   * horas"). Para el aviso al finalizar la jornada. Los auxiliares no cuentan
+   * (no recolectan).
    */
   get sinAnotar(): string[] {
+    if (this.porHoras) {
+      return this.recolectores
+        .filter((w) => this.horasDe(w.id) == null)
+        .map((w) => w.name);
+    }
     if (this.trabajaPorGrupos) {
       return this.grupos
         .filter((g) => this.conteoDe(g.groupId) === 0)
@@ -326,6 +356,80 @@ class JornadaStore {
     } catch (e) {
       this.shift = { ...actualizado, auxiliares: anterior };
       console.error("[jornada] no se pudo guardar el auxiliar", e);
+      throw e;
+    }
+  }
+
+  /**
+   * Guarda las horas de UN recolector para esta jornada (modo "horas"). `null`
+   * o `<= 0` quita su entrada de `Shift.horasRecolectores`.
+   */
+  async actualizarHorasRecolector(
+    workerId: string,
+    horas: number | null,
+  ): Promise<void> {
+    if (!this.shift) return;
+    const base = $state.snapshot(this.shift) as Shift;
+    const anterior = base.horasRecolectores;
+
+    const valor =
+      horas != null && Number.isFinite(horas) && horas > 0 ? horas : undefined;
+    const otros = (base.horasRecolectores ?? []).filter(
+      (h) => h.workerId !== workerId,
+    );
+    const horasRecolectores =
+      valor != null ? [...otros, { workerId, horas: valor }] : otros;
+
+    const actualizado: Shift = { ...base, horasRecolectores, updatedAt: Date.now() };
+    this.shift = actualizado;
+    try {
+      await guardarShift(actualizado);
+    } catch (e) {
+      this.shift = { ...actualizado, horasRecolectores: anterior };
+      console.error("[jornada] no se pudieron guardar las horas", e);
+      throw e;
+    }
+  }
+
+  /** Anota las mismas horas a TODOS los recolectores presentes de una vez. */
+  async aplicarHorasATodos(horas: number): Promise<void> {
+    if (!this.shift || !(horas > 0)) return;
+    const base = $state.snapshot(this.shift) as Shift;
+    const anterior = base.horasRecolectores;
+
+    const horasRecolectores: HorasRecolector[] = this.recolectores.map(
+      (w) => ({ workerId: w.id, horas }),
+    );
+
+    const actualizado: Shift = { ...base, horasRecolectores, updatedAt: Date.now() };
+    this.shift = actualizado;
+    try {
+      await guardarShift(actualizado);
+    } catch (e) {
+      this.shift = { ...actualizado, horasRecolectores: anterior };
+      console.error("[jornada] no se pudieron aplicar las horas a todos", e);
+      throw e;
+    }
+  }
+
+  /** Total de envases del día (modo "horas"). `null` quita el campo. */
+  async actualizarTotalEnvases(total: number | null): Promise<void> {
+    if (!this.shift) return;
+    const base = $state.snapshot(this.shift) as Shift;
+    if ((base.totalEnvases ?? null) === total) return;
+    const anterior = base.totalEnvases;
+
+    const actualizado: Shift = {
+      ...base,
+      totalEnvases: total ?? undefined,
+      updatedAt: Date.now(),
+    };
+    this.shift = actualizado;
+    try {
+      await guardarShift(actualizado);
+    } catch (e) {
+      this.shift = { ...actualizado, totalEnvases: anterior };
+      console.error("[jornada] no se pudo guardar el total de envases", e);
       throw e;
     }
   }

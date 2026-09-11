@@ -4,15 +4,16 @@
   import {
     informeAsistencia,
     informeParte,
+    informeParteHoras,
     type CabeceraInforme,
   } from "@cuadrilla/shared/domain";
   import { i18n } from "../i18n/i18n.svelte";
   import { perfil } from "../stores/perfil.svelte";
   import { obtenerCrew } from "../db/repositories/crews";
   import { textoAsistenciaParte } from "../export/asistenciaParte";
-  import { asistenciaAPdf, parteAPdf } from "../export/pdf";
-  import { asistenciaAXlsx, parteAXlsx } from "../export/xlsx";
-  import { docAsistencia, docParte } from "../export/documento";
+  import { asistenciaAPdf, parteAPdf, parteHorasAPdf } from "../export/pdf";
+  import { asistenciaAXlsx, parteAXlsx, parteHorasAXlsx } from "../export/xlsx";
+  import { docAsistencia, docParte, docParteHoras } from "../export/documento";
   import { compartirArchivo, slug } from "../export/compartir";
   import PreviaDocumento from "./PreviaDocumento.svelte";
 
@@ -60,8 +61,10 @@
     firmaPng: shift.firma,
   });
 
+  const porHoras = $derived(shift.modo === "horas");
   const infAsistencia = $derived(informeAsistencia(cabecera, shift, workers));
   const infParte = $derived(informeParte(cabecera, shift, workers, entries));
+  const infParteHoras = $derived(informeParteHoras(cabecera, shift, workers));
   const texto = $derived(textoAsistenciaParte(infAsistencia));
 
   /** Informe cuya previa está abierta (null = sin previa). */
@@ -70,7 +73,9 @@
     previa === "asistencia"
       ? docAsistencia(infAsistencia)
       : previa === "parte"
-        ? docParte(infParte)
+        ? porHoras
+          ? docParteHoras(infParteHoras)
+          : docParte(infParte)
         : null,
   );
 
@@ -144,10 +149,14 @@
       ext === "pdf"
         ? tipo === "asistencia"
           ? () => asistenciaAPdf(infAsistencia)
-          : () => parteAPdf(infParte)
+          : porHoras
+            ? () => parteHorasAPdf(infParteHoras)
+            : () => parteAPdf(infParte)
         : tipo === "asistencia"
           ? () => asistenciaAXlsx(infAsistencia)
-          : () => parteAXlsx(infParte);
+          : porHoras
+            ? () => parteHorasAXlsx(infParteHoras)
+            : () => parteAXlsx(infParte);
     await archivo(ext === "pdf" ? "pdf" : "xls", tipo, ext, gen);
   }
 

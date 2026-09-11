@@ -61,6 +61,24 @@ export interface InformeParte {
   totalUnidades: number;
 }
 
+export interface FilaRecolectorHoras {
+  nombre: string;
+  /** `null` = sin horas anotadas todavía. */
+  horas: number | null;
+}
+
+export interface InformeParteHoras {
+  cabecera: CabeceraInforme;
+  recolectores: FilaRecolectorHoras[];
+  auxiliares: FilaAuxiliar[];
+  /** Suma de las horas anotadas (ignora los que aún no tienen). */
+  totalHoras: number;
+  /** Total de envases del día, anotado en conjunto (`Shift.totalEnvases`). */
+  totalEnvases: number | null;
+  /** `totalEnvases` / nº de recolectores presentes, o `null` sin datos. */
+  mediaEnvases: number | null;
+}
+
 function porNombre(a: { nombre: string }, b: { nombre: string }): number {
   return a.nombre.localeCompare(b.nombre, "es");
 }
@@ -134,6 +152,56 @@ export function informeParte(
     recolectores,
     auxiliares,
     totalUnidades: totalJornada(conteos),
+  };
+}
+
+type ShiftInformeHoras = Pick<
+  Shift,
+  "attendeeIds" | "auxiliares" | "horasRecolectores" | "totalEnvases"
+>;
+
+/**
+ * Parte completo en modo "por horas": horas por recolector (sin unidades
+ * individuales), tarea/horas de auxiliares (igual que en destajo), y el total
+ * de envases del día con la media por recolector.
+ */
+export function informeParteHoras(
+  cabecera: CabeceraInforme,
+  shift: ShiftInformeHoras,
+  workers: Worker[],
+): InformeParteHoras {
+  const presentes = workers.filter((w) => shift.attendeeIds.includes(w.id));
+  const horasPorId = new Map(
+    (shift.horasRecolectores ?? []).map((h) => [h.workerId, h.horas ?? null]),
+  );
+
+  const recolectores: FilaRecolectorHoras[] = presentes
+    .filter((w) => w.funcion !== "auxiliar")
+    .map((w) => ({ nombre: w.name, horas: horasPorId.get(w.id) ?? null }))
+    .sort(porNombre);
+
+  const auxiliares: FilaAuxiliar[] = presentes
+    .filter((w) => w.funcion === "auxiliar")
+    .map((w) => {
+      const a = shift.auxiliares?.find((x) => x.workerId === w.id);
+      return { nombre: w.name, tarea: a?.tarea ?? "", horas: a?.horas ?? null };
+    })
+    .sort(porNombre);
+
+  const totalHoras = recolectores.reduce((n, r) => n + (r.horas ?? 0), 0);
+  const totalEnvases = shift.totalEnvases ?? null;
+  const mediaEnvases =
+    totalEnvases != null && recolectores.length > 0
+      ? Math.round((totalEnvases / recolectores.length) * 10) / 10
+      : null;
+
+  return {
+    cabecera,
+    recolectores,
+    auxiliares,
+    totalHoras: Math.round(totalHoras * 10) / 10,
+    totalEnvases,
+    mediaEnvases,
   };
 }
 
