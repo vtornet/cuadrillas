@@ -24,8 +24,14 @@
         await sesion.verificar(decodeURIComponent(m[1]));
         location.hash = "#/resumen";
       } catch (e) {
+        // Sin esto la pantalla se queda en "Cargando…" para siempre: el
+        // canje del enlace falla, pero sesion.estado nunca sale de su valor
+        // inicial. sesion.cargar() la deja en "fuera" (no hay sesión
+        // guardada porque verificar() no llegó a guardar nada), así se
+        // renderiza el login con el error.
         errorEntrada = e instanceof Error ? e.message : "No se pudo entrar";
         location.hash = "";
+        sesion.cargar();
       }
       return;
     }

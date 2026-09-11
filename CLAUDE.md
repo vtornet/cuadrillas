@@ -348,6 +348,22 @@ El `plan` marca qué tiene la org: `foreman` = solo PWA (1 jefe, 2 cuadrillas, s
     panel/wrangler.toml`, var de build `VITE_API_URL`). Railway: `PANEL_URL` para que el
     enlace mágico del panel apunte al panel (`/auth/magic-link` acepta `destino:
     "app"|"panel"`).
+  - **Bug del enlace mágico — arreglado (2026-09-11).** `panel/src/App.svelte`: si
+    `sesion.verificar()` fallaba (token ya usado/caducado — p. ej. el escáner de
+    enlaces de Gmail "visita" el correo antes de que el usuario pulse, y al ser de
+    un solo uso lo deja inválido), el `catch` ponía el mensaje de error pero
+    **nunca sacaba `sesion.estado` de su valor inicial `"cargando"`** — la pantalla
+    se quedaba colgada en "Cargando…" para siempre, sin mostrar el error ni el
+    login. Si el usuario volvía a `panel.cuadrillas.app` a mano, aterrizaba en el
+    login limpio (sin sesión guardada) y parecía que el enlace "no llevaba al
+    panel", cuando en realidad sí llegaba pero se quedaba atascado. Arreglado
+    llamando a `sesion.cargar()` en el `catch` (dejaría `estado` en `"fuera"`, ya
+    que `verificar()` no llegó a guardar nada en `localStorage`) para que se
+    renderice el login con el error visible. Detectado al depurar en vivo con el
+    usuario: se descartaron primero `PANEL_URL` (Railway), el enrutado de
+    `panel.cuadrillas.app` (Cloudflare, confirmado sirviendo el build correcto por
+    el `<title>`), `VITE_API_URL` del panel y el CORS de la API (`cors()` abierto)
+    antes de dar con que el bug estaba en el propio `App.svelte`.
 - **C — Altas**: **hecha (2026-09-10).**
   - `shared/domain/laboral.ts`: `CAMPOS_ALTA_MINIMOS` (dni, numAfiliacionSS, iban,
     fechaAlta), `estadoAlta(w)` (`pendiente` | `completa`), `faltanDatosAlta(w)`,
