@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
+  import Inicio from "./routes/Inicio.svelte";
   import Registro from "./routes/Registro.svelte";
   import Historial from "./routes/Historial.svelte";
   import Estadisticas from "./routes/Estadisticas.svelte";
@@ -7,7 +8,6 @@
   import Gestion from "./routes/Gestion.svelte";
   import Cuenta from "./routes/Cuenta.svelte";
   import Privacidad from "./routes/Privacidad.svelte";
-  import MenuSheet from "./lib/components/MenuSheet.svelte";
   import { i18n } from "./lib/i18n/i18n.svelte";
   import { router } from "./lib/stores/router.svelte";
   import { auth } from "./lib/auth/auth.svelte";
@@ -56,7 +56,9 @@
   {/if}
 {:else}
   <main>
-    {#if router.vista === "historial"}
+    {#if router.vista === "inicio"}
+      <Inicio />
+    {:else if router.vista === "historial"}
       <Historial />
     {:else if router.vista === "estadisticas"}
       <Estadisticas />
@@ -72,7 +74,4 @@
       <Registro />
     {/if}
   </main>
-  {#if router.menuAbierto}
-    <MenuSheet onclose={() => router.cerrarMenu()} />
-  {/if}
 {/if}

@@ -16,8 +16,6 @@
     "observaciones_ph": "Issues, notices, notes for the day..."
   },
   "menu": {
-    "titulo": "Menu",
-    "cerrar": "Close menu",
     "registrar": "Start shift",
     "historial": "History",
     "gestion": "Data",
@@ -25,6 +23,11 @@
     "asistencia": "Attendance",
     "cuenta": "Account and sync",
     "privacidad": "Privacy"
+  },
+  "inicio": {
+    "titulo": "Home",
+    "panel_empresa": "Company panel",
+    "panel_empresa_ayuda": "Rates, team, payroll. Opens panel.cuadrillas.app in a new tab."
   },
   "export": {
     "compartido": "File shared",

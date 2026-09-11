@@ -841,12 +841,6 @@ button:disabled {
   background: transparent;
 }
 
-.hoja-menu {
-  position: relative;
-  z-index: 1;
-  padding: 0;
-}
-
 .menu-lista {
   display: flex;
   flex-direction: column;
@@ -859,11 +853,6 @@ button:disabled {
   min-height: var(--tap);
   font-size: var(--f-base);
   font-weight: 600;
-}
-
-.menu-item.activo {
-  border-color: var(--c-primario);
-  color: var(--c-primario);
 }
 
 /* ---- Overlays (teclado numerico, escaner QR) ---- */

@@ -16,8 +16,6 @@
     "observaciones_ph": "Incidente, anunțuri, note ale zilei..."
   },
   "menu": {
-    "titulo": "Meniu",
-    "cerrar": "Închide meniul",
     "registrar": "Începe fișa",
     "historial": "Istoric",
     "gestion": "Date",
@@ -25,6 +23,11 @@
     "asistencia": "Prezență",
     "cuenta": "Cont și sincronizare",
     "privacidad": "Confidențialitate"
+  },
+  "inicio": {
+    "titulo": "Acasă",
+    "panel_empresa": "Panoul companiei",
+    "panel_empresa_ayuda": "Tarife, echipă, plată. Se deschide panel.cuadrillas.app într-o filă nouă."
   },
   "export": {
     "compartido": "Fișier partajat",

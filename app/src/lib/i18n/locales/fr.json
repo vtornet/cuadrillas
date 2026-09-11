@@ -16,8 +16,6 @@
     "observaciones_ph": "Incidents, avis, notes du jour..."
   },
   "menu": {
-    "titulo": "Menu",
-    "cerrar": "Fermer le menu",
     "registrar": "Commencer la fiche",
     "historial": "Historique",
     "gestion": "Données",
@@ -25,6 +23,11 @@
     "asistencia": "Présence",
     "cuenta": "Compte et synchronisation",
     "privacidad": "Confidentialité"
+  },
+  "inicio": {
+    "titulo": "Accueil",
+    "panel_empresa": "Panneau de l'entreprise",
+    "panel_empresa_ayuda": "Tarifs, équipe, paie. Ouvre panel.cuadrillas.app dans un nouvel onglet."
   },
   "export": {
     "compartido": "Fichier partagé",

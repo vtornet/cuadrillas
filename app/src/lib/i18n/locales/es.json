@@ -16,8 +16,6 @@
     "observaciones_ph": "Incidencias, avisos, notas del dia..."
   },
   "menu": {
-    "titulo": "Menu",
-    "cerrar": "Cerrar menu",
     "registrar": "Iniciar parte",
     "historial": "Historial",
     "gestion": "Datos",
@@ -25,6 +23,11 @@
     "asistencia": "Asistencia",
     "cuenta": "Cuenta y sincronizacion",
     "privacidad": "Privacidad"
+  },
+  "inicio": {
+    "titulo": "Inicio",
+    "panel_empresa": "Panel de empresa",
+    "panel_empresa_ayuda": "Tarifas, equipo, liquidacion. Se abre en panel.cuadrillas.app, en una pestana nueva."
   },
   "export": {
     "compartido": "Archivo compartido",

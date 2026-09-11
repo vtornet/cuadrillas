@@ -1,4 +1,5 @@
 export type Vista =
+  | "inicio"
   | "registro"
   | "historial"
   | "estadisticas"
@@ -8,6 +9,7 @@ export type Vista =
   | "privacidad";
 
 const VISTAS: Vista[] = [
+  "inicio",
   "registro",
   "historial",
   "estadisticas",
@@ -20,11 +22,14 @@ const VISTAS: Vista[] = [
 /**
  * Enrutado minimo por hash (`#/registro`, `#/gestion`...). Suficiente para el
  * MVP; sin dependencias. La pantalla principal ("registro") es autosuficiente:
- * comenzar y finalizar la jornada se hacen ahi mismo, sin pantalla aparte.
+ * comenzar y finalizar la jornada se hacen ahi mismo, sin pantalla aparte. La
+ * app sigue ABRIENDO en "registro" (no en "inicio") para no añadir un toque
+ * extra a la acción mas repetida del día a día; "inicio" (el antiguo menú,
+ * ahora pantalla propia con botones grandes) se alcanza desde el botón de
+ * arriba a la izquierda en cualquier pantalla (`AppBar`).
  */
 class Router {
   vista = $state<Vista>("registro");
-  menuAbierto = $state(false);
 
   constructor() {
     if (typeof window === "undefined") return;
@@ -34,19 +39,10 @@ class Router {
 
   ir(v: Vista): void {
     this.vista = v;
-    this.menuAbierto = false;
     if (typeof window !== "undefined") {
       const nuevo = `#/${v}`;
       if (window.location.hash !== nuevo) window.location.hash = nuevo;
     }
-  }
-
-  abrirMenu(): void {
-    this.menuAbierto = true;
-  }
-
-  cerrarMenu(): void {
-    this.menuAbierto = false;
   }
 
   #leerHash(): void {

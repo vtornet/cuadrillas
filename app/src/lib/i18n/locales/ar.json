@@ -16,8 +16,6 @@
     "observaciones_ph": "حوادث، تنبيهات، ملاحظات اليوم..."
   },
   "menu": {
-    "titulo": "القائمة",
-    "cerrar": "إغلاق القائمة",
     "registrar": "بدء ورقة العمل",
     "historial": "السجل",
     "gestion": "البيانات",
@@ -25,6 +23,11 @@
     "asistencia": "الحضور",
     "cuenta": "الحساب والمزامنة",
     "privacidad": "الخصوصية"
+  },
+  "inicio": {
+    "titulo": "الرئيسية",
+    "panel_empresa": "لوحة الشركة",
+    "panel_empresa_ayuda": "التعريفات، الفريق، التصفية. تُفتح panel.cuadrillas.app في تبويب جديد."
   },
   "export": {
     "compartido": "تمت مشاركة الملف",

@@ -524,7 +524,9 @@ Los detalles de cada punto están en **Backlog sin planificar** justo debajo.
 
 **Bloqueadas esperando decisión del usuario**
 
-11. **Estructura de navegación** (más renombrados de menús / cambios de estructura).
+11. **Estructura de navegación.** **HECHO (2026-09-11)** — pantalla "Inicio" con
+    accesos grandes + botón de acceso al panel de empresa. Ver detalle en "Backlog
+    sin planificar". Queda abierto: más renombrados de menús si surgen.
 
 **Pendientes nuevos (2026-09-09) — sin planificar**
 
@@ -536,12 +538,8 @@ Los detalles de cada punto están en **Backlog sin planificar** justo debajo.
     `mailto:contact@appstracta.app`. Definir: ¿pantalla propia en el menú?, ¿en varios
     idiomas o solo español al principio?, ¿texto largo tipo la política de privacidad o
     lista de pasos?
-16. **Botón de acceso al panel de empresa desde la PWA.** Pedido por el usuario
-    (2026-09-11), sin implementar. Probablemente en Cuenta, enlazando a
-    `panel.cuadrillas.app`. Pendiente de definir: ¿visible solo para `owner`/`gestor`
-    (los únicos roles que el panel admite) o para todos aunque a un `foreman` le
-    rebote?, ¿abre en la misma pestaña o en una nueva?, ¿lleva algo en la URL para
-    saltar directo al login (enlace mágico) o solo al home del panel?
+16. **Botón de acceso al panel de empresa desde la PWA.** **HECHO (2026-09-11).**
+    Ver detalle en "Backlog sin planificar" (junto a la pantalla "Inicio").
 
 **Cuando toque cobrar de verdad**
 
@@ -569,6 +567,39 @@ Los detalles de cada punto están en **Backlog sin planificar** justo debajo.
 
 ### Backlog sin planificar
 
+- **Pantalla "Inicio" + botón de acceso al panel de empresa — hecho (2026-09-11).**
+  El menú hamburguesa (`MenuSheet.svelte`, una hoja modal) se sustituye por una
+  pantalla propia, `Inicio.svelte`, con los mismos accesos como botones grandes
+  (reutiliza las claves i18n `menu.*` y el CSS `.menu-lista`/`.menu-item`, antes de
+  `MenuSheet`). **La app sigue abriendo en "registro"** (Iniciar parte) — decisión
+  explícita del usuario para no añadir un toque extra a la acción más repetida del
+  día a día; "Inicio" se alcanza desde el botón de arriba a la izquierda en
+  cualquier pantalla (`AppBar`), que antes abría el menú y ahora navega a
+  `router.ir("inicio")` (icono cambiado de ☰ a ⌂, `aria-label` de `menu.titulo` a
+  `inicio.titulo`). Sin pantalla activa "encima" como antes (era una hoja modal
+  sobre la pantalla actual): ahora es una pantalla más de `router.vista`, así que
+  "volver a Inicio" es automático desde cualquier sitio con el mismo botón — no
+  hizo falta añadir un botón "volver" a cada pantalla suelta.
+  - `router.svelte.ts`: `Vista` gana `"inicio"` (no es el valor por defecto, sigue
+    siendo `"registro"`). Se quitan `menuAbierto`/`abrirMenu()`/`cerrarMenu()` — ya
+    no hace falta el estado de "hoja abierta", `router.ir()` basta.
+  - **Botón "Panel de empresa"**, solo si `Organization.plan` es `"company"` o
+    `"campaign"` (interpretación de "solo visible para empresas": el plan, no el
+    rol — el jefe de cuadrilla en plan `foreman`/`free` no tiene panel). Abre
+    `PANEL_URL` (`app/lib/config.ts`, nueva constante — fija a
+    `https://panel.cuadrillas.app`, con `VITE_PANEL_URL` para sobreescribirla) en
+    pestaña nueva (`window.open(..., "_blank", "noopener,noreferrer")`, mismo
+    patrón que el botón de WhatsApp en `CompartirParteSheet`). No hay traspaso de
+    sesión — el dueño inicia sesión en el panel por su cuenta (enlace mágico, ya
+    existente); no se ha montado ningún mecanismo de single sign-on entre PWA y
+    panel. Sección aparte, separada por un borde, con una línea de ayuda explicando
+    qué es (tarifas/equipo/liquidación) porque a diferencia del resto de accesos no
+    es evidente por el nombre solo.
+  - i18n: nueva sección `inicio.*` (`titulo`, `panel_empresa`,
+    `panel_empresa_ayuda`) en los 5 idiomas; quitadas `menu.titulo`/`menu.cerrar`
+    (solo las usaba `MenuSheet`, ya no existen). `menu.registrar/historial/
+    gestion/estadisticas/asistencia/cuenta/privacidad` se conservan (los usa
+    `Inicio.svelte` igual que antes `MenuSheet`).
 - **Trabajo por horas — hecho (2026-09-11).** Modo alternativo al destajo, elegido al
   comenzar el parte, fijo para toda su vida (no cambia después).
   - **Modelo**: `Shift.modo?: "destajo" | "horas"` (ausente = "destajo", partes de
