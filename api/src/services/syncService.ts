@@ -1,10 +1,12 @@
-import type { PendingOp, SyncResponse } from "@cuadrilla/shared";
+import type { EntityName, PendingOp, SyncResponse } from "@cuadrilla/shared";
 import { ENTIDADES, LIMITES_PLAN_GRATIS } from "@cuadrilla/shared";
 import { entranteGana } from "@cuadrilla/shared/domain";
 import { Modelos, type DocBase } from "../models/sync";
 
 interface Contexto {
   organizationId: string;
+  /** Quién sincroniza — determina qué cuadrillas ve (ver `cambiosDesde`). */
+  userId: string;
 }
 
 interface RegistroEntrante {
@@ -13,6 +15,9 @@ interface RegistroEntrante {
   deleted?: boolean | 0 | 1;
   [campo: string]: unknown;
 }
+
+/** Entidades ligadas a una cuadrilla: solo se envían las de las cuadrillas del jefe. */
+const ENTIDADES_POR_CUADRILLA = new Set<EntityName>(["worker", "group", "shift"]);
 
 export async function procesarSync(
   ctx: Contexto,
@@ -67,7 +72,7 @@ export async function procesarSync(
     applied.push(op.entityId);
   }
 
-  const changes = await cambiosDesde(ctx.organizationId, lastSyncAt);
+  const changes = await cambiosDesde(ctx.organizationId, ctx.userId, lastSyncAt);
   return { serverTime: ahora.toISOString(), changes, applied, rejected };
 }
 
@@ -97,21 +102,90 @@ async function dentroDelLimite(
   return n < limite;
 }
 
+/** Ids de las cuadrillas (no borradas) de las que `userId` es jefe. */
+async function crewIdsDe(organizationId: string, userId: string): Promise<string[]> {
+  const crews = await Modelos.crew
+    .find({ organizationId, foremanIds: userId, deleted: false })
+    .lean<{ _id: string }[]>();
+  return crews.map((c) => c._id);
+}
+
+/**
+ * Cambios desde `lastSyncAt`, **acotados a lo que le corresponde a `userId`**:
+ * - `crew`: solo las cuadrillas de las que es jefe.
+ * - `worker` / `group` / `shift`: solo los de esas cuadrillas.
+ * - `entry`: solo los de los partes (`shift`) de esas cuadrillas.
+ * - `organization` / `product` / `unitType` / `finca` / `rate`: catálogo de la
+ *   organización, igual para todos (sin `crewId`, no son datos de una cuadrilla).
+ *
+ * Antes se enviaba TODO lo de la organización a cualquier jefe — en una
+ * empresa con varias cuadrillas, un jefe recibía los trabajadores y partes de
+ * los demás. `PUT /admin/jefes/:id/cuadrillas` y la aceptación de una
+ * invitación bumpean `serverUpdatedAt` de la cuadrilla recién asignada (ver
+ * `refrescarCuadrilla` en `adminService`) para que este cursor por fecha no se
+ * salte su historial al ganar acceso.
+ */
 async function cambiosDesde(
   organizationId: string,
+  userId: string,
   lastSyncAt: string | null,
 ): Promise<SyncResponse["changes"]> {
-  const filtro: Record<string, unknown> = { organizationId };
-  if (lastSyncAt) filtro.serverUpdatedAt = { $gt: new Date(lastSyncAt) };
+  const base: Record<string, unknown> = { organizationId };
+  if (lastSyncAt) base.serverUpdatedAt = { $gt: new Date(lastSyncAt) };
+
+  const crewIds = await crewIdsDe(organizationId, userId);
 
   const changes: SyncResponse["changes"] = {};
   for (const entity of ENTIDADES) {
+    let filtro = base;
+    if (entity === "crew") {
+      filtro = { ...base, foremanIds: userId };
+    } else if (ENTIDADES_POR_CUADRILLA.has(entity)) {
+      filtro = { ...base, crewId: { $in: crewIds } };
+    } else if (entity === "entry") {
+      const shiftIds = await Modelos.shift
+        .find({ organizationId, crewId: { $in: crewIds } })
+        .distinct("_id");
+      filtro = { ...base, shiftId: { $in: shiftIds } };
+    }
+
     const docs = await Modelos[entity].find(filtro).lean<DocBase[]>();
     if (docs.length > 0) {
       changes[entity] = docs.map(aWire);
     }
   }
   return changes;
+}
+
+/**
+ * Bumpea `serverUpdatedAt` de todo lo que pertenece a una cuadrilla
+ * (trabajadores, grupos, partes y sus anotaciones), para que el cursor por
+ * fecha de `cambiosDesde` no se salte el historial cuando alguien gana acceso
+ * a esa cuadrilla (invitación aceptada con `lastSyncAt` ya existente, o
+ * reasignación). Se llama desde `adminService` al asignar cuadrillas a un jefe.
+ */
+export async function refrescarCuadrilla(
+  organizationId: string,
+  crewId: string,
+): Promise<void> {
+  const ahora = new Date();
+  const control = { updatedAt: Date.now(), serverUpdatedAt: ahora };
+
+  const shiftIds = await Modelos.shift
+    .find({ organizationId, crewId })
+    .distinct("_id");
+
+  await Promise.all([
+    Modelos.worker.updateMany({ organizationId, crewId }, { $set: control }),
+    Modelos.group.updateMany({ organizationId, crewId }, { $set: control }),
+    Modelos.shift.updateMany({ organizationId, crewId }, { $set: control }),
+    shiftIds.length > 0
+      ? Modelos.entry.updateMany(
+          { organizationId, shiftId: { $in: shiftIds } },
+          { $set: control },
+        )
+      : Promise.resolve(),
+  ]);
 }
 
 /** Doc de Mongo -> forma que espera el cliente (`id`, `deleted` como 0/1). */

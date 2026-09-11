@@ -24,7 +24,7 @@ syncRouter.post("/", requiereAuth, async (req, res, next) => {
   try {
     const { lastSyncAt, ops } = bodySchema.parse(req.body);
     const resultado = await procesarSync(
-      { organizationId: req.auth!.organizationId },
+      { organizationId: req.auth!.organizationId, userId: req.auth!.userId },
       lastSyncAt,
       ops as PendingOp[],
     );

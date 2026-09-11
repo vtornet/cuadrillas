@@ -76,9 +76,44 @@ con arrays anidados como `attendeeIds`).
   `updatedAt` (epoch ms del cliente); **fuerza `organizationId` al del token**; valida
   límites de plan; pone `serverUpdatedAt` (Date del servidor) en cada escritura.
   El pull son los docs con `serverUpdatedAt > lastSyncAt` — **nunca** se compara contra el
-  reloj del cliente.
+  reloj del cliente. La **escritura** (push) no está acotada por cuadrilla (un jefe podría
+  empujar un registro con el `crewId` de otro); es la **lectura** (pull) la que se acota.
 - Disparadores de sync: al volver la red, rebote de 2 s tras cada escritura local, y cada
   30 s (`app/src/lib/sync/status.svelte.ts`).
+
+### El pull es por cuadrilla, no por organización entera (2026-09-11)
+
+Antes `cambiosDesde` enviaba a cualquier jefe **todo** lo de la organización. En una
+empresa con varios jefes, uno veía los trabajadores/partes de los demás — se notó al
+invitar a un segundo jefe desde el panel.
+
+- `syncService.cambiosDesde(organizationId, userId, lastSyncAt)`: `crew` → solo las que
+  lidera (`foremanIds` contiene `userId`); `worker`/`group`/`shift` → solo `crewId` en esas
+  cuadrillas; `entry` → solo `shiftId` de esos partes. `organization`/`product`/`unitType`/
+  `finca`/`rate` siguen siendo catálogo de la organización, igual para todos (no tienen
+  `crewId`, no son datos de una cuadrilla concreta — nota: `rate` viaja al dispositivo del
+  jefe aunque no lo use, heredado de antes del panel; pendiente de revisar si debería).
+- **Backfill al ganar una cuadrilla**: como el pull es un cursor por fecha
+  (`serverUpdatedAt > lastSyncAt`), un jefe con sync ya avanzado que gana acceso a una
+  cuadrilla con historial antiguo se lo saltaría. `refrescarCuadrilla(organizationId,
+  crewId)` (en `syncService`, exportada) bumpea `serverUpdatedAt` de sus trabajadores,
+  grupos, partes y anotaciones; se llama desde `adminService.asignarCuadrillas` (solo para
+  las cuadrillas que se AÑADEN) y no hace falta en `altaInvitado` (la primera sincronización
+  de un jefe nuevo siempre es `lastSyncAt: null` → backfill completo ya de serie).
+- Tests: `api/tests/sync.test.ts` (aislamiento entre dos cuadrillas de la misma org),
+  `api/tests/admin.test.ts` (backfill tras `PUT /admin/jefes/:id/cuadrillas`).
+
+**Bug de infra que esto destapó**: `api/src/config/db.ts` tenía `mongoose.set("strictQuery",
+true)`. Los modelos de entidad son `strict: false` a propósito (la forma se valida en
+`syncService`, no en Mongo) — con `strictQuery: true`, Mongoose **descartaba en silencio**
+cualquier condición de consulta sobre un campo no declarado en el schema (`foremanIds`,
+`crewId`, `shiftId`…), así que filtros como `{ crewId: id }` no filtraban nada. Afectaba
+también a `adminService` desde antes del pull por cuadrilla: `borrarCuadrilla` contaba
+trabajadores de toda la org (no solo esa cuadrilla), `resumen()` contaba como "activos"
+también los inactivos, y `partes()`/`parte()`/`asistencia()`/`liquidacion()` ignoraban el
+filtro `crewId`/`shiftId`. Arreglado poniendo `strictQuery: false` (el valor por defecto de
+Mongoose 7+). **Cualquier consulta nueva que filtre por un campo no declarado en
+`models/sync.ts` necesita esto para funcionar** — ya no hay que volver a activarlo.
 
 ### Entidades sincronizables
 
@@ -109,9 +144,9 @@ Stores singleton en archivos `*.svelte.ts`:
   **`cargar()` filtra `crews`/`workers`/`groups` a las cuadrillas del jefe**
   (`Crew.foremanIds.includes(sesion.userId)`) — en una empresa con varios jefes cada uno
   ve lo suyo. `products`/`unitTypes`/`fincas` son catálogo de la organización (compartidos).
-  **Ojo**: el `/sync` sigue siendo org-wide (todos los docs de la org llegan al
-  IndexedDB del jefe); el filtro es solo de UI. Aislamiento real de datos entre
-  cuadrillas = sync con cursor por cuadrilla (pendiente, ver "Panel de empresa").
+  **El `/sync` en sí es por cuadrilla (2026-09-11, ver "Sincronización" más abajo)**: el
+  filtro de `gestion` es defensa en profundidad, no la única barrera — el dispositivo del
+  jefe ya no se descarga los datos de cuadrillas ajenas.
 - `router.svelte.ts` — router por hash (`#/registro`, …). Vistas: registro, historial,
   estadisticas, asistencia, gestion, cuenta, privacidad. **No hay pantalla "jornada" separada**: `Registro.svelte`
   es autosuficiente — con parte activo muestra el registro normal y un botón "Finalizar

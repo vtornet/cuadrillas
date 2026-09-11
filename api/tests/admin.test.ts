@@ -39,9 +39,11 @@ async function orgDe(email: string): Promise<string> {
   return u!.organizationId;
 }
 
-/** Id de la cuadrilla que `verify` crea para la organización. */
-async function crewIdDe(orgId: string): Promise<string> {
-  const c = await Modelos.crew.findOne({ organizationId: orgId }).lean();
+/** Id de una cuadrilla de la organización (opcionalmente distinta de `excepto`). */
+async function crewIdDe(orgId: string, excepto?: string): Promise<string> {
+  const filtro: Record<string, unknown> = { organizationId: orgId };
+  if (excepto) filtro._id = { $ne: excepto };
+  const c = await Modelos.crew.findOne(filtro).lean();
   return c!._id;
 }
 
@@ -165,7 +167,19 @@ describe("/admin", () => {
       .send({ name: "Cuadrilla Este" });
     expect(ren.body.name).toBe("Cuadrilla Este");
 
-    // Con un trabajador dentro no se puede borrar.
+    // Un trabajador de OTRA cuadrilla no debe bloquear el borrado (el conteo
+    // tiene que filtrar por crewId de verdad, no contar toda la org).
+    await Modelos.worker.create({
+      _id: "w-otra",
+      organizationId: orgId,
+      crewId: await crewIdDe(orgId, id),
+      name: "Beto",
+      updatedAt: 1,
+      serverUpdatedAt: new Date(),
+      deleted: false,
+    });
+
+    // Con un trabajador DENTRO sí bloquea.
     await Modelos.worker.create({
       _id: "w1",
       organizationId: orgId,
@@ -179,6 +193,7 @@ describe("/admin", () => {
       .delete(`/admin/cuadrillas/${id}`)
       .set(auth);
     expect(bloqueado.status).toBe(409);
+    expect(bloqueado.body.error).toContain("1 trabajador"); // no 2
 
     // Sin trabajadores, se borra.
     await Modelos.worker.deleteOne({ _id: "w1" });
@@ -189,6 +204,64 @@ describe("/admin", () => {
     const tras = await request(app).get("/admin/cuadrillas").set(auth);
     expect(tras.body.map((x: { name: string }) => x.name)).not.toContain(
       "Cuadrilla Este",
+    );
+  });
+
+  it("asignar una cuadrilla nueva a un jefe le hace ver su historial anterior", async () => {
+    const token = await tokenPara("refresco@empresa.com");
+    const orgId = await orgDe("refresco@empresa.com");
+    const auth = { authorization: `Bearer ${token}` };
+    const me = await User.findOne({ email: "refresco@empresa.com" }).lean();
+    await Modelos.organization.updateOne(
+      { _id: orgId },
+      { $set: { "planLimits.crews": 25 } },
+    );
+
+    // Segunda cuadrilla con historial YA existente (anterior a que este jefe
+    // la lidere): un trabajador con serverUpdatedAt antiguo.
+    const c2 = await request(app)
+      .post("/admin/cuadrillas")
+      .set(auth)
+      .send({ name: "Segunda" });
+    const crew2 = c2.body.id as string;
+    await Modelos.worker.create({
+      _id: "w-historico",
+      organizationId: orgId,
+      crewId: crew2,
+      name: "Ana",
+      updatedAt: 1,
+      serverUpdatedAt: new Date("2020-01-01"),
+      deleted: false,
+    });
+
+    // El jefe ya sincronizó antes de que le asignaran la cuadrilla 2 (cursor
+    // avanzado) — sin "refrescar", el pull por fecha se saltaría ese historial.
+    const primera = await request(app)
+      .post("/sync")
+      .set(auth)
+      .send({ lastSyncAt: null, ops: [] });
+    const cursor = primera.body.serverTime as string;
+    let cambios = (
+      await request(app)
+        .post("/sync")
+        .set(auth)
+        .send({ lastSyncAt: cursor, ops: [] })
+    ).body.changes;
+    expect(cambios.worker ?? []).toHaveLength(0);
+
+    await request(app)
+      .put(`/admin/jefes/${me!._id}/cuadrillas`)
+      .set(auth)
+      .send({ crewIds: [crew2] });
+
+    cambios = (
+      await request(app)
+        .post("/sync")
+        .set(auth)
+        .send({ lastSyncAt: cursor, ops: [] })
+    ).body.changes;
+    expect((cambios.worker ?? []).map((w: { id: string }) => w.id)).toContain(
+      "w-historico",
     );
   });
 
@@ -255,6 +328,70 @@ describe("/admin", () => {
       .set(auth)
       .send({ dni: "X" });
     expect(noExiste.status).toBe(404);
+  });
+
+  it("el detalle de un parte solo trae SUS anotaciones, y /partes filtra por cuadrilla", async () => {
+    const token = await tokenPara("partes@empresa.com");
+    const orgId = await orgDe("partes@empresa.com");
+    const crew1 = await crewIdDe(orgId);
+    const auth = { authorization: `Bearer ${token}` };
+    await Modelos.organization.updateOne(
+      { _id: orgId },
+      { $set: { "planLimits.crews": 25 } },
+    );
+    const c2 = await request(app)
+      .post("/admin/cuadrillas")
+      .set(auth)
+      .send({ name: "Cuadrilla B" });
+    const crew2 = c2.body.id as string;
+
+    const shift = (crewId: string, id: string) => ({
+      _id: id,
+      organizationId: orgId,
+      crewId,
+      fecha: "2026-03-10",
+      horaInicio: "08:00",
+      horaFin: "14:00",
+      productId: "p1",
+      unitTypeId: "u1",
+      estado: "closed",
+      attendeeIds: [],
+      updatedAt: 1,
+      serverUpdatedAt: new Date(),
+      deleted: false,
+    });
+    await Modelos.shift.create(shift(crew1, "s1"));
+    await Modelos.shift.create(shift(crew2, "s2"));
+    await Modelos.entry.create({
+      _id: "e1",
+      organizationId: orgId,
+      shiftId: "s1",
+      cantidad: 10,
+      timestamp: 1,
+      registradoPor: "u1",
+      updatedAt: 1,
+      serverUpdatedAt: new Date(),
+      deleted: false,
+    });
+    await Modelos.entry.create({
+      _id: "e2",
+      organizationId: orgId,
+      shiftId: "s2",
+      cantidad: 99,
+      timestamp: 1,
+      registradoPor: "u1",
+      updatedAt: 1,
+      serverUpdatedAt: new Date(),
+      deleted: false,
+    });
+
+    const detalle = await request(app).get("/admin/partes/s1").set(auth);
+    expect(detalle.body.entries.map((e: { id: string }) => e.id)).toEqual(["e1"]);
+
+    const soloCrew2 = await request(app)
+      .get(`/admin/partes?crewId=${crew2}`)
+      .set(auth);
+    expect(soloCrew2.body.map((s: { id: string }) => s.id)).toEqual(["s2"]);
   });
 
   it("CRUD de tarifas", async () => {

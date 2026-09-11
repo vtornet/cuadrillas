@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import { MagicToken, User } from "../models/auth";
 import { enviarInvitacion } from "../lib/email";
 import { env } from "../config/env";
+import { refrescarCuadrilla } from "./syncService";
 import type {
   EntityName,
   Entry,
@@ -582,6 +583,13 @@ export async function asignarCuadrillas(
   const u = await User.findOne({ _id: userId, organizationId }).lean();
   if (!u) return { error: "Jefe no encontrado" };
 
+  // Cuadrillas de las que YA era jefe, para saber cuáles ganan un jefe nuevo
+  // (esas hay que "refrescar": ver refrescarCuadrilla).
+  const antes = await Modelos.crew
+    .find({ organizationId, foremanIds: userId })
+    .distinct("_id");
+  const nuevas = crewIds.filter((id) => !antes.includes(id));
+
   await Modelos.crew.updateMany(
     { organizationId, _id: { $in: crewIds } },
     {
@@ -596,5 +604,10 @@ export async function asignarCuadrillas(
       $set: { updatedAt: Date.now(), serverUpdatedAt: new Date() },
     },
   );
+
+  // El sync es por cuadrilla (cursor por fecha): sin esto, un jefe con
+  // lastSyncAt ya avanzado no vería el historial de una cuadrilla nueva.
+  for (const crewId of nuevas) await refrescarCuadrilla(organizationId, crewId);
+
   return { ok: true };
 }
