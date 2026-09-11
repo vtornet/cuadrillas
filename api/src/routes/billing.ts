@@ -20,12 +20,12 @@ billingRouter.post("/checkout", requiereAuth, async (req, res, next) => {
   try {
     const { plan } = checkoutSchema.parse(req.body);
     const user = await User.findById(req.auth!.userId).lean<{ email?: string } | null>();
-    const url = await crearCheckout(
+    const resultado = await crearCheckout(
       req.auth!.organizationId,
       user?.email ?? "",
       plan,
     );
-    res.json({ url });
+    res.json(resultado);
   } catch (e) {
     next(e);
   }

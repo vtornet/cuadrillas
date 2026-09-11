@@ -12,18 +12,43 @@ import {
   type PlanPago,
 } from "../lib/stripe";
 
+/**
+ * `{ url }` cuando hay que llevar al jefe a Stripe Checkout (alta nueva, o
+ * plan de pago único como "campaign"); `{ actualizado: true }` cuando la
+ * organización ya tenía una suscripción activa y el plan nuevo también es una
+ * suscripción — en ese caso se cambia el precio de la suscripción EXISTENTE
+ * (con prorateo) en vez de crear una nueva, para no duplicar el cobro. Es lo
+ * que permite "mejorar de plan" sin pasar por el portal de Stripe.
+ */
+export type ResultadoCheckout = { url: string } | { actualizado: true };
+
 export async function crearCheckout(
   organizationId: string,
   email: string,
   plan: PlanPago,
-): Promise<string> {
+): Promise<ResultadoCheckout> {
   if (!stripe) throw new BillingNoConfigurado();
   const priceId = PRECIOS[plan];
   if (!priceId) throw new ErrorHttp(400, `Sin precio configurado para "${plan}"`);
 
   const org = await Modelos.organization
     .findById(organizationId)
-    .lean<{ stripeCustomerId?: string } | null>();
+    .lean<{ stripeCustomerId?: string; stripeSubscriptionId?: string } | null>();
+
+  if (org?.stripeSubscriptionId && modoCheckout(plan) === "subscription") {
+    const sub = await stripe.subscriptions.retrieve(org.stripeSubscriptionId);
+    const item = sub.items.data[0];
+    if (!item) throw new ErrorHttp(500, "La suscripcion no tiene lineas");
+    await stripe.subscriptions.update(org.stripeSubscriptionId, {
+      items: [{ id: item.id, price: priceId }],
+      proration_behavior: "create_prorations",
+    });
+    // El webhook customer.subscription.updated ya actualizaria el plan al
+    // llegar, pero lo hacemos tambien aqui para que el jefe lo vea al
+    // instante sin esperar al webhook.
+    await actualizarPlan(organizationId, plan, {});
+    return { actualizado: true };
+  }
 
   const session = await stripe.checkout.sessions.create({
     mode: modoCheckout(plan),
@@ -37,7 +62,7 @@ export async function crearCheckout(
   });
 
   if (!session.url) throw new ErrorHttp(502, "Stripe no devolvio URL");
-  return session.url;
+  return { url: session.url };
 }
 
 export async function crearPortal(organizationId: string): Promise<string> {
@@ -96,7 +121,7 @@ function idDe(v: unknown): string | undefined {
   return typeof v === "string" ? v : undefined;
 }
 
-async function actualizarPlan(
+export async function actualizarPlan(
   organizationId: string,
   plan: Plan,
   extra: Record<string, string | undefined>,

@@ -3,7 +3,12 @@ import { auth } from "./auth/auth.svelte";
 
 export type PlanPago = "foreman" | "company" | "campaign";
 
-async function pedirUrl(ruta: string, body?: unknown): Promise<string> {
+interface RespuestaCheckout {
+  url?: string;
+  actualizado?: true;
+}
+
+async function pedirJson<T>(ruta: string, body?: unknown): Promise<T> {
   const r = await fetch(`${API_URL}${ruta}`, {
     method: "POST",
     headers: {
@@ -14,16 +19,28 @@ async function pedirUrl(ruta: string, body?: unknown): Promise<string> {
   });
   if (r.status === 503) throw new Error("no-configurado");
   if (!r.ok) throw new Error(`billing ${r.status}`);
-  const { url } = (await r.json()) as { url: string };
-  return url;
+  return (await r.json()) as T;
 }
 
-/** Lleva a Stripe Checkout para contratar un plan. */
-export async function irACheckout(plan: PlanPago): Promise<void> {
-  window.location.href = await pedirUrl("/billing/checkout", { plan });
+/**
+ * Contrata un plan o cambia al indicado. Si la organización ya tenía una
+ * suscripción activa y el nuevo plan también es una suscripción, el servidor
+ * la actualiza in situ (sin checkout nuevo, para no duplicar el cobro) y esta
+ * función resuelve con `{ actualizado: true }` sin navegar a ningún sitio —
+ * quien llama debe refrescar el plan. En cualquier otro caso (alta nueva, o
+ * "campaign", que es pago único) navega a Stripe Checkout.
+ */
+export async function irACheckout(plan: PlanPago): Promise<{ actualizado: boolean }> {
+  const r = await pedirJson<RespuestaCheckout>("/billing/checkout", { plan });
+  if (r.url) {
+    window.location.href = r.url;
+    return { actualizado: false };
+  }
+  return { actualizado: true };
 }
 
 /** Lleva al portal de cliente de Stripe (facturas, cancelar, cambiar tarjeta). */
 export async function irAPortal(): Promise<void> {
-  window.location.href = await pedirUrl("/billing/portal");
+  const { url } = await pedirJson<{ url: string }>("/billing/portal");
+  window.location.href = url;
 }

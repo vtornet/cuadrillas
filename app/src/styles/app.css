@@ -804,6 +804,12 @@ button:disabled {
 }
 
 /* ---- Planes ---- */
+.plan-otros-titulo {
+  margin: 14px 0 8px;
+  font-weight: 600;
+  font-size: 14px;
+}
+
 .plan-card {
   display: flex;
   align-items: center;

@@ -195,6 +195,29 @@ sincronizada. El webhook de Stripe (`api/src/services/billingService.ts` →
 lo reciba en el siguiente `/sync`. `syncService.dentroDelLimite` lee `org.planLimits`.
 Sin `STRIPE_SECRET_KEY` los endpoints de pago responden 503 y la UI de plan no aparece.
 
+**Cambiar de plan ya con una suscripción activa — hecho (2026-09-11).** Antes,
+`POST /billing/checkout` siempre creaba una sesión de Stripe Checkout nueva —
+si la organización ya tenía una suscripción activa (p. ej. `foreman`) no había
+forma de pasar a `company` desde la app: solo se ofrecía "Gestionar suscripción"
+(portal de Stripe, sin control sobre si permite cambiar de precio). Ahora
+`crearCheckout` distingue: si hay `stripeSubscriptionId` Y el plan nuevo
+también es una suscripción (no `campaign`, que es pago único), cambia el
+precio de la suscripción EXISTENTE con `stripe.subscriptions.update(...,
+{items:[...], proration_behavior:"create_prorations"})` en vez de crear una
+sesión nueva (evita duplicar el cobro), y actualiza `Organization.plan` al
+momento (sin esperar al webhook). Responde `{ actualizado: true }` en vez de
+`{ url }` — no hay a dónde navegar. `Cuenta.svelte` (`otrosPlanes`, planes
+que no son el actual) ya no oculta las tarjetas de plan cuando `esDePago`:
+las muestra igual, con el botón "Cambiar a este plan"; si la respuesta es
+`{ actualizado: true }` muestra un mensaje y refresca el plan en vez de
+navegar. Mismo ajuste en `panel/routes/Equipo.svelte` (`cambiarAEmpresa`,
+botón al llegar al límite de jefes) para no mostrar un error falso cuando
+en realidad el cambio sí se aplicó. Sin test unitario del camino de
+`subscriptions.update` (necesitaría mockear el SDK de Stripe, que esta
+suite no hace en ningún sitio — se apoya en `stripe === null` para probar
+el 503 y en llamar a `procesarEventoStripe` directamente con eventos
+sintéticos para el resto); se verifica a mano en modo test de Stripe.
+
 Límites de cuadrillas: `LIMITES_PLAN_GRATIS.crews = 2` (2026-09-09, antes 1),
 `LIMITES_POR_PLAN.foreman.crews = 2` (`api/src/lib/stripe.ts`); company 25, campaign 3.
 Además del rechazo en `/sync`, el cliente avisa **antes** de abrir el formulario:

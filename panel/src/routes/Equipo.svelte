@@ -20,6 +20,7 @@
   let eq = $state<Equipo | null>(null);
   let crews = $state<Crew[]>([]);
   let error = $state<string | null>(null);
+  let cambioOk = $state<string | null>(null);
 
   async function cargar(): Promise<void> {
     error = null;
@@ -111,6 +112,8 @@
   }
 
   async function cambiarAEmpresa(): Promise<void> {
+    error = null;
+    cambioOk = null;
     try {
       const r = await fetch(`${API_URL}/billing/checkout`, {
         method: "POST",
@@ -124,9 +127,21 @@
         error = "Los pagos no están disponibles todavía.";
         return;
       }
-      const data = (await r.json()) as { url?: string; error?: string };
-      if (data.url) window.location.href = data.url;
-      else error = data.error ?? "No se pudo abrir la pasarela de pago.";
+      const data = (await r.json()) as {
+        url?: string;
+        actualizado?: true;
+        error?: string;
+      };
+      if (data.url) {
+        window.location.href = data.url;
+      } else if (data.actualizado) {
+        // Ya había una suscripción activa: Stripe la actualizó in situ, sin
+        // checkout nuevo — no hay a dónde navegar, solo refrescar.
+        cambioOk = "Cambiado al plan Empresa.";
+        await cargar();
+      } else {
+        error = data.error ?? "No se pudo abrir la pasarela de pago.";
+      }
     } catch {
       error = "No se pudo abrir la pasarela de pago.";
     }
@@ -136,6 +151,7 @@
 <h1>Equipo</h1>
 
 {#if error}<p class="aviso">{error}</p>{/if}
+{#if cambioOk}<p>{cambioOk}</p>{/if}
 
 {#if !eq}
   <p class="cargando">Cargando…</p>

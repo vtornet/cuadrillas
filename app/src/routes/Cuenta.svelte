@@ -33,6 +33,9 @@
   ];
 
   const esDePago = $derived(!!org && org.plan !== "free");
+  /** Planes de pago que no son el actual — para ofrecer cambiar a ellos. */
+  const otrosPlanes = $derived(PLANES.filter((p) => !org || org.plan !== p.id));
+  let cambioMsg = $state("");
   const checkoutMsg = $derived(
     typeof window !== "undefined" && window.location.hash.includes("checkout=success")
       ? i18n.t("plan.pago_recibido")
@@ -58,8 +61,17 @@
     if (planCargando) return;
     planCargando = true;
     planError = "";
+    cambioMsg = "";
     try {
-      await irACheckout(plan);
+      const r = await irACheckout(plan);
+      if (r.actualizado) {
+        // Ya había una suscripción activa: Stripe la actualizó in situ, sin
+        // checkout nuevo — no hay a dónde navegar, solo refrescar el plan.
+        cambioMsg = i18n.t("plan.cambiado", { plan: nombrePlan(plan) });
+        await cargarOrg();
+        planCargando = false;
+      }
+      // si no, ya se ha navegado a Stripe Checkout.
     } catch (e) {
       planError =
         (e as Error).message === "no-configurado"
@@ -201,6 +213,7 @@
           <h2>{i18n.t("plan.titulo")}</h2>
 
           {#if checkoutMsg}<p class="login-ok">{checkoutMsg}</p>{/if}
+          {#if cambioMsg}<p class="login-ok">{cambioMsg}</p>{/if}
           {#if planError}<p class="login-error">{planError}</p>{/if}
 
           {#if esDePago && org}
@@ -230,7 +243,13 @@
             </div>
           {:else}
             <p class="jc-sub" style="margin-bottom:10px">{i18n.t("plan.gratis_actual")}</p>
-            {#each PLANES as p (p.id)}
+          {/if}
+
+          {#if otrosPlanes.length > 0}
+            <p class="plan-otros-titulo">
+              {esDePago ? i18n.t("plan.cambiar_titulo") : i18n.t("plan.elegir_titulo")}
+            </p>
+            {#each otrosPlanes as p (p.id)}
               <div class="plan-card">
                 <div>
                   <p class="pc-titulo">{p.titulo}</p>
@@ -244,7 +263,9 @@
                 >
                   {p.id === "campaign"
                     ? i18n.t("plan.pagar")
-                    : i18n.t("plan.suscribirse")}
+                    : esDePago
+                      ? i18n.t("plan.cambiar")
+                      : i18n.t("plan.suscribirse")}
                 </button>
               </div>
             {/each}
