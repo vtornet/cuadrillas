@@ -580,14 +580,14 @@ Los detalles de cada punto están en **Backlog sin planificar** justo debajo.
 16. **Botón de acceso al panel de empresa desde la PWA.** **HECHO (2026-09-11).**
     Ver detalle en "Backlog sin planificar" (junto a la pantalla "Inicio").
 17. **Panel de empresa: estructura inadecuada en móvil.** Reportado por el usuario
-    (2026-09-11) tras probarlo en el móvil, pendiente de mirar. El panel se diseñó a
-    propósito como herramienta de **escritorio** (`panel/src/app.css`, CSS propio, no
-    reusa `tokens.css` de la PWA — ver "Panel de empresa" en `## Estado`), así que no
-    es raro que en móvil (barra lateral fija, tablas anchas, sin `--tap` de objetivos
-    táctiles grandes) se vea forzado. Falta decidir con el usuario: ¿vale con hacerlo
-    responsive (breakpoints, la barra lateral colapsa a menú, tablas con scroll
-    horizontal) o el panel sigue siendo "solo escritorio" y esto es solo pulir lo
-    mínimo para que no se rompa si alguien lo abre desde el móvil?
+    (2026-09-11) tras probarlo en el móvil. **Decisión del usuario (2026-09-11): el
+    panel se queda como herramienta de escritorio, a propósito** — "es lo correcto
+    para una empresa". No se hace responsive de verdad (sin breakpoints, sin colapsar
+    la barra lateral, sin tablas con scroll horizontal pensado para móvil). Sigue
+    coherente con cómo ya estaba planteado desde el principio (`panel/src/app.css`,
+    CSS propio, no reusa `tokens.css` de la PWA — ver "Panel de empresa" en
+    `## Estado`). Sin trabajo pendiente aquí salvo que el usuario pida en algún
+    momento un mínimo de "que no se rompa" en móvil (no pedido de momento).
 
 **Cuando toque cobrar de verdad**
 
