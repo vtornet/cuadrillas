@@ -42,7 +42,7 @@
       <p>De los <strong>trabajadores</strong> dados de alta por el jefe:</p>
       <ul>
         <li>Nombre y alias o código.</li>
-        <li>Cuadrilla, idioma y, si se indica, código QR e importe de transporte.</li>
+        <li>Cuadrilla y, si se indica, código QR e importe de transporte.</li>
         <li>
           Registro diario de asistencia y de las unidades recolectadas en cada
           parte de trabajo.

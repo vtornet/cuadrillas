@@ -580,7 +580,12 @@ Los detalles de cada punto están en **Backlog sin planificar** justo debajo.
   — solo mostraba el valor, tampoco accionaba nada ahí). El tipo `Idioma` en sí se
   conserva (lo usa `i18n.svelte.ts` para el idioma de la propia app, ver abajo).
   Datos ya sincronizados con un `language` viejo no se borran (los modelos de Mongo son
-  `strict: false`) pero quedan ignorados por todo el código.
+  `strict: false`) pero quedan ignorados por todo el código. Restos encontrados en un
+  barrido posterior: la política de privacidad (`Privacidad.svelte`) todavía listaba
+  "idioma" como dato tratado del trabajador — corregido; el archivo de ejemplo
+  `ejemplos/trabajadores-ejemplo.xlsx` traía columna "Idioma" — regenerado sin ella;
+  `shared/src/constants.ts` tenía `IDIOMAS_MVP` sin ningún uso (residuo de cuando ro/ar/fr
+  no tenían traducción completa, ya hecha desde 2026-09-08) — eliminada.
 - **Selector de idioma de la app movido a Cuenta › Perfil (2026-09-11).** Antes vivía
   en su propia sección "Idioma" separada, encima de "Perfil"; ahora `SelectorIdioma`
   (sin `compacto`) es el primer campo dentro de la sección "Perfil" — es una preferencia
