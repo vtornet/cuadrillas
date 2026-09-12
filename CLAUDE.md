@@ -395,6 +395,26 @@ El `plan` marca qué tiene la org: `foreman` = solo PWA (1 jefe, 2 cuadrillas, s
     `free` para un email nuevo; el owner sube a `company` desde el panel (o la PWA).
   - Límite: `LIMITES_POR_PLAN` — free/foreman 1 jefe, company 25, campaign 3. El owner
     siempre cuenta como 1 jefe.
+- **Trabajadores: exportar + cambiar de cuadrilla desde el panel (2026-09-12).**
+  - API: `PUT /admin/trabajadores/:id/cuadrilla` `{crewId}` (zod) →
+    `adminService.cambiarCuadrilla` (valida que el trabajador y la cuadrilla destino
+    existan en la organización; upsert con `serverUpdatedAt` para que el `/sync` del
+    jefe que RECIBE al trabajador lo vea en su próximo pull normal — su filtro por
+    cuadrilla usa el `crewId` actual del documento). El jefe de cuadrilla ya podía
+    cambiar la cuadrilla de sus propios trabajadores desde `WorkerForm`, pero solo
+    entre SUS cuadrillas; el gestor ve la organización entera y puede mover a alguien
+    a la cuadrilla de OTRO jefe. **Limitación conocida (no resuelta, ya existía en el
+    modelo):** el jefe que PIERDE al trabajador no recibe una señal explícita de
+    "quítalo" — su copia local (IndexedDB) no se borra sola, queda obsoleta hasta que
+    algo más la toque (mismo tipo de limitación que documenta `cambiosDesde` en
+    `syncService.ts`). Tampoco se recolocan las membresías de `Group` si el
+    trabajador estaba en un grupo de su cuadrilla anterior (edge case preexistente,
+    no introducido por este cambio). Test en `api/tests/admin.test.ts`.
+  - Panel (`Trabajadores.svelte`): en la ficha de detalle, "Cuadrilla" pasa a
+    editable (`<select>` de cuadrillas + Guardar/Cancelar, mismo patrón que la
+    reasignación de `Equipo.svelte`). Botones **Excel**/**CSV** sobre la lista
+    filtrada (`tablaACsv`/`tablaAXlsx` de `lib/export/tabla.ts`, mismo patrón que
+    Asistencia/Liquidación) — no se ofrece PDF aquí, solo se pidió CSV/Excel.
 
 ### Despliegue (en marcha, 2026-09-05)
 

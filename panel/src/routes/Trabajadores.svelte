@@ -2,6 +2,8 @@
   import type { Worker, Crew } from "@cuadrilla/shared";
   import { api, get } from "../lib/api";
   import { router } from "../lib/router.svelte";
+  import { descargar, slug } from "../lib/export/descargar";
+  import { tablaACsv, tablaAXlsx, type Tabla } from "../lib/export/tabla";
   import FichaLaboral from "../lib/FichaLaboral.svelte";
 
   type Fila = Worker & { cuadrilla: string };
@@ -13,6 +15,8 @@
   let crewId = $state(router.param ?? "");
   let q = $state("");
   let detalle = $state<(Worker & { cuadrilla: string }) | null>(null);
+  let cambiandoCuadrilla = $state(false);
+  let crewSel = $state("");
 
   async function cargar(): Promise<void> {
     filas = null;
@@ -47,6 +51,7 @@
       detalle = await api<Worker & { cuadrilla: string }>(
         `/trabajadores/${id}`,
       );
+      cambiandoCuadrilla = false;
     } catch (e) {
       error = e instanceof Error ? e.message : "Error";
     }
@@ -54,6 +59,61 @@
 
   function eur(centimos?: number): string {
     return centimos ? `${(centimos / 100).toFixed(2)} €` : "—";
+  }
+
+  function abrirCambioCuadrilla(): void {
+    if (!detalle) return;
+    crewSel = detalle.crewId;
+    cambiandoCuadrilla = true;
+  }
+
+  async function guardarCuadrilla(): Promise<void> {
+    if (!detalle || !crewSel) return;
+    try {
+      detalle = await api<Worker & { cuadrilla: string }>(
+        `/trabajadores/${detalle.id}/cuadrilla`,
+        { metodo: "PUT", body: { crewId: crewSel } },
+      );
+      cambiandoCuadrilla = false;
+      await cargar();
+    } catch (e) {
+      error = e instanceof Error ? e.message : "Error";
+    }
+  }
+
+  let generando = $state<string | null>(null);
+  function tablaExport(): Tabla {
+    const cuad = crews.find((c) => c.id === crewId)?.name ?? "Todas las cuadrillas";
+    return {
+      titulo: "Trabajadores",
+      meta: [
+        `Cuadrilla: ${cuad}`,
+        ...(q.trim() ? [`Búsqueda: "${q.trim()}"`] : []),
+      ],
+      cabeceras: ["Nombre", "Alias", "Cuadrilla", "Función", "Alta laboral", "Activo"],
+      filas: (filas ?? []).map((w) => [
+        w.name,
+        w.alias,
+        w.cuadrilla,
+        w.funcion === "auxiliar" ? "Auxiliar" : "Recolector",
+        w.laboral?.fechaAlta ?? "",
+        w.activo === 1 ? "Sí" : "No",
+      ]),
+    };
+  }
+
+  async function exportar(fmt: "csv" | "xlsx"): Promise<void> {
+    if (!filas || generando) return;
+    generando = fmt;
+    try {
+      const t = tablaExport();
+      const blob = fmt === "csv" ? tablaACsv(t) : await tablaAXlsx(t);
+      descargar(blob, `trabajadores_${slug(new Date().toISOString().slice(0, 10))}.${fmt}`);
+    } catch (e) {
+      error = e instanceof Error ? e.message : "Error al exportar";
+    } finally {
+      generando = null;
+    }
   }
 </script>
 
@@ -68,6 +128,17 @@
   </select>
   <input type="search" placeholder="Buscar por nombre o alias" bind:value={q} />
 </div>
+
+{#if filas && filas.length > 0}
+  <p style="display:flex;gap:8px">
+    <button type="button" disabled={!!generando} onclick={() => exportar("xlsx")}>
+      {generando === "xlsx" ? "…" : "Excel"}
+    </button>
+    <button type="button" disabled={!!generando} onclick={() => exportar("csv")}>
+      {generando === "csv" ? "…" : "CSV"}
+    </button>
+  </p>
+{/if}
 
 {#if error}
   <p class="aviso">{error}</p>
@@ -108,7 +179,25 @@
   {@const d = detalle}
   <h2>{d.name} <em style="color:var(--suave)">{d.alias}</em></h2>
   <dl class="pares">
-    <dt>Cuadrilla</dt><dd>{d.cuadrilla}</dd>
+    <dt>Cuadrilla</dt>
+    <dd>
+      {#if cambiandoCuadrilla}
+        <select bind:value={crewSel}>
+          {#each crews as c (c.id)}
+            <option value={c.id}>{c.name}</option>
+          {/each}
+        </select>
+        <button type="button" class="primario" onclick={guardarCuadrilla}>
+          Guardar
+        </button>
+        <button type="button" onclick={() => (cambiandoCuadrilla = false)}>
+          Cancelar
+        </button>
+      {:else}
+        {d.cuadrilla}
+        <button type="button" onclick={abrirCambioCuadrilla}>Cambiar</button>
+      {/if}
+    </dd>
     <dt>Función</dt>
     <dd>{d.funcion === "auxiliar" ? "Auxiliar" : "Recolector"}</dd>
     <dt>Transporte / día</dt><dd>{eur(d.transporteCentimos)}</dd>

@@ -229,6 +229,46 @@ export async function actualizarLaboral(
   return aWire(doc!);
 }
 
+/**
+ * Cambia la cuadrilla de un trabajador (alta o traslado). Solo desde el
+ * panel — el jefe de cuadrilla ya podía cambiar la cuadrilla de sus propios
+ * trabajadores desde `WorkerForm`, pero solo entre SUS cuadrillas; aquí el
+ * gestor ve la organización entera y puede mover a alguien a la cuadrilla de
+ * OTRO jefe. Upsert con `serverUpdatedAt` para que el jefe que RECIBE al
+ * trabajador lo vea en su próximo `/sync` normal (su filtro por cuadrilla usa
+ * el `crewId` actual del documento).
+ *
+ * Limitación conocida: el jefe que PIERDE al trabajador no recibe una señal
+ * explícita de "quítalo" — el pull es un cursor por fecha filtrado por el
+ * `crewId` de CADA documento, así que un registro que ya no pertenece a
+ * ninguna de sus cuadrillas simplemente deja de aparecer en `changes`, pero
+ * su copia local (IndexedDB) no se borra sola. Mismo tipo de limitación que
+ * ya existe en el modelo de pull por cuadrilla (ver `cambiosDesde` en
+ * `syncService.ts`) — no se resuelve aquí.
+ */
+export async function cambiarCuadrilla(
+  organizationId: string,
+  id: string,
+  crewId: string,
+): Promise<{ error: string } | Wire> {
+  const worker = await Modelos.worker
+    .findOne({ _id: id, organizationId, ...VIVO })
+    .lean<DocBase | null>();
+  if (!worker) return { error: "Trabajador no encontrado" };
+
+  const crew = await Modelos.crew
+    .findOne({ _id: crewId, organizationId, ...VIVO })
+    .lean<DocBase | null>();
+  if (!crew) return { error: "Cuadrilla no encontrada" };
+
+  await Modelos.worker.updateOne(
+    { _id: id, organizationId },
+    { $set: { crewId, updatedAt: Date.now(), serverUpdatedAt: new Date() } },
+  );
+  const doc = await Modelos.worker.findById(id).lean<DocBase>();
+  return { ...aWire(doc!), cuadrilla: String(crew.name) };
+}
+
 interface FiltrosPartes {
   crewId?: string;
   desde?: string;

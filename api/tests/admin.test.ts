@@ -331,6 +331,52 @@ describe("/admin", () => {
     expect(noExiste.status).toBe(404);
   });
 
+  it("cambia la cuadrilla de un trabajador desde el panel", async () => {
+    const token = await tokenPara("traslado@empresa.com");
+    const orgId = await orgDe("traslado@empresa.com");
+    const crew1 = await crewIdDe(orgId);
+    const auth = { authorization: `Bearer ${token}` };
+    await Modelos.organization.updateOne(
+      { _id: orgId },
+      { $set: { "planLimits.crews": 25 } },
+    );
+    const c2 = await request(app)
+      .post("/admin/cuadrillas")
+      .set(auth)
+      .send({ name: "Segunda" });
+    const crew2 = c2.body.id as string;
+
+    await sync(token, [opWorker(orgId, "w1", { crewId: crew1, name: "Ana" })]);
+
+    const r = await request(app)
+      .put("/admin/trabajadores/w1/cuadrilla")
+      .set(auth)
+      .send({ crewId: crew2 });
+    expect(r.status).toBe(200);
+    expect(r.body.crewId).toBe(crew2);
+    expect(r.body.cuadrilla).toBe("Segunda");
+
+    const ficha = await request(app)
+      .get("/admin/trabajadores/w1")
+      .set(auth);
+    expect(ficha.body.crewId).toBe(crew2);
+    expect(ficha.body.cuadrilla).toBe("Segunda");
+
+    // Cuadrilla inexistente → 404, sin tocar el trabajador.
+    const malaCrew = await request(app)
+      .put("/admin/trabajadores/w1/cuadrilla")
+      .set(auth)
+      .send({ crewId: "zzz" });
+    expect(malaCrew.status).toBe(404);
+
+    // Trabajador inexistente → 404.
+    const malWorker = await request(app)
+      .put("/admin/trabajadores/zzz/cuadrilla")
+      .set(auth)
+      .send({ crewId: crew1 });
+    expect(malWorker.status).toBe(404);
+  });
+
   it("el detalle de un parte solo trae SUS anotaciones, y /partes filtra por cuadrilla", async () => {
     const token = await tokenPara("partes@empresa.com");
     const orgId = await orgDe("partes@empresa.com");

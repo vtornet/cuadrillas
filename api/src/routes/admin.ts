@@ -130,6 +130,27 @@ const laboralSchema = z
   })
   .strict();
 
+const cuadrillaSchema = z.object({ crewId: z.string().min(1) });
+
+adminRouter.put("/trabajadores/:id/cuadrilla", (req, res, next) => {
+  const datos = cuadrillaSchema.safeParse(req.body);
+  if (!datos.success) {
+    res.status(400).json({ error: "crewId inválido" });
+    return;
+  }
+  admin
+    .cambiarCuadrilla(req.auth!.organizationId, req.params.id, datos.data.crewId)
+    .then((r) => {
+      if ("error" in r) {
+        const err = String(r.error);
+        res.status(err.includes("no encontrad") ? 404 : 400).json({ error: err });
+        return;
+      }
+      res.json(r);
+    })
+    .catch(next);
+});
+
 adminRouter.put("/trabajadores/:id/laboral", (req, res, next) => {
   const datos = laboralSchema.safeParse(req.body);
   if (!datos.success) {
