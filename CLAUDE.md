@@ -592,11 +592,31 @@ Los detalles de cada punto están en **Backlog sin planificar** justo debajo.
 14. **Trabajo por horas.** **HECHO (2026-09-11).** Ver detalle en "Backlog sin
     planificar". Queda pendiente para el futuro panel: cómo entra en la liquidación
     (jornal × horas) — `settlement.ts` no se ha tocado.
-15. **Apartado de instrucciones / ayuda.** Nueva pantalla (o sección en Cuenta) con
-    instrucciones de uso de la app y un **botón de contacto** para dudas que abra un
-    `mailto:contact@appstracta.app`. Definir: ¿pantalla propia en el menú?, ¿en varios
-    idiomas o solo español al principio?, ¿texto largo tipo la política de privacidad o
-    lista de pasos?
+15. **Apartado de instrucciones / ayuda — hecho (2026-09-12).** Decisiones tomadas
+    (las tres preguntas abiertas que dejó este punto): pantalla propia en el menú (no
+    sección de Cuenta) tanto en la PWA como en el panel; en los 5 idiomas de la PWA
+    (es/en/fr/ro/ar — mismo compromiso de i18n completo que el resto de la app, ya que
+    el jefe de cuadrilla elige su propio idioma y merece ayuda en él igual que el
+    resto de la interfaz) y solo español en el panel (coherente con que el panel no
+    tiene i18n); formato de lista de secciones cortas (título + 2-4 frases), no un
+    documento largo tipo la política de privacidad.
+    - **PWA**: `Ayuda.svelte` (vista `"ayuda"` en `router.svelte.ts`, entrada en
+      `Inicio.svelte` y en `App.svelte`), con una sección por pantalla (Iniciar parte,
+      Grupos, Horas, Auxiliares, Finalizar, Historial, Compartir, Estadísticas,
+      Asistencia, Datos, Cuenta, Panel de empresa) y un bloque final de contacto
+      (`mailto:contact@appstracta.app`). i18n: nueva sección `ayuda.*` (~29 claves) +
+      `menu.ayuda`, traducida a los 5 idiomas — pasa el test de paridad de claves
+      (`i18n.test.ts`). Reutiliza la clase `.legal` (mismo patrón visual que
+      `Privacidad.svelte`, duplicada localmente porque los estilos de Svelte son
+      scoped por componente).
+    - **Panel**: `Ayuda.svelte` (vista `"ayuda"` en `router.svelte.ts`, entrada en la
+      barra lateral vía `VISTAS`), con secciones equivalentes desde la perspectiva del
+      gestor (Resumen, Cuadrillas, Trabajadores, Altas, Partes, Asistencia, Tarifas,
+      Liquidación, Equipo) y el mismo bloque de contacto. Sin i18n (solo español, como
+      el resto del panel).
+    - Verificado en Chrome headless vía CDP: la pantalla se ve completa en español y,
+      al cambiar el idioma a árabe desde Cuenta, cambia a RTL (`dir="rtl"`) con el
+      contenido bien traducido — sin errores de consola.
 16. **Botón de acceso al panel de empresa desde la PWA.** **HECHO (2026-09-11).**
     Ver detalle en "Backlog sin planificar" (junto a la pantalla "Inicio").
 17. **Panel de empresa: estructura inadecuada en móvil.** Reportado por el usuario

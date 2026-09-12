@@ -8,6 +8,7 @@
   import Gestion from "./routes/Gestion.svelte";
   import Cuenta from "./routes/Cuenta.svelte";
   import Privacidad from "./routes/Privacidad.svelte";
+  import Ayuda from "./routes/Ayuda.svelte";
   import { i18n } from "./lib/i18n/i18n.svelte";
   import { router } from "./lib/stores/router.svelte";
   import { auth } from "./lib/auth/auth.svelte";
@@ -70,6 +71,8 @@
       <Cuenta />
     {:else if router.vista === "privacidad"}
       <Privacidad />
+    {:else if router.vista === "ayuda"}
+      <Ayuda />
     {:else}
       <Registro />
     {/if}

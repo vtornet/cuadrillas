@@ -32,6 +32,7 @@
     { v: "gestion", label: i18n.t("menu.gestion") },
     { v: "cuenta", label: i18n.t("menu.cuenta") },
     { v: "privacidad", label: i18n.t("menu.privacidad") },
+    { v: "ayuda", label: i18n.t("menu.ayuda") },
   ];
 
   function abrirPanel(): void {

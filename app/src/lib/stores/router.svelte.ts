@@ -6,7 +6,8 @@ export type Vista =
   | "asistencia"
   | "gestion"
   | "cuenta"
-  | "privacidad";
+  | "privacidad"
+  | "ayuda";
 
 const VISTAS: Vista[] = [
   "inicio",
@@ -17,6 +18,7 @@ const VISTAS: Vista[] = [
   "gestion",
   "cuenta",
   "privacidad",
+  "ayuda",
 ];
 
 /**
