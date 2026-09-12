@@ -33,6 +33,8 @@
   "ayuda": {
     "titulo": "Help",
     "intro": "A quick guide to each screen in Cuadrillas. If something isn't covered here, get in touch — contact details are below.",
+    "previo_titulo": "Before you start",
+    "previo_texto": "The first thing to do is fill in Data: at least one crew, one worker, one product and one unit. Without this you can't start a shift.",
     "iniciar_titulo": "Starting a shift",
     "iniciar_texto": "When no shift is open, tap \"Start shift\" and choose the crew, product, unit, date and who's present. Once started, tap each worker's card to record units with +1, +5 or the keypad.",
     "grupos_titulo": "Working by groups",

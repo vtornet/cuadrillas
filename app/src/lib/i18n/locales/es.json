@@ -33,6 +33,8 @@
   "ayuda": {
     "titulo": "Ayuda",
     "intro": "Guia rapida de cada pantalla de Cuadrillas. Si tienes dudas que no resuelve esta pagina, escribenos, abajo tienes el contacto.",
+    "previo_titulo": "Antes de empezar",
+    "previo_texto": "Lo primero es rellenar los Datos: al menos una cuadrilla, un trabajador, un producto y una unidad. Sin esto no se puede iniciar un parte.",
     "iniciar_titulo": "Iniciar parte",
     "iniciar_texto": "Cuando no hay ningun parte abierto, pulsa «Comenzar jornada» y elige cuadrilla, producto, unidad, fecha y quien esta presente. Ya empezado, toca la tarjeta de cada trabajador para anotar unidades con +1, +5 o el teclado.",
     "grupos_titulo": "Trabajar por grupos",

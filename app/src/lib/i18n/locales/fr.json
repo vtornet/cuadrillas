@@ -33,6 +33,8 @@
   "ayuda": {
     "titulo": "Aide",
     "intro": "Guide rapide de chaque écran de Cuadrillas. Si un point n'est pas couvert ici, contactez-nous — les coordonnées sont ci-dessous.",
+    "previo_titulo": "Avant de commencer",
+    "previo_texto": "La première chose à faire est de remplir les Données : au moins une équipe, un travailleur, un produit et une unité. Sans cela, impossible de commencer une fiche.",
     "iniciar_titulo": "Commencer une fiche",
     "iniciar_texto": "Quand aucune fiche n'est ouverte, appuyez sur « Commencer la fiche » et choisissez l'équipe, le produit, l'unité, la date et les présents. Une fois commencée, touchez la carte de chaque travailleur pour enregistrer les unités avec +1, +5 ou le clavier.",
     "grupos_titulo": "Travailler par groupes",

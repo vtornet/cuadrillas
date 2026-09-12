@@ -33,6 +33,8 @@
   "ayuda": {
     "titulo": "Ajutor",
     "intro": "Ghid rapid pentru fiecare ecran din Cuadrillas. Dacă ceva nu este acoperit aici, scrieți-ne — datele de contact sunt mai jos.",
+    "previo_titulo": "Înainte de a începe",
+    "previo_texto": "Primul lucru este să completezi Datele: cel puțin o echipă, un lucrător, un produs și o unitate. Fără acestea nu poți începe o tură.",
     "iniciar_titulo": "Începe un tur",
     "iniciar_texto": "Când nu este niciun tur deschis, apasă „Începe tura” și alege echipa, produsul, unitatea, data și cine este prezent. După ce a început, atinge cardul fiecărui lucrător pentru a înregistra unități cu +1, +5 sau tastatura.",
     "grupos_titulo": "Lucrul pe grupe",

@@ -14,6 +14,9 @@
     <article class="legal">
       <p>{i18n.t("ayuda.intro")}</p>
 
+      <h2>{i18n.t("ayuda.previo_titulo")}</h2>
+      <p>{i18n.t("ayuda.previo_texto")}</p>
+
       <h2>{i18n.t("ayuda.iniciar_titulo")}</h2>
       <p>{i18n.t("ayuda.iniciar_texto")}</p>
 
